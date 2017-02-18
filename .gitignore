@@ -1,0 +1,14 @@
+/Debug
+/Product
+/Release
+/*.ncb
+/*.suo
+*.user
+/*.bin
+/Version.h
+/ipch
+/trace.log
+/*.sdf
+/*.opensdf
+/*.dsk
+/*.nmst
