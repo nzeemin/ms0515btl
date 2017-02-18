@@ -1,0 +1,4 @@
+ 
+#define SVN_REVISION  
+ 
+#define MS0515BTL_VERSION_STRING "1.0." 
