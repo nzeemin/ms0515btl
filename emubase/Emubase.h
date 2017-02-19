@@ -83,7 +83,6 @@ protected:
     int  m_rwlen;
     uint16_t m_crc;
     int  m_startcrc;
-    //uint8_t m_cursector;    // Sector number read from sector header
 
 public:
     CFloppyController();
@@ -138,6 +137,7 @@ public:
     bool HasByteReady() const;  // Do we have a byte to receive from the keyboard
     uint8_t ReceiveByte();      // Receive byte from the keyboard
     void Periodic();            // Time tick; call it around 4900 times per second
+    void KeyPressed(uint8_t scan);  // Key press event
 
 private:
     void PutByteToQueue(uint8_t);

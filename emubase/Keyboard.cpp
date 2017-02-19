@@ -47,6 +47,11 @@ void CKeyboard::Periodic()
         m_nTxCounter--;
 }
 
+void CKeyboard::KeyPressed(uint8_t scan)
+{
+    PutByteToQueue(scan);
+}
+
 uint8_t CKeyboard::ReceiveByte()
 {
     if (m_nQueueLength == 0)

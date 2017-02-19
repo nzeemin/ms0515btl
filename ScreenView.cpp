@@ -264,17 +264,17 @@ WORD ScreenView_GetKeyEventFromQueue()
     return keyevent;
 }
 
-const BYTE arrPcChar2NemigaChar[256] =    // Nemiga chars from PC chars
+const BYTE arrPcChar2MS7004scan[256] =    // Nemiga chars from PC chars
 {
     /*       0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f  */
     /*0*/    0000, 0000, 0000, 0x03, 0000, 0000, 0000, 0000, 0177, 0015, 0000, 0000, 0x0c, 0015, 0000, 0000,
     /*1*/    0000, 0x11, 0000, 0x13, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000,
     /*2*/    0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
-    /*3*/    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
-    /*4*/    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
-    /*5*/    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,
-    /*6*/    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
-    /*7*/    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
+    /*3*/    0222, 0226, 0227, 0230, 0231, 0232, 0233, 0235, 0236, 0237, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+    /*4*/    0x60, 0322, 0350, 0306, 0351, 0327, 0302, 0341, 0366, 0331, 0301, 0321, 0347, 0323, 0334, 0342,
+    /*5*/    0330, 0303, 0335, 0316, 0336, 0314, 0362, 0315, 0343, 0307, 0360, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,
+    /*6*/    0x40, 0322, 0350, 0306, 0351, 0327, 0302, 0341, 0366, 0331, 0301, 0321, 0347, 0323, 0334, 0342,
+    /*7*/    0330, 0303, 0335, 0316, 0336, 0314, 0362, 0315, 0343, 0307, 0360, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
     /*8*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000,
     /*9*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000,
     /*a*/    0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000, 0000,
@@ -311,7 +311,6 @@ void ScreenView_ScanKeyboard()
             int res = ToAsciiEx(vkey, MapVirtualKey(vkey, 0), keys, mapchars, 0, hkl);
             if (!res)
                 continue;
-
             BYTE key = (BYTE)mapchars[0];
 
 //#if !defined(PRODUCT)
@@ -319,7 +318,7 @@ void ScreenView_ScanKeyboard()
 //                DebugPrintFormat(_T("Key PC: 0x%0x %d %d 0x%0x\r\n"), vkey, okShift, okCtrl, (int)key);
 //#endif
 
-            key = arrPcChar2NemigaChar[key];
+            key = arrPcChar2MS7004scan[key];
             if (key == 0)
                 continue;
 
@@ -341,13 +340,13 @@ void ScreenView_ProcessKeyboard()
     {
         bool pressed = ((keyevent & 0x8000) != 0);
         bool ctrl = ((keyevent & 0x4000) != 0);
-        BYTE bkscan = LOBYTE(keyevent);
+        BYTE scan = LOBYTE(keyevent);
 
 //#if !defined(PRODUCT)
-//        DebugPrintFormat(_T("KeyEvent: 0x%0x %d %d\r\n"), bkscan, pressed, ctrl);
+//        DebugPrintFormat(_T("KeyEvent: 0x%0x %d %d\r\n"), scan, pressed, ctrl);
 //#endif
 
-        g_pBoard->KeyboardEvent(bkscan, pressed);
+        g_pBoard->KeyboardEvent(scan, pressed);
     }
 }
 

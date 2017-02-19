@@ -349,7 +349,7 @@ bool CMotherboard::SystemFrame()
 #if !defined(PRODUCT)
                 if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard received %03o\r\n"), m_Port177440);
 #endif
-                m_Port177442r |= 2;  // Set Ready flag
+                m_Port177442r |= 2;  // Установка флага "готовность приёмника"
                 //m_pCPU->InterruptVIRQ(5, 0130);
             }
             if (keyboardTxCount > 0)
@@ -358,7 +358,7 @@ bool CMotherboard::SystemFrame()
                 if (keyboardTxCount == 0)
                 {
                     m_pKeyboard->SendByte(m_Port177460 & 0xff);
-                    m_Port177442r |= 1;  // Set Ready flag
+                    m_Port177442r |= 1;  // Установка флага "готовность передатчика"
                 }
             }
             else if ((m_Port177442r & 1) == 0)  // Ready is 0?
@@ -428,10 +428,8 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed)
 {
     if (okPressed)  // Key released
     {
-        //m_Port170006 |= 02000;
-        //m_Port170006 |= scancode;
-        //if (m_Port177560 | 0100)
-        //m_pCPU->FireHALT();
+        m_pKeyboard->KeyPressed(scancode);
+
 #if !defined(PRODUCT)
         if (m_dwTrace & TRACE_KEYBOARD)
         {
@@ -665,9 +663,15 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
 
     case 0177440:  // Клавиатура: буфер данных приёмника, READ ONLY
         m_Port177442r &= ~2;  // Reset Ready flag
+//#if !defined(PRODUCT)
+//        if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard 177440 read %06o\r\n"), m_Port177442r);
+//#endif
         return m_Port177440;
     case 0177442: // Клавиатура: регистр состояния порта, READ
-        return 0xff; //STUB
+//#if !defined(PRODUCT)
+//        if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard 177440 read %06o\r\n"), m_Port177442r);
+//#endif
+        return m_Port177442r;
     case 0177460:  // Клавиатура: буфер данных передатчика
         return m_Port177460;
     case 0177462:  // Клавиатура: регистр уплавления, READ ONLY
