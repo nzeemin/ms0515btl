@@ -196,7 +196,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_internalTick = 0;
     m_waitmode = false;
     m_stepmode = false;
-    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;
 
@@ -213,7 +213,7 @@ void CProcessor::Start ()
 
     m_stepmode = false;
     m_waitmode = false;
-    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
@@ -232,7 +232,7 @@ void CProcessor::Stop ()
     m_waitmode = false;
     m_psw = 0340;
     m_internalTick = 0;
-    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 }
@@ -247,8 +247,6 @@ void CProcessor::Execute()
         return;
     }
     m_internalTick = TIMING_ILLEGAL;  // ANYTHING UNKNOWN
-
-    //m_RPLYrq = false;
 
     if (!m_waitmode)
     {
@@ -275,7 +273,7 @@ void CProcessor::Execute()
 
             // Calculate interrupt vector and mode accoding to priority
             uint16_t intrVector = 0;
-            //TODO: int priority =
+            int priority = (m_psw & 0340) >> 5;  // Priority: 0..7
             if (m_HALTrq)  // HALT command
             {
                 //intrVector = 0172004;  intrMode = true;
@@ -295,50 +293,45 @@ void CProcessor::Execute()
             }
             else if (m_BPT_rq)  // BPT command
             {
-                intrVector = 0000014;
-                m_BPT_rq = false;
+                intrVector = 0000014;  m_BPT_rq = false;
             }
             else if (m_IOT_rq)  // IOT command
             {
-                intrVector = 0000020;
-                m_IOT_rq = false;
+                intrVector = 0000020;  m_IOT_rq = false;
             }
             else if (m_EMT_rq)  // EMT command
             {
-                intrVector = 0000030;
-                m_EMT_rq = false;
+                intrVector = 0000030;  m_EMT_rq = false;
             }
             else if (m_TRAPrq)  // TRAP command
             {
-                intrVector = 0000034;
-                m_TRAPrq = false;
+                intrVector = 0000034;  m_TRAPrq = false;
             }
             else if (m_RPLYrq)  // Зависание
             {
-                intrVector = 000000;
-                m_RPLYrq = false;
+                intrVector = 000000;  m_RPLYrq = false;
             }
             else if (m_RSVD4rq)  // Reserved instruction trap: JMP / JSR wrong mode
             {
-                intrVector = 000010;
-                m_RSVDrq = false;
+                intrVector = 000010;  m_RSVDrq = false;
             }
             else if (m_RSVDrq)  // Reserved instruction trap: illegal and reserved instruction
             {
-                intrVector = 000010;
-                m_RSVDrq = false;
+                intrVector = 000010;  m_RSVDrq = false;
             }
-            else if (m_TBITrq && (!m_waitmode))  // T-bit, priority 3
+            else if (m_TBITrq && (!m_waitmode))  // T-bit
             {
-                intrVector = 000014;
-                m_TBITrq = false;
+                intrVector = 000014;  m_TBITrq = false;
             }
-            else if (m_IRQ2rq && (m_psw & 0200) != 0200)  // Vblank interrupt, priority 4
+            else if (m_IRQ5rq && priority < 5)  // Keyboard 7004 interrupt, priority 5
             {
-                intrVector = 000064;
-                m_IRQ2rq = false;
+                intrVector = 000130;  m_IRQ5rq = false;
             }
-            else if (m_virqrq > 0 && (m_psw & 0200) != 0200)  // VIRQ, priority 7
+            else if (m_IRQ2rq && priority < 4)  // Vblank interrupt, priority 4
+            {
+                intrVector = 000064;  m_IRQ2rq = false;
+            }
+            else if (m_virqrq > 0 && (m_psw & 0200) != 0200)  // VIRQ
             {
                 for (int irq = 0; irq <= 15; irq++)
                 {

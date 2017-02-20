@@ -350,7 +350,7 @@ bool CMotherboard::SystemFrame()
                 if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard received %03o\r\n"), m_Port177440);
 #endif
                 m_Port177442r |= 2;  // Установка флага "готовность приёмника"
-                //m_pCPU->InterruptVIRQ(5, 0130);
+                m_pCPU->FireIRQ5();
             }
             if (keyboardTxCount > 0)
             {

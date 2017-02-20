@@ -57,10 +57,10 @@ void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
 //   pVideoBuffer   Исходные данные, биты экрана БК
 //   pPalette       Палитра
 //   pImageBits     Результат, 32-битный цвет, размер для каждой функции свой
-typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(const BYTE* pVideoBuffer, const uint32_t* pPalette, void* pImageBits, bool hires);
+typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(const BYTE* pVideoBuffer, const uint32_t* pPalette, void* pImageBits, bool hires, uint8_t border);
 
-void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires);
-void CALLBACK Emulator_PrepareScreen320x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires);
+void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
+void CALLBACK Emulator_PrepareScreen320x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
 
 struct ScreenModeStruct
 {
@@ -477,8 +477,9 @@ void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
 
     // Render to bitmap
     bool hires = g_pBoard->GetPortView(0177604) & 010;
+    uint8_t border = g_pBoard->GetPortView(0177604) & 7;
     PREPARE_SCREEN_CALLBACK callback = ScreenModeReference[screenMode].callback;
-    callback(pVideoBuffer, Emulator_Palette, pImageBits, hires);
+    callback(pVideoBuffer, Emulator_Palette, pImageBits, hires, border);
 }
 
 const uint32_t * Emulator_GetPalette()
@@ -488,15 +489,17 @@ const uint32_t * Emulator_GetPalette()
 
 #define AVERAGERGB(a, b)  ( (((a) & 0xfefefeffUL) + ((b) & 0xfefefeffUL)) >> 1 )
 
-void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires)
+void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
 {
     if (!hires)
     {
+        uint32_t colorborder = palette[border & 7];
         for (int y = 0; y < 200; y++)
         {
             const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + y * 320 / 4);
             uint32_t* pBits = (uint32_t*)pImageBits + (200 - 1 - y) * 640;
-            ::memset(pBits, 0, 4 * 160);  pBits += 160;  // Left part of line
+            for (int i = 0; i < 160; i++)  // Left part of line
+                *pBits++ = colorborder;
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -511,11 +514,14 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
                     pBits++;
                 }
             }
-            ::memset(pBits, 0, 4 * 160);  pBits += 160;  // Right part of line
+            for (int i = 0; i < 160; i++)  // Right part of line
+                *pBits++ = colorborder;
         }
     }
-    else
+    else  // hires
     {
+        uint32_t colorpaper = palette[border & 7];
+        uint32_t colorink = palette[(border & 7) ^ 7];
         for (int y = 0; y < 200; y++)
         {
             const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + y * 640 / 8);
@@ -526,7 +532,7 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
                 uint8_t mask = 0x80;
                 for (int f = 0; f < 8; f++)
                 {
-                    uint32_t color = (value & mask) ? RGB(255, 255, 255) : 0;
+                    uint32_t color = (value & mask) ? colorink : colorpaper;
                     *pBits = color;
                     mask = mask >> 1;
                     pBits++;
@@ -536,7 +542,7 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
     }
 }
 
-void CALLBACK Emulator_PrepareScreen320x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires)
+void CALLBACK Emulator_PrepareScreen320x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
 {
     //TODO
 }
