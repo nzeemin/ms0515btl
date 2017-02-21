@@ -606,8 +606,6 @@ void CALLBACK Emulator_PrepareScreen640x400(const BYTE* pVideoBuffer, const uint
             const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + y * 320 / 4);
             uint32_t* pBits1 = (uint32_t*)pImageBits + (400 - 1 - y * 2) * 640;
             uint32_t* pBits2 = (uint32_t*)pImageBits + (400 - 2 - y * 2) * 640;
-            for (int i = 0; i < 160; i++)  // Left part of line
-                *pBits1++ = *pBits2++ = colorborder;
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -617,11 +615,10 @@ void CALLBACK Emulator_PrepareScreen640x400(const BYTE* pVideoBuffer, const uint
                 for (int f = 0; f < 8; f++)
                 {
                     *pBits1++ = *pBits2++ = (value & mask) ? colorink : colorpaper;
+                    *pBits1++ = *pBits2++ = (value & mask) ? colorink : colorpaper;
                     mask = mask >> 1;
                 }
             }
-            for (int i = 0; i < 160; i++)  // Right part of line
-                *pBits1++ = *pBits2++ = colorborder;
         }
     }
     else  // hires

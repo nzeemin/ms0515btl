@@ -270,7 +270,8 @@ void CMotherboard::ResetHALT()
 
 void CMotherboard::Tick50()  // Vblank
 {
-    m_pCPU->TickIRQ2();
+    if (m_Port177400 & 0400)
+        m_pCPU->TickIRQ2();
 }
 
 void CMotherboard::TimerTick() // Timer Tick, 8 MHz
