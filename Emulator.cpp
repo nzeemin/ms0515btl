@@ -60,7 +60,7 @@ void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
 typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(const BYTE* pVideoBuffer, const uint32_t* pPalette, void* pImageBits, bool hires, uint8_t border);
 
 void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
-void CALLBACK Emulator_PrepareScreen320x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
+void CALLBACK Emulator_PrepareScreen360x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
 
 struct ScreenModeStruct
 {
@@ -71,7 +71,7 @@ struct ScreenModeStruct
 static ScreenModeReference[] =
 {
     {  640, 200, Emulator_PrepareScreen640x200 },
-    {  320, 200, Emulator_PrepareScreen320x200 },
+    {  360, 200, Emulator_PrepareScreen360x200 },
 };
 
 const uint32_t Emulator_Palette[16] =
@@ -503,15 +503,13 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
-                uint16_t mask = 0x0080;
                 uint32_t colorpaper = palette[(value >> 11) & 7];
                 uint32_t colorink = palette[(value >> 8) & 7];
+                uint16_t mask = 0x80;
                 for (int f = 0; f < 8; f++)
                 {
-                    uint32_t color = (value & mask) ? colorink : colorpaper;
-                    *pBits = color;
+                    *pBits++ = (value & mask) ? colorink : colorpaper;
                     mask = mask >> 1;
-                    pBits++;
                 }
             }
             for (int i = 0; i < 160; i++)  // Right part of line
@@ -532,19 +530,68 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
                 uint8_t mask = 0x80;
                 for (int f = 0; f < 8; f++)
                 {
-                    uint32_t color = (value & mask) ? colorink : colorpaper;
-                    *pBits = color;
+                    *pBits++ = (value & mask) ? colorink : colorpaper;
                     mask = mask >> 1;
-                    pBits++;
                 }
             }
         }
     }
 }
 
-void CALLBACK Emulator_PrepareScreen320x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
+void CALLBACK Emulator_PrepareScreen360x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
 {
-    //TODO
+    if (!hires)
+    {
+        uint32_t colorborder = palette[border & 7];
+        for (int y = 0; y < 200; y++)
+        {
+            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + y * 320 / 4);
+            uint32_t* pBits = (uint32_t*)pImageBits + (200 - 1 - y) * 360;
+            for (int i = 0; i < 20; i++)  // Left part of line
+                *pBits++ = colorborder;
+            for (int x = 0; x < 320 / 8; x++)
+            {
+                uint16_t value = *pVideo++;
+                uint32_t colorpaper = palette[(value >> 11) & 7];
+                uint32_t colorink = palette[(value >> 8) & 7];
+                uint16_t mask = 0x80;
+                for (int f = 0; f < 8; f++)
+                {
+                    *pBits++ = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                }
+            }
+            for (int i = 0; i < 20; i++)  // Right part of line
+                *pBits++ = colorborder;
+        }
+    }
+    else  // hires
+    {
+        uint32_t colorpaper = palette[border & 7];
+        uint32_t colorink = palette[(border & 7) ^ 7];
+        for (int y = 0; y < 200; y++)
+        {
+            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + y * 640 / 8);
+            uint32_t* pBits = (uint32_t*)pImageBits + (200 - 1 - y) * 360;
+            for (int i = 0; i < 20; i++)  // Left part of line
+                *pBits++ = colorpaper;
+            for (int x = 0; x < 320; x += 4)
+            {
+                uint8_t value = *pVideo++;
+                uint8_t mask = 0x80;
+                for (int f = 0; f < 8; f += 2)
+                {
+                    uint32_t color1 = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                    uint32_t color2 = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                    *pBits++ = AVERAGERGB(color1, color2);
+                }
+            }
+            for (int i = 0; i < 20; i++)  // Right part of line
+                *pBits++ = colorpaper;
+        }
+    }
 }
 
 
