@@ -124,7 +124,7 @@ void ScreenView_Create(HWND hwndParent, int x, int y)
     int xLeft = x;
     int yTop = y;
     int cyScreenHeight = m_cyScreenHeight + 8;
-    int cyHeight = cyScreenHeight;
+    int cyHeight = 4 + cyScreenHeight + 4;
     int cxWidth = 4 + m_cxScreenWidth + 4;
 
     g_hwndScreen = CreateWindow(
@@ -196,7 +196,7 @@ void ScreenView_SetScreenMode(int newMode)
     ScreenView_CreateDisplay();
 
     RECT rc;  ::GetWindowRect(g_hwndScreen, &rc);
-    ::SetWindowPos(g_hwndScreen, NULL, 0, 0, 4 + cxWidth + 4, cyHeight, SWP_NOZORDER | SWP_NOMOVE);
+    ::SetWindowPos(g_hwndScreen, NULL, 0, 0, 4 + cxWidth + 4, 4 + cyHeight + 4, SWP_NOZORDER | SWP_NOMOVE);
 
     ScreenView_RedrawScreen();
 }
@@ -219,8 +219,8 @@ void ScreenView_OnDraw(HDC hdc)
     HGDIOBJ hOldBrush = ::SelectObject(hdc, hBrush);
     PatBlt(hdc, 0, 0, x, rc.bottom, PATCOPY);
     PatBlt(hdc, x + m_cxScreenWidth, 0, rc.right, rc.bottom, PATCOPY);
-    PatBlt(hdc, x, 0, m_cxScreenWidth, 4, BLACKNESS);
-    PatBlt(hdc, x, rc.bottom - 4, m_cxScreenWidth, 4, BLACKNESS);
+    PatBlt(hdc, x, 0, m_cxScreenWidth, 4, PATCOPY);
+    PatBlt(hdc, x, rc.bottom - 4, m_cxScreenWidth, 4, PATCOPY);
     ::SelectObject(hdc, hOldBrush);
     ::DeleteObject(hBrush);
 }
