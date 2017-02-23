@@ -680,48 +680,67 @@ uint16_t CalculateChecksum(const uint8_t* buffer, int length)
 // pSrc   array length is 10 * 512
 // data   array length is 6250 == FLOPPY_RAWTRACKSIZE
 // marker array length is 6250 == FLOPPY_RAWMARKERSIZE
+//-------------------------------------------------
+//     ¶  54        4E
+//     ¶  12        00
+// 105-+   4        F6 (записываетс€ C2)
+//     ¶  35        4E
+//  ---- Ќачало сектора 1..10 ---------------------
+//     ¶   8        00                            ¶
+//     ¶   3        F5 (записываетс€ A1)          ¶
+//     ¶   1        FE Ч маркер заголовка сектора ¶
+//     ¶   1        tt Ч номер дорожки 0..79      ¶
+//     ¶   1        00 Ч сторона: 0 - низ         ¶
+//     ¶   1        0s Ч номер сектора 1..10      ¶
+//     ¶   1        02 Ч 512 байт на сектор       ¶
+//     ¶   1(2)     F7 (записываетс€ 2 байта CRC) ¶
+//     ¶  22        4E                            ¶
+//     ¶  12        00                            ¶
+//     ¶   3        F5 (записываетс€ A1)          ¶
+//     ¶   1        FB Ч маркер данных            ¶
+// 612-+ 512        xx Ч данные сектора           ¶
+//(614)¶   1(2)     F7 (записываетс€ 2 байта CRC) ¶
+//     ¶  44        4E                            ¶
+//  ----  онец сектора ----------------------------
+//     ¶ 352        4E Ч до конца дорожки
+//-------------------------------------------------
 static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker, uint16_t track, uint16_t side)
 {
     memset(data, 0, FLOPPY_RAWTRACKSIZE);
     memset(marker, 0, FLOPPY_RAWMARKERSIZE);
     uint32_t count;
     int ptr = 0;
-    int gap = 34;
+    for (count = 0; count < 54; count++) data[ptr++] = 0x4e;  // Initial gap
+    for (count = 0; count < 12; count++) data[ptr++] = 0x00;
+    for (count = 0; count < 4; count++) data[ptr++] = 0xC2;
+    int gap = 35;
     for (int sect = 0; sect < 10; sect++)
     {
-        // GAP
+        // sector gap
         for (count = 0; count < (uint32_t)gap; count++) data[ptr++] = 0x4e;
         // sector header
-        for (count = 0; count < 12; count++) data[ptr++] = 0x00;
-        // marker
+        for (count = 0; count < 8; count++) data[ptr++] = 0x00;
         data[ptr++] = 0xa1;  data[ptr++] = 0xa1;  data[ptr++] = 0xa1;
-        marker[ptr] = true;  // ID marker; start CRC calculus
-        data[ptr++] = 0xfe;
-
-        data[ptr++] = (uint8_t)track;  data[ptr++] = (side != 0);
-        data[ptr++] = (uint8_t)sect + 1;  data[ptr++] = 2; // Assume 512 bytes per sector;
+        marker[ptr] = true;  data[ptr++] = 0xfe;  // ID marker; start CRC calculus
+        data[ptr++] = (uint8_t)track;  // Track 0..79
+        data[ptr++] = (side != 0);
+        data[ptr++] = (uint8_t)sect + 1;  // Sector 1..10
+        data[ptr++] = 2; // Assume 512 bytes per sector;
         // crc
-        //TODO: Calculate CRC
-        data[ptr++] = 0x12;  data[ptr++] = 0x34;  // CRC stub
-
-        // sync
-        for (count = 0; count < 24; count++) data[ptr++] = 0x4e;
+        data[ptr++] = 0x12;  data[ptr++] = 0x34;  //TODO: Calculate CRC
+        for (count = 0; count < 22; count++) data[ptr++] = 0x4e;
         // data header
         for (count = 0; count < 12; count++) data[ptr++] = 0x00;
-        // marker
         data[ptr++] = 0xa1;  data[ptr++] = 0xa1;  data[ptr++] = 0xa1;
-        marker[ptr] = true;  // Data marker; start CRC calculus
-        data[ptr++] = 0xfb;
+        marker[ptr] = true;  data[ptr++] = 0xfb;  // Data marker; start CRC calculus
         // data
         for (count = 0; count < 512; count++)
             data[ptr++] = pSrc[(sect * 512) + count];
         // crc
-        //TODO: Calculate CRC
-        data[ptr++] = 0x43;  data[ptr++] = 0x21;  // CRC stub
-
-        gap = 38;
+        data[ptr++] = 0x43;  data[ptr++] = 0x21;  //TODO: Calculate CRC
+        gap = 44;
     }
-    // fill GAP4B to the end of the track
+    // fill to the end of the track
     while (ptr < FLOPPY_RAWTRACKSIZE) data[ptr++] = 0x4e;
 }
 
@@ -731,11 +750,15 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
 // Returns: true - decoded, false - parse error
 static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest, uint16_t track)
 {
-    uint16_t dataptr = 0;  // Offset in m_data array
+    uint16_t dataptr = 0;  // Offset in raw track array
     uint16_t destptr = 0;  // Offset in data array
+    // Skip gap and sync at the track start
+    while (dataptr < FLOPPY_RAWTRACKSIZE && pRaw[dataptr] == 0x4e) dataptr++;
+    while (dataptr < FLOPPY_RAWTRACKSIZE && (pRaw[dataptr] == 0x00 || pRaw[dataptr] == 0xC2)) dataptr++;
     for (;;)
     {
-        while (dataptr < FLOPPY_RAWTRACKSIZE && pRaw[dataptr] == 0x4e) dataptr++;  // Skip GAP1 or GAP3
+        if (dataptr >= FLOPPY_RAWTRACKSIZE) break;  // End of track or error
+        while (dataptr < FLOPPY_RAWTRACKSIZE && pRaw[dataptr] == 0x4e) dataptr++;  // Skip sector gap
         if (dataptr >= FLOPPY_RAWTRACKSIZE) break;  // End of track or error
         while (dataptr < FLOPPY_RAWTRACKSIZE && pRaw[dataptr] == 0x00) dataptr++;  // Skip sync
         if (dataptr >= FLOPPY_RAWTRACKSIZE) return false;  // Something wrong
