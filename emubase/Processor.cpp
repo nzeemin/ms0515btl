@@ -86,16 +86,15 @@ void CProcessor::Init()
     RegisterMethodRef( 0000004, 0000004, &CProcessor::ExecuteIOT );
     RegisterMethodRef( 0000005, 0000005, &CProcessor::ExecuteRESET );
     RegisterMethodRef( 0000006, 0000006, &CProcessor::ExecuteRTT );
-
+    RegisterMethodRef( 0000007, 0000007, &CProcessor::ExecuteMFPT );
+    // RESERVED:       0000010, 0000077
     RegisterMethodRef( 0000100, 0000177, &CProcessor::ExecuteJMP );
     RegisterMethodRef( 0000200, 0000207, &CProcessor::ExecuteRTS );  // RTS / RETURN
-
+    // RESERVED:       0000210, 0000227
+    // SPL             0000230, 0000237
     RegisterMethodRef( 0000240, 0000257, &CProcessor::ExecuteCCC );
-
     RegisterMethodRef( 0000260, 0000277, &CProcessor::ExecuteSCC );
-
     RegisterMethodRef( 0000300, 0000377, &CProcessor::ExecuteSWAB );
-
     RegisterMethodRef( 0000400, 0000777, &CProcessor::ExecuteBR );
     RegisterMethodRef( 0001000, 0001377, &CProcessor::ExecuteBNE );
     RegisterMethodRef( 0001400, 0001777, &CProcessor::ExecuteBEQ );
@@ -103,9 +102,7 @@ void CProcessor::Init()
     RegisterMethodRef( 0002400, 0002777, &CProcessor::ExecuteBLT );
     RegisterMethodRef( 0003000, 0003377, &CProcessor::ExecuteBGT );
     RegisterMethodRef( 0003400, 0003777, &CProcessor::ExecuteBLE );
-
     RegisterMethodRef( 0004000, 0004777, &CProcessor::ExecuteJSR );  // JSR / CALL
-
     RegisterMethodRef( 0005000, 0005077, &CProcessor::ExecuteCLR );
     RegisterMethodRef( 0005100, 0005177, &CProcessor::ExecuteCOM );
     RegisterMethodRef( 0005200, 0005277, &CProcessor::ExecuteINC );
@@ -118,24 +115,25 @@ void CProcessor::Init()
     RegisterMethodRef( 0006100, 0006177, &CProcessor::ExecuteROL );
     RegisterMethodRef( 0006200, 0006277, &CProcessor::ExecuteASR );
     RegisterMethodRef( 0006300, 0006377, &CProcessor::ExecuteASL );
-
-    RegisterMethodRef( 0006400, 0006477, &CProcessor::ExecuteMARK );
+    // MARK            0006400, 0006477
+    // MFPI            0006500, 0006577
+    // MTPI            0006600, 0006677
     RegisterMethodRef( 0006700, 0006777, &CProcessor::ExecuteSXT );
-
+    // RESERVED:       0007000, 0007777
     RegisterMethodRef( 0010000, 0017777, &CProcessor::ExecuteMOV );
     RegisterMethodRef( 0020000, 0027777, &CProcessor::ExecuteCMP );
     RegisterMethodRef( 0030000, 0037777, &CProcessor::ExecuteBIT );
     RegisterMethodRef( 0040000, 0047777, &CProcessor::ExecuteBIC );
     RegisterMethodRef( 0050000, 0057777, &CProcessor::ExecuteBIS );
     RegisterMethodRef( 0060000, 0067777, &CProcessor::ExecuteADD );
-
-    RegisterMethodRef( 0070000, 0070777, &CProcessor::ExecuteMUL );
-    RegisterMethodRef( 0071000, 0071777, &CProcessor::ExecuteDIV );
-    RegisterMethodRef( 0072000, 0072777, &CProcessor::ExecuteASH );
-    RegisterMethodRef( 0073000, 0073777, &CProcessor::ExecuteASHC );
+    RegisterMethodRef( 0070000, 0070777, &CProcessor::ExecuteMUL );  //TODO: Check 0704SS not executed
+    RegisterMethodRef( 0071000, 0071777, &CProcessor::ExecuteDIV );  //TODO: Check 071RSS not executed
+    RegisterMethodRef( 0072000, 0072777, &CProcessor::ExecuteASH );  //TODO: Check 072RSS not executed
+    RegisterMethodRef( 0073000, 0073777, &CProcessor::ExecuteASHC ); //TODO: Check 073RSS not executed
     RegisterMethodRef( 0074000, 0074777, &CProcessor::ExecuteXOR );
+    // FADD etc.       0075000, 0075777
+    // RESERVED:       0076000, 0076777
     RegisterMethodRef( 0077000, 0077777, &CProcessor::ExecuteSOB );
-
     RegisterMethodRef( 0100000, 0100377, &CProcessor::ExecuteBPL );
     RegisterMethodRef( 0100400, 0100777, &CProcessor::ExecuteBMI );
     RegisterMethodRef( 0101000, 0101377, &CProcessor::ExecuteBHI );
@@ -144,10 +142,8 @@ void CProcessor::Init()
     RegisterMethodRef( 0102400, 0102777, &CProcessor::ExecuteBVS );
     RegisterMethodRef( 0103000, 0103377, &CProcessor::ExecuteBHIS );  // BCC
     RegisterMethodRef( 0103400, 0103777, &CProcessor::ExecuteBLO );   // BCS
-
     RegisterMethodRef( 0104000, 0104377, &CProcessor::ExecuteEMT );
     RegisterMethodRef( 0104400, 0104777, &CProcessor::ExecuteTRAP );
-
     RegisterMethodRef( 0105000, 0105077, &CProcessor::ExecuteCLR );  // CLRB
     RegisterMethodRef( 0105100, 0105177, &CProcessor::ExecuteCOM );  // COMB
     RegisterMethodRef( 0105200, 0105277, &CProcessor::ExecuteINC );  // INCB
@@ -160,16 +156,17 @@ void CProcessor::Init()
     RegisterMethodRef( 0106100, 0106177, &CProcessor::ExecuteROL );  // ROLB
     RegisterMethodRef( 0106200, 0106277, &CProcessor::ExecuteASR );  // ASRB
     RegisterMethodRef( 0106300, 0106377, &CProcessor::ExecuteASL );  // ASLB
-
     RegisterMethodRef( 0106400, 0106477, &CProcessor::ExecuteMTPS );
+    // MFPD            0106500, 0106577
+    // MTPD            0106600, 0106677
     RegisterMethodRef( 0106700, 0106777, &CProcessor::ExecuteMFPS );
-
     RegisterMethodRef( 0110000, 0117777, &CProcessor::ExecuteMOV );  // MOVB
     RegisterMethodRef( 0120000, 0127777, &CProcessor::ExecuteCMP );  // CMPB
     RegisterMethodRef( 0130000, 0137777, &CProcessor::ExecuteBIT );  // BITB
     RegisterMethodRef( 0140000, 0147777, &CProcessor::ExecuteBIC );  // BICB
     RegisterMethodRef( 0150000, 0157777, &CProcessor::ExecuteBIS );  // BISB
     RegisterMethodRef( 0160000, 0167777, &CProcessor::ExecuteSUB );
+    // FPP             0170000, 0177777
 }
 
 void CProcessor::Done()
@@ -679,7 +676,7 @@ void CProcessor::TranslateInstruction ()
 void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается TRAP 10
 {
 #if !defined(PRODUCT)
-    DebugLogFormat(_T(">>Invalid OPCODE = %06o at %06o\r\n"), m_instruction, m_instructionpc);
+    DebugLogFormat(_T("CPU: Invalid OPCODE %06o at PC=%06o\r\n"), m_instruction, m_instructionpc);
 #endif
 
     m_RSVDrq = true;
@@ -730,6 +727,13 @@ void CProcessor::ExecuteRESET ()  // Reset input/output devices
     m_pBoard->ResetDevices();  // INIT signal
 
     m_internalTick = TIMING_WAIT;
+}
+
+void CProcessor::ExecuteMFPT()
+{
+    SetReg(0, 4);
+
+    m_internalTick = TIMING_NOP;
 }
 
 void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
@@ -2000,16 +2004,6 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
 
         m_internalTick = TIMING_DS[m_methdest];
     }
-}
-
-void CProcessor::ExecuteMARK ()  // MARK
-{
-    SetSP( GetPC() + (m_instruction & 0x003F) * 2 );
-    SetPC( GetReg(5) );
-    SetReg(5, GetWord( GetSP() ));
-    SetSP( GetSP() + 2 );
-
-    m_internalTick = TIMING_MARK;
 }
 
 //////////////////////////////////////////////////////////////////////

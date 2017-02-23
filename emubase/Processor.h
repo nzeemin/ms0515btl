@@ -20,7 +20,7 @@ NEMIGABTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
-class CProcessor  // KM1801VM1 processor
+class CProcessor  // KR1807VM1 processor
 {
 
 public:  // Constructor / initialization
@@ -161,103 +161,102 @@ protected:
 protected:  // Implementation - instruction execution
     void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
 
-    // Команды перечислены по книге "Микропроцессорный комплект БИС серии КР588" Таблица 2, стр.11-13
     // Одноадресные команды
-    void        ExecuteCLR ();      // CLR(B),  0001
-    void        ExecuteCOM ();      //  0001
-    void        ExecuteINC ();      //  0001
-    void        ExecuteDEC ();      //  0001
-    void        ExecuteNEG ();      //  0001
-    void        ExecuteTST ();      //  0001
-    void        ExecuteASR ();      //  0001
-    void        ExecuteASL ();      //  0001
-    void        ExecuteROR ();      //  0001
-    void        ExecuteROL ();      //  0001
-    void        ExecuteADC ();      //  0001
-    void        ExecuteSBC ();      //  0001
-    void        ExecuteSXT ();      //  0002
-    void        ExecuteSWAB ();     //  0002
-    void        ExecuteMTPS ();     //  0002
-    void        ExecuteMFPS ();     //  0002
+    void        ExecuteCLR (); 
+    void        ExecuteCOM (); 
+    void        ExecuteINC (); 
+    void        ExecuteDEC (); 
+    void        ExecuteNEG (); 
+    void        ExecuteTST (); 
+    void        ExecuteASR (); 
+    void        ExecuteASL (); 
+    void        ExecuteROR (); 
+    void        ExecuteROL (); 
+    void        ExecuteADC (); 
+    void        ExecuteSBC (); 
+    void        ExecuteSXT (); 
+    void        ExecuteSWAB ();
+    void        ExecuteMTPS ();
+    void        ExecuteMFPS ();
     // Двухадресные команды
-    void        ExecuteMOV ();      //  0001
-    void        ExecuteCMP ();      //  0001
-    void        ExecuteADD ();      //  0001
-    void        ExecuteSUB ();      //  0001
-    void        ExecuteBIT ();      //  0001
-    void        ExecuteBIC ();      //  0001
-    void        ExecuteBIS ();      //  0001
-    void        ExecuteXOR ();      //  0002
+    void        ExecuteMOV ();
+    void        ExecuteCMP ();
+    void        ExecuteADD ();
+    void        ExecuteSUB ();
+    void        ExecuteBIT ();
+    void        ExecuteBIC ();
+    void        ExecuteBIS ();
+    void        ExecuteXOR ();
     // Команды управления программой
-    void        ExecuteBR ();       //  0002
-    void        ExecuteBNE ();      //  0002
-    void        ExecuteBEQ ();      //  0002
-    void        ExecuteBPL ();      //  0002
-    void        ExecuteBMI ();      //  0002
-    void        ExecuteBVC ();      //  0002
-    void        ExecuteBVS ();      //  0002
+    void        ExecuteBR (); 
+    void        ExecuteBNE ();
+    void        ExecuteBEQ ();
+    void        ExecuteBPL ();
+    void        ExecuteBMI ();
+    void        ExecuteBVC ();
+    void        ExecuteBVS ();
     //BCC == BHIS
     //BCS == BLO
-    void        ExecuteBGE ();      //  0002
-    void        ExecuteBLT ();      //  0002
-    void        ExecuteBGT ();      //  0002
-    void        ExecuteBLE ();      //  0002
-    void        ExecuteBHI ();      //  0002
-    void        ExecuteBLOS ();     //  0002
-    void        ExecuteBHIS ();     //  0002
-    void        ExecuteBLO ();      //  0002
-    void        ExecuteJMP ();      //  0004
-    void        ExecuteJSR ();      //  0004
-    void        ExecuteRTS ();      //  0004
-    void        ExecuteMARK ();     //  0002
-    void        ExecuteSOB ();      //  0002
+    void        ExecuteBGE ();  
+    void        ExecuteBLT ();  
+    void        ExecuteBGT ();  
+    void        ExecuteBLE ();  
+    void        ExecuteBHI ();  
+    void        ExecuteBLOS (); 
+    void        ExecuteBHIS (); 
+    void        ExecuteBLO ();  
+    void        ExecuteJMP ();  
+    void        ExecuteJSR ();  
+    void        ExecuteRTS ();  
+    void        ExecuteSOB ();  
     // Команды прерывания программы
-    void        ExecuteEMT ();      //  0004
-    void        ExecuteTRAP ();     //  0004
-    void        ExecuteIOT ();      //  0004
-    void        ExecuteBPT ();      //  0004
-    void        ExecuteRTI ();      //  0004
-    void        ExecuteRTT ();      //  0004
-    void        ExecuteHALT ();     //  0004
-    void        ExecuteWAIT ();     //  0004
-    void        ExecuteRESET ();    //  0004
+    void        ExecuteEMT ();  
+    void        ExecuteTRAP (); 
+    void        ExecuteIOT ();  
+    void        ExecuteBPT ();  
+    void        ExecuteRTI ();  
+    void        ExecuteRTT ();  
+    void        ExecuteHALT (); 
+    void        ExecuteWAIT (); 
+    void        ExecuteRESET ();
+    void        ExecuteMFPT();
     // Команды изменения признаков
-    void        ExecuteCLC ();      //  0002
-    void        ExecuteCLV ();      //  0002
+    void        ExecuteCLC ();  
+    void        ExecuteCLV ();  
     void        ExecuteCLVC ();
-    void        ExecuteCLZ ();      //  0002
+    void        ExecuteCLZ ();  
     void        ExecuteCLZC ();
     void        ExecuteCLZV ();
     void        ExecuteCLZVC ();
-    void        ExecuteCLN ();      //  0002
+    void        ExecuteCLN ();  
     void        ExecuteCLNC ();
     void        ExecuteCLNV ();
     void        ExecuteCLNVC ();
     void        ExecuteCLNZ ();
     void        ExecuteCLNZC ();
     void        ExecuteCLNZV ();
-    void        ExecuteCCC ();      //  0002
-    void        ExecuteSEC ();      //  0002
-    void        ExecuteSEV ();      //  0002
+    void        ExecuteCCC ();  
+    void        ExecuteSEC ();  
+    void        ExecuteSEV ();  
     void        ExecuteSEVC ();
-    void        ExecuteSEZ ();      //  0002
+    void        ExecuteSEZ ();  
     void        ExecuteSEZC ();
     void        ExecuteSEZV ();
     void        ExecuteSEZVC ();
-    void        ExecuteSEN ();      //  0002
+    void        ExecuteSEN ();  
     void        ExecuteSENC ();
     void        ExecuteSENV ();
     void        ExecuteSENVC ();
     void        ExecuteSENZ ();
     void        ExecuteSENZC ();
     void        ExecuteSENZV ();
-    void        ExecuteSCC ();      //  0002
-    void        ExecuteNOP ();      //  0002
+    void        ExecuteSCC ();  
+    void        ExecuteNOP ();  
     // Команды расширенной арифметики
-    void		ExecuteMUL ();      //  0003
-    void		ExecuteDIV ();      //  0003
-    void		ExecuteASH ();      //  0003
-    void		ExecuteASHC ();     //  0003
+    void		ExecuteMUL (); 
+    void		ExecuteDIV (); 
+    void		ExecuteASH (); 
+    void		ExecuteASHC ();
 
 };
 

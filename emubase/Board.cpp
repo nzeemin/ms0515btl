@@ -836,28 +836,28 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 
     case 0177640:  // НГМД: регистр команд
 //#if !defined(PRODUCT)
-//        DebugLogFormat(_T("Floppy %06o -> 177640\r\n"), word);
+//        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy %06o -> 177640\r\n"), word);
 //#endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetCommand(word & 0xff);
         return;
     case 0177642:  // НГМД: регистр дорожки
 #if !defined(PRODUCT)
-        DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
+        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
 #endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetTrack(word & 0xff);
         return;
     case 0177644:  // НГМД: регистр сектора
 #if !defined(PRODUCT)
-        DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
+        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
 #endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetSector(word & 0xff);
         return;
     case 0177646:  // НГМД: регистр данных
 #if !defined(PRODUCT)
-        DebugLogFormat(_T("Floppy SET DATA %02X\r\n"), word);
+        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET DATA %02X\r\n"), word);
 #endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->WriteData(word);
