@@ -40,8 +40,8 @@ FILE* m_fpEmulatorParallelOut = NULL;
 
 long m_nFrameCount = 0;
 uint32_t m_dwTickCount = 0;
-uint32_t m_dwEmulatorUptime = 0;  // Machine uptime, seconds, from turn on or reset, increments every 25 frames
 long m_nUptimeFrameCount = 0;
+uint32_t m_dwTotalFrameCount = 0;
 
 BYTE* g_pEmulatorRam;  // RAM values - for change tracking
 BYTE* g_pEmulatorChangedRam;  // RAM change flags
@@ -57,11 +57,16 @@ void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
 //   pVideoBuffer   Исходные данные, биты экрана БК
 //   pPalette       Палитра
 //   pImageBits     Результат, 32-битный цвет, размер для каждой функции свой
-typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(const BYTE* pVideoBuffer, const uint32_t* pPalette, void* pImageBits, bool hires, uint8_t border);
+//   hires          Признак режима высокого разрешения 640x200
+//   border         Номер цвета бордюра 0..7
+//   blink          Фаза мерцания
+typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(
+    const BYTE* pVideoBuffer, const uint32_t* pPalette, void* pImageBits,
+    bool hires, uint8_t border, bool blink);
 
-void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
-void CALLBACK Emulator_PrepareScreen360x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
-void CALLBACK Emulator_PrepareScreen640x400(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border);
+void CALLBACK Emulator_PrepareScreen640x200(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen360x200(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen640x400(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
 
 struct ScreenModeStruct
 {
@@ -207,7 +212,7 @@ void Emulator_Reset()
     g_pBoard->Reset();
 
     m_nUptimeFrameCount = 0;
-    m_dwEmulatorUptime = 0;
+    m_dwTotalFrameCount = 0;
 
     MainWindow_UpdateAllViews();
 }
@@ -396,29 +401,20 @@ int Emulator_SystemFrame()
     }
 
     // Calculate emulator uptime (25 frames per second)
+    m_dwTotalFrameCount++;
     m_nUptimeFrameCount++;
     if (m_nUptimeFrameCount >= 25)
     {
-        m_dwEmulatorUptime++;
         m_nUptimeFrameCount = 0;
 
-        int seconds = (int) (m_dwEmulatorUptime % 60);
-        int minutes = (int) (m_dwEmulatorUptime / 60 % 60);
-        int hours   = (int) (m_dwEmulatorUptime / 3600 % 60);
+        uint32_t dwEmulatorUptime = m_dwTotalFrameCount / 25;
+        int seconds = (int) (dwEmulatorUptime % 60);
+        int minutes = (int) (dwEmulatorUptime / 60 % 60);
+        int hours   = (int) (dwEmulatorUptime / 3600 % 60);
 
         TCHAR buffer[20];
         swprintf_s(buffer, 20, _T("Uptime: %02d:%02d:%02d"), hours, minutes, seconds);
         MainWindow_SetStatusbarText(StatusbarPartUptime, buffer);
-    }
-
-    // Auto-boot option processing: select "boot from disk" and press Enter
-    if (Option_AutoBoot)
-    {
-        if (m_dwEmulatorUptime == 2 && m_nUptimeFrameCount == 16)
-        {
-            ScreenView_KeyEvent(68, true);  // Press "D"
-            Option_AutoBoot = false;  // All done
-        }
     }
 
     return 1;
@@ -480,8 +476,9 @@ void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
     // Render to bitmap
     bool hires = g_pBoard->GetPortView(0177604) & 010;
     uint8_t border = g_pBoard->GetPortView(0177604) & 7;
+    bool blink = (m_dwTotalFrameCount % 75) > 37;
     PREPARE_SCREEN_CALLBACK callback = ScreenModeReference[screenMode].callback;
-    callback(pVideoBuffer, Emulator_Palette, pImageBits, hires, border);
+    callback(pVideoBuffer, Emulator_Palette, pImageBits, hires, border, blink);
 }
 
 const uint32_t * Emulator_GetPalette()
@@ -491,7 +488,8 @@ const uint32_t * Emulator_GetPalette()
 
 #define AVERAGERGB(a, b)  ( (((a) & 0xfefefeffUL) + ((b) & 0xfefefeffUL)) >> 1 )
 
-void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
+void CALLBACK Emulator_PrepareScreen640x200(
+    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     if (!hires)
     {
@@ -507,6 +505,10 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
                 uint16_t value = *pVideo++;
                 uint32_t colorpaper = palette[(value >> 11) & 7];
                 uint32_t colorink = palette[(value >> 8) & 7];
+                if ((value & 0x8000) && blink)
+                {
+                    uint32_t temp = colorink;  colorink = colorpaper;  colorpaper = temp;
+                }
                 uint16_t mask = 0x80;
                 for (int f = 0; f < 8; f++)
                 {
@@ -540,7 +542,8 @@ void CALLBACK Emulator_PrepareScreen640x200(const BYTE* pVideoBuffer, const uint
     }
 }
 
-void CALLBACK Emulator_PrepareScreen360x200(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
+void CALLBACK Emulator_PrepareScreen360x200(
+    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     if (!hires)
     {
@@ -556,6 +559,10 @@ void CALLBACK Emulator_PrepareScreen360x200(const BYTE* pVideoBuffer, const uint
                 uint16_t value = *pVideo++;
                 uint32_t colorpaper = palette[(value >> 11) & 7];
                 uint32_t colorink = palette[(value >> 8) & 7];
+                if ((value & 0x8000) && blink)
+                {
+                    uint32_t temp = colorink;  colorink = colorpaper;  colorpaper = temp;
+                }
                 uint16_t mask = 0x80;
                 for (int f = 0; f < 8; f++)
                 {
@@ -596,7 +603,8 @@ void CALLBACK Emulator_PrepareScreen360x200(const BYTE* pVideoBuffer, const uint
     }
 }
 
-void CALLBACK Emulator_PrepareScreen640x400(const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border)
+void CALLBACK Emulator_PrepareScreen640x400(
+    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     if (!hires)
     {
@@ -611,6 +619,10 @@ void CALLBACK Emulator_PrepareScreen640x400(const BYTE* pVideoBuffer, const uint
                 uint16_t value = *pVideo++;
                 uint32_t colorpaper = palette[(value >> 11) & 7];
                 uint32_t colorink = palette[(value >> 8) & 7];
+                if ((value & 0x8000) && blink)
+                {
+                    uint32_t temp = colorink;  colorink = colorpaper;  colorpaper = temp;
+                }
                 uint16_t mask = 0x80;
                 for (int f = 0; f < 8; f++)
                 {
@@ -649,11 +661,11 @@ void CALLBACK Emulator_PrepareScreen640x400(const BYTE* pVideoBuffer, const uint
 //
 // Emulator image format - see CMotherboard::SaveToImage()
 // Image header format (32 bytes):
-//   4 bytes        NEMIGAIMAGE_HEADER1
-//   4 bytes        NEMIGAIMAGE_HEADER2
-//   4 bytes        NEMIGAIMAGE_VERSION
-//   4 bytes        NEMIGAIMAGE_SIZE
-//   4 bytes        NEMIGA uptime
+//   4 bytes        MS0515IMAGE_HEADER1
+//   4 bytes        MS0515IMAGE_HEADER2
+//   4 bytes        MS0515IMAGE_VERSION
+//   4 bytes        MS0515IMAGE_SIZE
+//   4 bytes        MS0515 uptime
 //   12 bytes       Not used
 
 bool Emulator_SaveImage(LPCTSTR sFilePath)
@@ -664,28 +676,28 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
         return false;
 
     // Allocate memory
-    BYTE* pImage = (BYTE*) ::malloc(NEMIGAIMAGE_SIZE);
+    BYTE* pImage = (BYTE*) ::malloc(MS0515IMAGE_SIZE);
     if (pImage == NULL)
     {
         ::fclose(fpFile);
         return false;
     }
-    memset(pImage, 0, NEMIGAIMAGE_SIZE);
+    memset(pImage, 0, MS0515IMAGE_SIZE);
     // Prepare header
     uint32_t* pHeader = (uint32_t*) pImage;
-    *pHeader++ = NEMIGAIMAGE_HEADER1;
-    *pHeader++ = NEMIGAIMAGE_HEADER2;
-    *pHeader++ = NEMIGAIMAGE_VERSION;
-    *pHeader++ = NEMIGAIMAGE_SIZE;
+    *pHeader++ = MS0515IMAGE_HEADER1;
+    *pHeader++ = MS0515IMAGE_HEADER2;
+    *pHeader++ = MS0515IMAGE_VERSION;
+    *pHeader++ = MS0515IMAGE_SIZE;
     // Store emulator state to the image
     g_pBoard->SaveToImage(pImage);
-    *(uint32_t*)(pImage + 16) = m_dwEmulatorUptime;
+    *(uint32_t*)(pImage + 16) = m_dwTotalFrameCount / 25;
 
     // Save image to the file
-    size_t dwBytesWritten = ::fwrite(pImage, 1, NEMIGAIMAGE_SIZE, fpFile);
+    size_t dwBytesWritten = ::fwrite(pImage, 1, MS0515IMAGE_SIZE, fpFile);
     ::free(pImage);
     ::fclose(fpFile);
-    if (dwBytesWritten != NEMIGAIMAGE_SIZE)
+    if (dwBytesWritten != MS0515IMAGE_SIZE)
         return false;
 
     return true;
@@ -702,9 +714,9 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
         return false;
 
     // Read header
-    uint32_t bufHeader[NEMIGAIMAGE_HEADER_SIZE / sizeof(uint32_t)];
-    uint32_t dwBytesRead = ::fread(bufHeader, 1, NEMIGAIMAGE_HEADER_SIZE, fpFile);
-    if (dwBytesRead != NEMIGAIMAGE_HEADER_SIZE)
+    uint32_t bufHeader[MS0515IMAGE_HEADER_SIZE / sizeof(uint32_t)];
+    uint32_t dwBytesRead = ::fread(bufHeader, 1, MS0515IMAGE_HEADER_SIZE, fpFile);
+    if (dwBytesRead != MS0515IMAGE_HEADER_SIZE)
     {
         ::fclose(fpFile);
         return false;
@@ -713,7 +725,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check version and size
 
     // Allocate memory
-    BYTE* pImage = (BYTE*) ::malloc(NEMIGAIMAGE_SIZE);
+    BYTE* pImage = (BYTE*) ::malloc(MS0515IMAGE_SIZE);
     if (pImage == NULL)
     {
         ::fclose(fpFile);
@@ -722,8 +734,8 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
 
     // Read image
     ::fseek(fpFile, 0, SEEK_SET);
-    dwBytesRead = ::fread(pImage, 1, NEMIGAIMAGE_SIZE, fpFile);
-    if (dwBytesRead != NEMIGAIMAGE_SIZE)
+    dwBytesRead = ::fread(pImage, 1, MS0515IMAGE_SIZE, fpFile);
+    if (dwBytesRead != MS0515IMAGE_SIZE)
     {
         ::free(pImage);
         ::fclose(fpFile);
@@ -733,7 +745,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     // Restore emulator state from the image
     g_pBoard->LoadFromImage(pImage);
 
-    m_dwEmulatorUptime = *(uint32_t*)(pImage + 16);
+    m_dwTotalFrameCount = (*(uint32_t*)(pImage + 16)) * 25;
     g_wEmulatorCpuPC = g_pBoard->GetCPU()->GetPC();
 
     // Free memory, close file

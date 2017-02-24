@@ -1,12 +1,12 @@
-/*  This file is part of NEMIGABTL.
-    NEMIGABTL is free software: you can redistribute it and/or modify it under the terms
+/*  This file is part of MS0515BTL.
+    MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
-    NEMIGABTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    MS0515BTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU Lesser General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with
-NEMIGABTL. If not, see <http://www.gnu.org/licenses/>. */
+MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // Dialogs.cpp
 
@@ -191,7 +191,7 @@ void Dialogs_DoCreateDisk()
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
             _T("Save new disk as"),
-            _T("NEMIGA disks (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0"),
+            _T("MS0515 disks (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0"),
             _T("dsk"),
             bufFileName);
     if (! okResult) return;
@@ -213,7 +213,7 @@ void Dialogs_DoCreateDisk()
     ::CloseHandle(hFile);
 
     ::MessageBox(g_hwnd, _T("New disk file created successfully.\nPlease initialize the disk using INIT command."),
-            _T("NEMIGABTL"), MB_OK | MB_ICONINFORMATION);
+            _T("MS0515BTL"), MB_OK | MB_ICONINFORMATION);
 }
 
 

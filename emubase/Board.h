@@ -1,12 +1,12 @@
-/*  This file is part of NEMIGABTL.
-    NEMIGABTL is free software: you can redistribute it and/or modify it under the terms
+/*  This file is part of MS0515BTL.
+    MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
-    NEMIGABTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    MS0515BTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU Lesser General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with
-NEMIGABTL. If not, see <http://www.gnu.org/licenses/>. */
+MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // Board.h
 //
@@ -41,11 +41,11 @@ class CProcessor;
 #define TRACE_ALL    0177777  // Trace all
 
 // Emulator image constants
-#define NEMIGAIMAGE_HEADER_SIZE 32
-#define NEMIGAIMAGE_SIZE 147456
-#define NEMIGAIMAGE_HEADER1 0x494D454E  // "NEMI"
-#define NEMIGAIMAGE_HEADER2 0x21214147  // "GA!!"
-#define NEMIGAIMAGE_VERSION 0x00010000  // 1.0
+#define MS0515IMAGE_HEADER_SIZE 32
+#define MS0515IMAGE_SIZE 147456
+#define MS0515IMAGE_HEADER1 0x494D454E  // "NEMI"
+#define MS0515IMAGE_HEADER2 0x21214147  // "GA!!"
+#define MS0515IMAGE_VERSION 0x00010000  // 1.0
 
 //////////////////////////////////////////////////////////////////////
 
@@ -77,7 +77,7 @@ class CKeyboard;
 
 //////////////////////////////////////////////////////////////////////
 
-class CMotherboard  // NEMIGA computer
+class CMotherboard  // MS0515 computer
 {
 private:  // Devices
     CProcessor*     m_pCPU;  // CPU device

@@ -991,7 +991,7 @@ void MainWindow_DoFileLoadState()
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowOpenDialog(g_hwnd,
             _T("Open state image to load"),
-            _T("NEMIGA state images (*.nmst)\0*.nmst\0All Files (*.*)\0*.*\0\0"),
+            _T("MS0515 state images (*.msst)\0*.msst\0All Files (*.*)\0*.*\0\0"),
             bufFileName);
     if (!okResult) return;
 
@@ -1008,8 +1008,8 @@ void MainWindow_DoFileSaveState()
     TCHAR bufFileName[MAX_PATH];
     BOOL okResult = ShowSaveDialog(g_hwnd,
             _T("Save state image as"),
-            _T("NEMIGA state images (*.nmst)\0*.nmst\0All Files (*.*)\0*.*\0\0"),
-            _T("nmst"),
+            _T("MS0515 state images (*.msst)\0*.msst\0All Files (*.*)\0*.*\0\0"),
+            _T("msst"),
             bufFileName);
     if (! okResult) return;
 
@@ -1084,7 +1084,7 @@ void MainWindow_DoEmulatorFloppy(int slot)
         ofn.hwndOwner = g_hwnd;
         ofn.hInstance = g_hInst;
         ofn.lpstrTitle = _T("Open floppy image to attach");
-        ofn.lpstrFilter = _T("NEMIGA floppy images (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0");
+        ofn.lpstrFilter = _T("MS0515 floppy images (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0");
         ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
         ofn.lpstrFile = bufFileName;
         ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
