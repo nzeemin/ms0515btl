@@ -264,8 +264,8 @@ uint16_t CFloppyController::GetData(void)
 
 #if !defined(PRODUCT)
     uint16_t offset = m_pDrive->dataptr;
-    if (m_okTrace && offset >= 10 && (offset - 96) % 614 == 0)
-        DebugLogFormat(_T("Floppy%d READ %02X POS%04d SC%02d TR%02d\r\n"), m_drive, m_data, offset, (offset - 96) / 614 + 1, m_track);
+    if (m_okTrace && offset >= 161 && (offset - 161) % 614 == 0)
+        DebugLogFormat(_T("Floppy%d READ %02X POS%04d TR%02d SC%02d\r\n"), m_drive, m_data, offset, m_track, (offset - 161) / 614 + 1);
 #endif
 
     return m_data;
@@ -273,11 +273,11 @@ uint16_t CFloppyController::GetData(void)
 
 void CFloppyController::WriteData(uint16_t data)
 {
-//#if !defined(PRODUCT)
-//    uint16_t offset = m_pDrive->dataptr;
-//    if (m_okTrace && offset >= 10 && (offset - 10) % 130 == 0)
-//        DebugLogFormat(_T("Floppy%d WRITE %02x POS%04d SC%02d TR%02d\r\n"), m_drive, data, m_pDrive->dataptr, (offset - 10) / 130 + 1, m_track);
-//#endif
+#if !defined(PRODUCT)
+    uint16_t offset = m_pDrive->dataptr;
+    if (m_okTrace && offset >= 161 && (offset - 161) % 614 == 0)
+        DebugLogFormat(_T("Floppy%d WRITE %02x POS%04d TR%02d SC%02d\r\n"), m_drive, data, m_pDrive->dataptr, m_track, (offset - 161) / 614 + 1);
+#endif
 
     m_data = data & 0xff;
 }
@@ -297,13 +297,7 @@ void CFloppyController::Periodic()
     }
 
     if (m_opercount > 0)  // Уменьшаем счётчик текущей операции
-    {
         m_opercount--;
-//#if !defined(PRODUCT)
-//        if (m_okTrace && m_opercount == 0)
-//            DebugLogFormat(_T("Floppy state %d end, next %d\r\n"), m_state, m_statenext);
-//#endif
-    }
 
     bool diskpresent = (m_pDrive != NULL) && (IsAttached(m_drive));
     if (diskpresent)
@@ -377,11 +371,19 @@ void CFloppyController::Periodic()
                         m_startcrc = -1;
                         break;
                     }
-                    if (readlen >= 6 && (m_cmd & 0xf8) == 0xc0)
+                    if (readlen >= 6 && (m_cmd & 0xf8) == 0xc0)  // Read Address
                     {
-                        // При выполнении команды "Чтение адреса"
-                        m_sector = m_track;      // содержиморе регистра дорожки пересылается в регистр сектора
+                        // При выполнении команды "Чтение адреса" содержиморе регистра дорожки пересылается в регистр сектора
+                        m_sector = m_track;
                         m_state = S_IDLE;
+                        break;
+                    }
+                    if (readlen == 6 && (m_cmd & 0xe0) == 0xa0)  // Write Sector
+                    {
+                        m_rqs = R_DRQ;
+                        m_status |= ST_DRQ;
+                        m_rwlen = 22 + 12 + 4;
+                        m_state = S_WRSEC;
                         break;
                     }
                     if (!m_pDrive->marker[m_pDrive->dataptr] || m_pDrive->data[m_pDrive->dataptr] != 0xfb)  // Data marker
@@ -389,7 +391,7 @@ void CFloppyController::Periodic()
                     // Finished reading the current sector header
                     m_startcrc = -1;
                     m_status &= ~ST_CRCERR;
-                    if ((m_cmd & 0xc0) == 0x80)
+                    if ((m_cmd & 0xe0) == 0x80)  // Read Sector
                     {
                         m_rwlen = 512;
                         m_state = S_READ;
@@ -435,7 +437,7 @@ void CFloppyController::Periodic()
         {
             if (m_rqs & R_DRQ)
                 m_status |= ST_LOST;
-            m_data = m_pDrive->data[m_pDrive->dataptr];  // Read next byte
+            m_data = m_pDrive->GetCurrentByte();  // Read next byte
             m_rwlen--;
             //TODO: Update m_crc
             m_rqs = R_DRQ;
@@ -448,10 +450,53 @@ void CFloppyController::Periodic()
         }
         break;
     case S_WRSEC:
-        //TODO
+        if (m_rwlen > 12 + 4)  // Skip 22 bytes of 0x4e
+        {
+            m_rwlen--;
+            break;
+        }
+        if (m_rwlen == 12 + 4 && m_rqs & R_DRQ)  // Check if DRQ has been serviced
+        {
+            m_status |= ST_LOST;
+            m_state = S_IDLE;
+            break;
+        }
+        if (m_rwlen > 4)
+        {
+            m_pDrive->SetCurrentByte(0);  // Write 12 bytes of 00
+            m_rwlen--;
+            break;
+        }
+        if (m_rwlen > 1)
+        {
+            m_pDrive->SetCurrentByte(0xa1);
+            m_rwlen--;
+            break;
+        }
+        m_pDrive->SetCurrentByte(0xfb);
+        m_rwlen = 512;
+        m_state = S_WRITE;
         break;
     case S_WRITE:
-        //TODO
+        if (m_rwlen > 0)
+        {
+            if (m_rqs & R_DRQ)
+            {
+                m_status |= ST_LOST;
+                m_data = 0;
+            }
+            m_pDrive->SetCurrentByte(m_data);
+            m_trackchanged = true;
+            m_rwlen--;
+            //TODO: Update m_crc
+            m_rqs = R_DRQ;
+            m_status |= ST_DRQ;
+        }
+        else
+        {
+            //TODO: if (m_cmd & CB_MULTIPLE)
+            m_state = S_IDLE;
+        }
         break;
     case S_WRTRACK:
         //TODO
@@ -569,14 +614,13 @@ void CFloppyController::PrepareTrack()
     m_pDrive->dataptr = 0;
     m_pDrive->datatrack = m_track;
 
-    long foffset = m_track * 5120;  // Track has 10 sectors, 512 bytes each
-    uint8_t data[5120];
-    memset(data, 0, 5120);
+    long foffset = m_track * FLOPPY_TRACKSIZE;
+    uint8_t data[FLOPPY_TRACKSIZE];  memset(data, 0, FLOPPY_TRACKSIZE);
 
     if (m_pDrive->fpFile != NULL)
     {
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        count = ::fread(&data, 1, 5120, m_pDrive->fpFile);
+        count = ::fread(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
         //TODO: Контроль ошибок чтения
     }
 
@@ -588,11 +632,11 @@ void CFloppyController::PrepareTrack()
     //::fclose(fpTrack);
 
 //    //DEBUG: Test DecodeTrackData()
-//    uint8_t data2[5120];
+//    uint8_t data2[FLOPPY_TRACKSIZE];
 //    bool parsed = DecodeTrackData(m_pDrive->data, data2, m_track);
 //    ASSERT(parsed);
 //    bool tested = true;
-//    for (int i = 0; i < 5120; i++)
+//    for (int i = 0; i < FLOPPY_TRACKSIZE; i++)
 //        if (data[i] != data2[i])
 //        {
 //            tested = false;
@@ -608,31 +652,25 @@ void CFloppyController::FlushChanges()
     if (!m_trackchanged) return;
 
 #if !defined(PRODUCT)
-    if (m_okTrace) DebugLogFormat(_T("Floppy%d FLUSH\r\n"), m_drive);  //DEBUG
+    if (m_okTrace) DebugLogFormat(_T("Floppy%d FLUSH track %d\r\n"), m_drive, (int)m_pDrive->datatrack);
 #endif
 
     // Decode track data from m_data
-    uint8_t data[128 * 23];  memset(data, 0, 128 * 23);
+    uint8_t data[FLOPPY_TRACKSIZE];  memset(data, 0, FLOPPY_TRACKSIZE);
     bool decoded = DecodeTrackData(m_pDrive->data, data, m_pDrive->datatrack);
 
     if (decoded)  // Write to the file only if the track was correctly decoded from raw data
     {
-        // Track has 23 sectors, 128 bytes each; track 0 has only 22 data sectors
-        long foffset = 0;
-        int sectors = 22;
-        if (m_pDrive->datatrack > 0)
-        {
-            foffset = (m_pDrive->datatrack * 23 - 1) * 128;
-            sectors = 23;
-        }
+        // Track has 10 sectors, 512 bytes each
+        long foffset = foffset = m_pDrive->datatrack * FLOPPY_TRACKSIZE;
 
 //        // Check file length
 //        ::fseek(m_pDrive->fpFile, 0, SEEK_END);
 //        uint32_t currentFileSize = ::ftell(m_pDrive->fpFile);
-//        while (currentFileSize < (uint32_t)(foffset + 5120))
+//        while (currentFileSize < (uint32_t)(foffset + FLOPPY_TRACKSIZE))
 //        {
 //            uint8_t datafill[512];  ::memset(datafill, 0, 512);
-//            uint32_t bytesToWrite = ((uint32_t)(foffset + 5120) - currentFileSize) % 512;
+//            uint32_t bytesToWrite = ((uint32_t)(foffset + FLOPPY_TRACKSIZE) - currentFileSize) % 512;
 //            if (bytesToWrite == 0) bytesToWrite = 512;
 //            ::fwrite(datafill, 1, bytesToWrite, m_pDrive->fpFile);
 //            //TODO: Проверка на ошибки записи
@@ -641,7 +679,7 @@ void CFloppyController::FlushChanges()
 
         // Save data into the file
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        uint32_t dwBytesWritten = ::fwrite(&data, 1, 128 * sectors, m_pDrive->fpFile);
+        uint32_t dwBytesWritten = ::fwrite(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
         //TODO: Проверка на ошибки записи
     }
     else
@@ -677,7 +715,7 @@ uint16_t CalculateChecksum(const uint8_t* buffer, int length)
 }
 
 // Fill data array and marker array with marked data
-// pSrc   array length is 10 * 512
+// pSrc   array length is 5120 == FLOPPY_TRACKSIZE
 // data   array length is 6250 == FLOPPY_RAWTRACKSIZE
 // marker array length is 6250 == FLOPPY_RAWMARKERSIZE
 //-------------------------------------------------
@@ -746,7 +784,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
 
 // Decode track data from raw data
 // pRaw is array of FLOPPY_RAWTRACKSIZE bytes
-// pDest is array of 5120 bytes
+// pDest is array of 5120 bytes = FLOPPY_TRACKSIZE
 // Returns: true - decoded, false - parse error
 static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest, uint16_t track)
 {
@@ -800,7 +838,7 @@ static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest, uint16_t track)
 
         for (int count = 0; count < sectorsize; count++)  // Copy sector data
         {
-            if (destptr >= 5120) break;  // End of track or error
+            if (destptr >= FLOPPY_TRACKSIZE) break;  // End of track or error
             pDest[destptr++] = pRaw[dataptr++];
             if (dataptr >= FLOPPY_RAWTRACKSIZE)
                 return false;  // Something wrong

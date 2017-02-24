@@ -40,6 +40,7 @@ int DisassembleInstruction(uint16_t* pMemory, uint16_t addr, TCHAR* sInstr, TCHA
 #define FLOPPY_RAWTRACKSIZE             6250    // Track length, bytes
 #define FLOPPY_RAWMARKERSIZE            FLOPPY_RAWTRACKSIZE
 #define FLOPPY_INDEXLENGTH              150     // Index mark length
+#define FLOPPY_TRACKSIZE                5120    // Logical track size, 10 sectors, 512 bytes each sector
 
 struct CFloppyDrive
 {
@@ -53,6 +54,11 @@ struct CFloppyDrive
 public:
     CFloppyDrive();
     void Reset();
+
+public:
+    uint8_t  GetCurrentByte() { return data[dataptr]; }
+    void     SetCurrentByte(uint8_t b) { data[dataptr] = b; }
+
 };
 
 class CFloppyController
@@ -97,7 +103,6 @@ public:
     bool IsEngineOn() const { return m_motoron; }
     uint16_t GetStatus();           // Reading status
     uint16_t GetData();             // Reading data
-    uint16_t GetTimer();            //TODO: Remove
     uint8_t  GetTrack() const { return m_track; }
     uint8_t  GetSector() const { return m_sector; }
     uint16_t GetStateView() const { return m_status; }  // Get state value for debugger

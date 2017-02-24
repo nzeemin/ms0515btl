@@ -850,7 +850,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         return;
     case 0177644:  // НГМД: регистр сектора
 #if !defined(PRODUCT)
-        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
+        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET SECTOR %d\r\n"), (int)word);
 #endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetSector(word & 0xff);

@@ -217,8 +217,8 @@ void CProcessor::Start ()
     // "Turn On" interrupt processing
     uint16_t pc = 0172000;
     SetPC(pc);
-    uint16_t ps = 0340;  //TODO
-    SetPSW(ps);
+    SetPSW(0340);
+    SetSP(376);
     m_internalTick = 1000000;  // Количество тактов на включение процессора (значение с потолка)
 }
 void CProcessor::Stop ()
