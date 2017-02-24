@@ -1,12 +1,12 @@
-/*  This file is part of BKBTL.
-    BKBTL is free software: you can redistribute it and/or modify it under the terms
+/*  This file is part of MS0515BTL.
+    MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
-    BKBTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    MS0515BTL is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 See the GNU Lesser General Public License for more details.
     You should have received a copy of the GNU Lesser General Public License along with
-BKBTL. If not, see <http://www.gnu.org/licenses/>. */
+MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // Floppy.cpp
 // Floppy controller and drives emulation
@@ -259,15 +259,14 @@ void CFloppyController::SetCommand(uint8_t cmd)
 
 uint16_t CFloppyController::GetData(void)
 {
-    m_status &= ~ST_DRQ;
-    m_rqs &= ~R_DRQ;
-
 #if !defined(PRODUCT)
     uint16_t offset = m_pDrive->dataptr;
-    if (m_okTrace && offset >= 161 && (offset - 161) % 614 == 0)
-        DebugLogFormat(_T("Floppy%d READ %02X POS%04d TR%02d SC%02d\r\n"), m_drive, m_data, offset, m_track, (offset - 161) / 614 + 1);
+    if (m_okTrace && offset >= 160 && (offset - 160) % 614 == 0)
+        DebugLogFormat(_T("Floppy%d READ %02X POS%04d TR%02d SC%02d\r\n"), m_drive, m_data, offset, m_track, (offset - 160) / 614 + 1);
 #endif
 
+    m_status &= ~ST_DRQ;
+    m_rqs &= ~R_DRQ;
     return m_data;
 }
 
@@ -275,10 +274,12 @@ void CFloppyController::WriteData(uint16_t data)
 {
 #if !defined(PRODUCT)
     uint16_t offset = m_pDrive->dataptr;
-    if (m_okTrace && offset >= 161 && (offset - 161) % 614 == 0)
-        DebugLogFormat(_T("Floppy%d WRITE %02x POS%04d TR%02d SC%02d\r\n"), m_drive, data, m_pDrive->dataptr, m_track, (offset - 161) / 614 + 1);
+    if (m_okTrace && offset >= 160 && (offset - 160) % 614 == 0)
+        DebugLogFormat(_T("Floppy%d WRITE %02X POS%04d TR%02d SC%02d\r\n"), m_drive, data, offset, m_track, (offset - 160) / 614 + 1);
 #endif
 
+    m_rqs &= ~R_DRQ;
+    m_status &= ~ST_DRQ;
     m_data = data & 0xff;
 }
 
@@ -343,10 +344,17 @@ void CFloppyController::Periodic()
         break;
     case S_CMD_RW:
         if (((m_cmd & 0xe0) == 0xa0 || (m_cmd & 0xf0) == 0xf0) &&
-            m_pDrive != NULL && m_pDrive->okReadOnly)
+            m_pDrive != NULL && m_pDrive->okReadOnly)  // Write operation on Write-Protected disk
         {
             m_status |= ST_WRITEP;
             m_state = S_IDLE;
+            break;
+        }
+        if ((m_cmd & 0xf8) == 0xf0)  // Write Track
+        {
+            m_rqs = R_DRQ;
+            m_status |= ST_DRQ;
+            m_state = S_WRTRACK;
             break;
         }
         if ((m_cmd & 0xc0) == 0x80 || (m_cmd & 0xf8) == 0xc0)  // read/write sectors or read AM -- find next AM
@@ -427,7 +435,6 @@ void CFloppyController::Periodic()
             // Now we finished to read the header
             m_startcrc = -1;
         }
-        //TODO: if (m_cmd & 0x20)  // write sector(s)
         //TODO
         m_rwlen = 512;
         ReadFirstByte();
@@ -499,10 +506,74 @@ void CFloppyController::Periodic()
         }
         break;
     case S_WRTRACK:
-        //TODO
-        break;
+        if (m_pDrive == NULL)
+        {
+            m_state = S_IDLE;
+            break;
+        }
+        if (m_pDrive->dataptr != 0)  // Wait for index
+            break;
+        if (m_rqs & R_DRQ)
+        {
+            m_status |= ST_LOST;
+            m_state = S_IDLE;
+            break;
+        }
+        m_state = S_WR_TRACK_DATA;
+        m_rwlen = 0;
+        m_startcrc = -1;
     case S_WR_TRACK_DATA:
-        //TODO
+        if (m_pDrive == NULL)
+        {
+            m_state = S_IDLE;
+            break;
+        }
+        if (m_pDrive->dataptr == FLOPPY_RAWTRACKSIZE - 1)  // Index found, finished writing the track
+        {
+            m_pDrive->SetCurrentByte(m_data);
+            m_pDrive->marker[m_pDrive->dataptr] = false;
+            m_state = S_IDLE;
+            break;
+        }
+        if (m_rqs & R_DRQ)
+        {
+            m_status |= ST_LOST;
+            m_data = 0;
+        }
+        m_trackchanged = true;
+        m_pDrive->marker[m_pDrive->dataptr] = false;
+        if (m_data == 0xf5)
+        {
+            m_pDrive->SetCurrentByte(0xa1);
+            m_startcrc = m_pDrive->dataptr + 1;
+        }
+        else if (m_data == 0xf6)
+        {
+            m_pDrive->SetCurrentByte(0xc2);
+        }
+        else if (m_data == 0xf7 && m_rwlen == 0)
+        {
+            m_pDrive->SetCurrentByte(0x12);  // Fake CRC, first byte
+            m_rwlen = 1;
+            break;
+        }
+        else if (m_data == 0xf7 && m_rwlen == 1)
+        {
+            m_pDrive->SetCurrentByte(0x34);  // Fake CRC, second byte
+            m_rwlen = 0;
+            m_startcrc = -1;
+        }
+        else
+        {
+            m_pDrive->SetCurrentByte(m_data);
+            if (m_startcrc > 0)
+            {
+                if (m_startcrc == m_pDrive->dataptr)
+                    m_pDrive->marker[m_pDrive->dataptr] = true;
+            }
+        }
+        m_rqs = R_DRQ;
+        m_status |= ST_DRQ;
         break;
     case S_TYPE1_CMD:
         m_status = (m_status | ST_BUSY) & ~(ST_DRQ | ST_CRCERR | ST_SEEKERR | ST_WRITEP);
@@ -521,19 +592,12 @@ void CFloppyController::Periodic()
         break;
     case S_STEP:
         {
-            /*if (m_pDrive != NULL && m_pDrive->datatrack == 0 && (m_cmd & 0xf0) == 0)
-            {
-                m_track = 0;
-                m_state = S_VERIFY;
-                break;
-            }*/
-            //if ((m_cmd & 0xe0) == 0 || (m_cmd & CB_SEEK_TRKUPD))
-            {
-                m_track += m_direction;
-            }
-            int cyl = (m_pDrive != NULL) ? m_pDrive->datatrack : 0;
+            int cyl = ((m_pDrive != NULL) ? m_pDrive->datatrack : 0) + m_direction;
             if (cyl < 0) cyl = 0;
             if (cyl > MAX_PHYS_CYL) cyl = MAX_PHYS_CYL;
+
+            //if ((m_cmd & 0xe0) == 0 || (m_cmd & CB_SEEK_TRKUPD))
+            m_track = cyl;
 
             PrepareTrack();
 
@@ -654,6 +718,11 @@ void CFloppyController::FlushChanges()
 #if !defined(PRODUCT)
     if (m_okTrace) DebugLogFormat(_T("Floppy%d FLUSH track %d\r\n"), m_drive, (int)m_pDrive->datatrack);
 #endif
+
+    //TCHAR filename[32];  wsprintf(filename, _T("rawtrack%02d.bin"), (int)m_pDrive->datatrack);
+    //FILE* fpTrack = ::_tfopen(filename, _T("w+b"));
+    //::fwrite(m_pDrive->data, 1, FLOPPY_RAWTRACKSIZE, fpTrack);
+    //::fclose(fpTrack);
 
     // Decode track data from m_data
     uint8_t data[FLOPPY_TRACKSIZE];  memset(data, 0, FLOPPY_TRACKSIZE);
