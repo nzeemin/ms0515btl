@@ -886,10 +886,9 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 //      32    128 bytes  - Board status
 //     160     32 bytes  - CPU status
 //     192   3904 bytes  - RESERVED
-//    4096   4096 bytes  - Main ROM image 4K
-//    8192   8192 bytes  - RESERVED for extra 8K ROM
-//   16384 131072 bytes  - RAM image 128K
-//  147456     --        - END
+//    4096  16384 bytes  - ROM image 16K
+//   20480 131072 bytes  - RAM image 128K
+//  151552     --        - END
 
 void CMotherboard::SaveToImage(uint8_t* pImage)
 {
@@ -897,16 +896,14 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
     uint16_t* pwImage = (uint16_t*) (pImage + 32);
     *pwImage++ = m_Configuration;
     pwImage += 6;  // RESERVED
-    //*pwImage++ = m_Port170006;
-    //*pwImage++ = m_Port170006wr;
-    //*pwImage++ = m_Port177572;
-    //*pwImage++ = m_Port177574;
-    //*pwImage++ = m_Port177514;
-    //*pwImage++ = m_Port177516;
-    //*pwImage++ = m_Port170020;
-    //*pwImage++ = m_Port170022;
-    //*pwImage++ = m_Port170024;
-    //*pwImage++ = m_Port170030;
+    *pwImage++ = m_Port177400;
+    *pwImage++ = m_Port177440;
+    *pwImage++ = m_Port177442r;
+    *pwImage++ = m_Port177460;
+    *pwImage++ = 0;  // Reserved for port 177600
+    *pwImage++ = 0;  // Reserved for port 177602
+    *pwImage++ = m_Port177604;
+    pwImage += 8;  // RESERVED
     *pwImage++ = m_Timer1;
     *pwImage++ = m_Timer1div;
     *pwImage++ = m_Timer2;
@@ -917,9 +914,9 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
     m_pCPU->SaveToImage(pImageCPU);
     // ROM
     uint8_t* pImageRom = pImage + 4096;
-    memcpy(pImageRom, m_pROM, 4096);
+    memcpy(pImageRom, m_pROM, 16384);
     // RAM
-    uint8_t* pImageRam = pImage + 16384;
+    uint8_t* pImageRam = pImage + 20480;
     memcpy(pImageRam, m_pRAM, 128 * 1024);
 }
 void CMotherboard::LoadFromImage(const uint8_t* pImage)
@@ -928,15 +925,14 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     uint16_t* pwImage = (uint16_t*)(pImage + 32);
     m_Configuration = *pwImage++;
     pwImage += 6;  // RESERVED
-    //m_Port170006 = *pwImage++;
-    //m_Port170006wr = *pwImage++;
-    //m_Port177572 = *pwImage++;
-    //m_Port177574 = *pwImage++;
-    //m_Port177516 = *pwImage++;
-    //m_Port170020 = *pwImage++;
-    //m_Port170022 = *pwImage++;
-    //m_Port170024 = *pwImage++;
-    //m_Port170030 = *pwImage++;
+    m_Port177400 = *pwImage++;
+    m_Port177440 = *pwImage++;
+    m_Port177442r = *pwImage++;
+    m_Port177460 = *pwImage++;
+    *pwImage++;  // Reserved for port 177600
+    *pwImage++;  // Reserved for port 177602
+    m_Port177604 = *pwImage++;
+    pwImage += 8;  // RESERVED
     m_Timer1 = *pwImage++;
     m_Timer1div = *pwImage++;
     m_Timer2 = *pwImage++;
@@ -948,86 +944,11 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
 
     // ROM
     const uint8_t* pImageRom = pImage + 4096;
-    memcpy(m_pROM, pImageRom, 4096);
+    memcpy(m_pROM, pImageRom, 16384);
     // RAM
-    const uint8_t* pImageRam = pImage + 16384;
+    const uint8_t* pImageRam = pImage + 20480;
     memcpy(m_pRAM, pImageRam, 128 * 1024);
 }
-
-//void CMotherboard::FloppyDebug(uint8_t val)
-//{
-////#if !defined(PRODUCT)
-////    TCHAR buffer[512];
-////#endif
-///*
-//m_floppyaddr=0;
-//m_floppystate=FLOPPY_FSM_WAITFORLSB;
-//#define FLOPPY_FSM_WAITFORLSB	0
-//#define FLOPPY_FSM_WAITFORMSB	1
-//#define FLOPPY_FSM_WAITFORTERM1	2
-//#define FLOPPY_FSM_WAITFORTERM2	3
-//
-//*/
-//	switch(m_floppystate)
-//	{
-//		case FLOPPY_FSM_WAITFORLSB:
-//			if(val!=0xff)
-//			{
-//				m_floppyaddr=val;
-//				m_floppystate=FLOPPY_FSM_WAITFORMSB;
-//			}
-//			break;
-//		case FLOPPY_FSM_WAITFORMSB:
-//			if(val!=0xff)
-//			{
-//				m_floppyaddr|=val<<8;
-//				m_floppystate=FLOPPY_FSM_WAITFORTERM1;
-//			}
-//			else
-//			{
-//				m_floppystate=FLOPPY_FSM_WAITFORLSB;
-//			}
-//			break;
-//		case FLOPPY_FSM_WAITFORTERM1:
-//			if(val==0xff)
-//			{ //done
-//				uint16_t par;
-//				uint8_t trk,sector,side;
-//
-//				par=m_pFirstMemCtl->GetWord(m_floppyaddr,0);
-//
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T(">>>>FDD Cmd %d "),(par>>8)&0xff);
-////				DebugPrint(buffer);
-////#endif
-//                par=m_pFirstMemCtl->GetWord(m_floppyaddr+2,0);
-//				side=par&0x8000?1:0;
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T("Side %d Drv %d, Type %d "),par&0x8000?1:0,(par>>8)&0x7f,par&0xff);
-////				DebugPrint(buffer);
-////#endif
-//				par=m_pFirstMemCtl->GetWord(m_floppyaddr+4,0);
-//				sector=(par>>8)&0xff;
-//				trk=par&0xff;
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T("Sect %d, Trk %d "),(par>>8)&0xff,par&0xff);
-////				DebugPrint(buffer);
-////				PrintOctalValue(buffer,m_pFirstMemCtl->GetWord(m_floppyaddr+6,0));
-////				DebugPrint(_T("Addr "));
-////				DebugPrint(buffer);
-////#endif
-//				par=m_pFirstMemCtl->GetWord(m_floppyaddr+8,0);
-////#if !defined(PRODUCT)
-////				wsprintf(buffer,_T(" Block %d Len %d\n"),trk*20+side*10+sector-1,par);
-////				DebugPrint(buffer);
-////#endif
-//
-//				m_floppystate=FLOPPY_FSM_WAITFORLSB;
-//			}
-//			break;
-//
-//	}
-//}
 
 
 //////////////////////////////////////////////////////////////////////

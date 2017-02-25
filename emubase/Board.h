@@ -42,10 +42,11 @@ class CProcessor;
 
 // Emulator image constants
 #define MS0515IMAGE_HEADER_SIZE 32
-#define MS0515IMAGE_SIZE 147456
-#define MS0515IMAGE_HEADER1 0x494D454E  // "NEMI"
-#define MS0515IMAGE_HEADER2 0x21214147  // "GA!!"
+#define MS0515IMAGE_SIZE 151552
+#define MS0515IMAGE_HEADER1 0x3530534D  // "MS05"
+#define MS0515IMAGE_HEADER2 0x21213531  // "15!!"
 #define MS0515IMAGE_VERSION 0x00010000  // 1.0
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -128,7 +129,6 @@ public:
     void        ExecuteCPU();  // Execute one CPU instruction
     bool        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(uint8_t scancode, bool okPressed);  // Key pressed or released
-    //uint16_t        GetPrinterOutPort() const { return m_Port177714out; }
 public:  // Floppy
     bool        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);

@@ -23,10 +23,6 @@ TCHAR m_Settings_IniPath[MAX_PATH];
 DCB  m_Settings_SerialConfig;
 DCB  m_Settings_NetComConfig;
 
-//////////////////////////////////////////////////////////////////////
-// Options
-
-BOOL Option_AutoBoot = FALSE;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -290,7 +286,7 @@ void Settings_SetCartridgeFilePath(int slot, LPCTSTR sFilePath)
     Settings_SaveStringValue(bufValueName, sFilePath);
 }
 
-SETTINGS_GETSET_DWORD(ScreenViewMode, _T("ScreenViewMode"), int, 0);
+SETTINGS_GETSET_DWORD(ScreenViewMode, _T("ScreenViewMode"), int, 1);
 
 SETTINGS_GETSET_DWORD(ScreenHeightMode, _T("ScreenHeightMode"), int, 0);
 

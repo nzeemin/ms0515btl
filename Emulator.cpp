@@ -768,7 +768,7 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
     *pHeader++ = MS0515IMAGE_SIZE;
     // Store emulator state to the image
     g_pBoard->SaveToImage(pImage);
-    *(uint32_t*)(pImage + 16) = m_dwTotalFrameCount / 25;
+    *(uint32_t*)(pImage + 16) = m_dwTotalFrameCount;
 
     // Save image to the file
     size_t dwBytesWritten = ::fwrite(pImage, 1, MS0515IMAGE_SIZE, fpFile);
@@ -822,7 +822,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     // Restore emulator state from the image
     g_pBoard->LoadFromImage(pImage);
 
-    m_dwTotalFrameCount = (*(uint32_t*)(pImage + 16)) * 25;
+    m_dwTotalFrameCount = (*(uint32_t*)(pImage + 16));
     g_wEmulatorCpuPC = g_pBoard->GetCPU()->GetPC();
 
     // Free memory, close file
