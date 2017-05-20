@@ -73,8 +73,9 @@
 #define ID_VIEW_SCREENMODE1             32828
 #define ID_VIEW_SCREENMODE2             32829
 #define ID_VIEW_SCREENMODE3             32830
-#define ID_FILE_SETTINGS                32831
-#define ID_FILE_SAVESCREENSHOTAS        32832
+#define ID_VIEW_SCREENMODE4             32831
+#define ID_FILE_SETTINGS                32832
+#define ID_FILE_SAVESCREENSHOTAS        32833
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
