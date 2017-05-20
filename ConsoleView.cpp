@@ -329,7 +329,7 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
     }
 }
 // Print disassembled instructions
-// Return value: number of words in the last instruction
+// Return value: number of words disassembled
 int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
 {
     BOOL okHaltMode = pProc->IsHaltMode();
@@ -344,6 +344,7 @@ int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okSh
     TCHAR bufvalue[7];
     TCHAR buffer[64];
 
+    int totalLength = 0;
     int lastLength = 0;
     int length = 0;
     for (int index = 0; index < nWindowSize; index++)    // Рисуем строки
@@ -378,9 +379,10 @@ int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okSh
         }
         length--;
         address += 2;
+        totalLength++;
     }
 
-    return lastLength;
+    return totalLength;
 }
 
 void ConsoleView_StepInto()
@@ -533,20 +535,27 @@ void DoConsoleCommand()
     case _T('D'):  // Disassemble, short format
         {
             BOOL okShort = (command[0] == _T('D'));
+            WORD address = 0;
             if (command[1] == 0)  // "d" - disassemble at current address
-                PrintDisassemble(pProc, pProc->GetPC(), FALSE, okShort);
+                address = pProc->GetPC();
             else if (command[1] >= _T('0') && command[1] <= _T('7'))  // "dXXXXXX" - disassemble at address XXXXXX
             {
-                WORD value;
-                if (! ParseOctalValue(command + 1, &value))
-                    ConsoleView_Print(MESSAGE_WRONG_VALUE);
-                else
+                if (!ParseOctalValue(command + 1, &address))
                 {
-                    PrintDisassemble(pProc, value, FALSE, okShort);
+                    ConsoleView_Print(MESSAGE_WRONG_VALUE);
+                    break;
                 }
             }
             else
+            {
                 ConsoleView_Print(MESSAGE_UNKNOWN_COMMAND);
+                break;
+            }
+
+            int length = PrintDisassemble(pProc, address, FALSE, okShort);
+            TCHAR buffer[32];  buffer[0] = command[0];
+            PrintOctalValue(buffer + 1, address + length * 2);
+            SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM)buffer);
         }
         break;
     case _T('u'):

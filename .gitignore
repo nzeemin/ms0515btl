@@ -7,8 +7,10 @@
 /*.bin
 /Version.h
 /ipch
-/trace.log
+*.log
 /*.sdf
 /*.opensdf
 /*.dsk
 /*.nmst
+*.png
+*.lst
