@@ -695,9 +695,11 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     case 0177540:  // Регистр порта A
         return 0; //STUB
     case 0177542:  // Регистр порта B
-        return 0; //STUB
+        return 0177777; //STUB
+        //return 0;//DEBUG
     case 0177544:  // Регистр порта C
-        return 0; //STUB
+        return 0177777; //STUB
+        //return 0;//DEBUG
     case 0177546:  // ИРПР: регистр управления
         return 0; //STUB
     case 0177600:  // Системный регистр A
