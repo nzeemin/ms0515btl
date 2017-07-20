@@ -104,6 +104,7 @@
     <ClCompile Include="emubase\Floppy.cpp" />
     <ClCompile Include="emubase\Keyboard.cpp" />
     <ClCompile Include="emubase\Processor.cpp" />
+    <ClCompile Include="emubase\Timer8253.cpp" />
     <ClCompile Include="Emulator.cpp" />
     <ClCompile Include="KeyboardView.cpp" />
     <ClCompile Include="Main.cpp" />

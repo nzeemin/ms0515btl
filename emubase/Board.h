@@ -15,8 +15,6 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "Defines.h"
 
-class CProcessor;
-
 
 //////////////////////////////////////////////////////////////////////
 
@@ -73,6 +71,8 @@ typedef bool (CALLBACK* SERIALOUTCALLBACK)(uint8_t byte);
 //   result     TRUE means OK, FALSE means we have an error
 typedef bool (CALLBACK* PARALLELOUTCALLBACK)(uint8_t byte);
 
+class CProcessor;
+class CTimer8253;
 class CFloppyController;
 class CKeyboard;
 
@@ -81,7 +81,8 @@ class CKeyboard;
 class CMotherboard  // MS0515 computer
 {
 private:  // Devices
-    CProcessor*     m_pCPU;  // CPU device
+    CProcessor* m_pCPU;  // CPU device
+    CTimer8253* m_pTimer;
     CFloppyController*  m_pFloppyCtl;  // FDD control
     CKeyboard*  m_pKeyboard;
     bool        m_okTimer50OnOff;
@@ -93,7 +94,7 @@ public:  // Construct / destruct
     CMotherboard();
     ~CMotherboard();
 public:  // Getting devices
-    CProcessor*     GetCPU() { return m_pCPU; }
+    CProcessor* GetCPU() { return m_pCPU; }
 public:  // Memory access  //TODO: Make it private
     uint16_t    GetLORAMWord(uint16_t offset);
     uint16_t    GetHIRAMWord(uint16_t offset);
@@ -122,7 +123,6 @@ public:  // System control
     void        SetTimer50OnOff(bool okOnOff) { m_okTimer50OnOff = okOnOff; }
     bool        IsTimer50OnOff() const { return m_okTimer50OnOff; }
     void        Tick50();           // Tick 50 Hz - goes to CPU EVNT line
-    void		TimerTick();		// Timer Tick, 31250 Hz, 32uS -- dividers are within timer routine
     void        ResetDevices();     // INIT signal
     void        ResetHALT();//DEBUG
 public:
@@ -181,16 +181,13 @@ private:  // Ports: implementation
 private:
     uint16_t    m_CPUbp;  // CPU breakpoint address
     uint32_t    m_dwTrace;  // Trace flags
-    uint16_t    m_Timer1div;        // Timer 1 subcounter, based on octave value
-    uint16_t    m_Timer1;           // Timer 1 counter, initial value copied from m_Port170022
-    uint16_t    m_Timer2;           // Timer 2 counter
     bool        m_okSoundOnOff;
 private:
     SOUNDGENCALLBACK m_SoundGenCallback;
     SERIALINCALLBACK    m_SerialInCallback;
     SERIALOUTCALLBACK   m_SerialOutCallback;
     PARALLELOUTCALLBACK m_ParallelOutCallback;
-
+private:
     void        DoSound();
 };
 

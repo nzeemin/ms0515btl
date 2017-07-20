@@ -149,5 +149,30 @@ private:
 
 };
 
+//////////////////////////////////////////////////////////////////////
+// CTimer8253
+
+struct CTimerChannel
+{
+    uint16_t    value;
+    uint16_t    latch;
+    uint16_t    count;
+    uint8_t     control;
+};
+
+class CTimer8253
+{
+private:
+    CTimerChannel m_timers[3];
+public:
+    CTimer8253();
+public:
+    void        WriteCommand(uint8_t command);
+    uint8_t     ReadCommand();
+    uint8_t     Read(int channel);
+    void        Write(int channel, uint8_t value);
+    void        Reset();
+    void        ClockTick();
+};
 
 //////////////////////////////////////////////////////////////////////

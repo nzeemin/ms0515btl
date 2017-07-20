@@ -23,6 +23,7 @@ CMotherboard::CMotherboard ()
 {
     // Create devices
     m_pCPU = new CProcessor(this);
+    m_pTimer = new CTimer8253();
     m_pFloppyCtl = NULL;
     m_pKeyboard = new CKeyboard();
 
@@ -33,7 +34,6 @@ CMotherboard::CMotherboard ()
     m_ParallelOutCallback = NULL;
     m_okTimer50OnOff = false;
     m_okSoundOnOff = false;
-    m_Timer1 = m_Timer1div = m_Timer2 = 0;
 
     // Allocate memory for RAM and ROM
     m_pRAM = (uint8_t*) ::malloc(128 * 1024);  ::memset(m_pRAM, 0, 128 * 1024);
@@ -48,6 +48,7 @@ CMotherboard::~CMotherboard ()
 {
     // Delete devices
     delete m_pCPU;
+    delete m_pTimer;
     if (m_pFloppyCtl != NULL)
         delete m_pFloppyCtl;
     delete m_pKeyboard;
@@ -251,13 +252,12 @@ const uint8_t* CMotherboard::GetVideoBuffer()
 
 void CMotherboard::ResetDevices()
 {
+    m_pTimer->Reset();
+
     if (m_pFloppyCtl != NULL)
         m_pFloppyCtl->Reset();
 
     m_pKeyboard->Reset();
-
-    //m_pCPU->DeassertHALT();//DEBUG
-    //m_pCPU->FireHALT();
 
     // Reset ports
     //TODO
@@ -272,10 +272,6 @@ void CMotherboard::Tick50()  // Vblank
 {
     if (m_Port177400 & 0400)
         m_pCPU->TickIRQ2();
-}
-
-void CMotherboard::TimerTick() // Timer Tick, 8 MHz
-{
 }
 
 void CMotherboard::DebugTicks()
@@ -295,8 +291,8 @@ void CMotherboard::ExecuteCPU()
 Каждый фрейм равен 1/25 секунды = 40 мс
 Фрейм делим на 20000 тиков, 1 тик = 2 мкс
 В каждый фрейм происходит:
-* 300000 тиков таймер 1 -- 15 раз за тик -- 7.5 МГц
 * 300000 тиков ЦП       -- 15 раз за тик
+*  80000 тиков таймера 580ВИ53 -- 4 раза за тик -- 2 МГц
 *      2 тика vblank    -- 50 Гц, в 0-й и 10000-й тик фрейма
 *    625 тиков FDD -- каждый 32-й тик (300 RPM = 5 оборотов в секунду)
 *    196 обращений к клавиатуре (4950 бод) -- каждый 101-й тик
@@ -323,8 +319,8 @@ bool CMotherboard::SystemFrame()
             if (m_pCPU->GetPC() == m_CPUbp)
                 return false;  // Breakpoint
 
-            // Timer 1 ticks
-            //TimerTick();
+            if (procticks % 4 == 0)  // on procticks: 0, 4, 8, 12
+                m_pTimer->ClockTick();
         }
 
         if (frameticks == 0 || frameticks == 10000)
@@ -679,17 +675,41 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
         return 0;
 
     case 0177500:  // Таймер
-        return 0; //STUB
+        {
+            uint8_t value = m_pTimer->Read(0);
+#if !defined(PRODUCT)
+            if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177500 read %02x\r\n"), value);
+#endif
+            return (uint16_t)value;
+        }
     case 0177502:  // Таймер
-        return 0; //STUB
+        {
+            uint8_t value = m_pTimer->Read(1);
+#if !defined(PRODUCT)
+            if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177502 read %02x\r\n"), value);
+#endif
+            return (uint16_t)value;
+        }
     case 0177504:  // Таймер
-        return 0; //STUB
+        {
+            uint8_t value = m_pTimer->Read(2);
+#if !defined(PRODUCT)
+            if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177504 read %02x\r\n"), value);
+#endif
+            return (uint16_t)value;
+        }
     case 0177506:  // Таймер: управляющее слово
-        return 0; //STUB
+        {
+            uint8_t value = m_pTimer->ReadCommand();
+#if !defined(PRODUCT)
+            if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177506 read %02x\r\n"), value);
+#endif
+            return (uint16_t)value;
+        }
 
-    case 0177524:
+    case 0177524:  // Таймер канал 2 запись
         return 0; //STUB
-    case 0177526:
+    case 0177526:  // Таймер упр.слово запись
         return 0; //STUB
 
     case 0177540:  // Регистр порта A
@@ -807,16 +827,37 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 
     case 0177462:
         return; //STUB
-    case 0177500:
+    case 0177500:  // Таймер канал 0 чтение
         return; //STUB
-    case 0177502:
+    case 0177502:  // Таймер канал 1 чтение
         return; //STUB
-    case 0177506:
+    case 0177506:  // Таймер упр.слово чтение
         return; //STUB
-    case 0177524:
-        return; //STUB
-    case 0177526:
-        return; //STUB
+    case 0177520:  // Таймер канал 0 запись
+#if !defined(PRODUCT)
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177520\r\n"), word);
+#endif
+        m_pTimer->Write(0, (uint8_t)(word & 255));
+        return;
+    case 0177522:  // Таймер канал 1 запись
+#if !defined(PRODUCT)
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177522\r\n"), word);
+#endif
+        m_pTimer->Write(1, (uint8_t)(word & 255));
+        return;
+    case 0177524:  // Таймер канал 2 запись
+#if !defined(PRODUCT)
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177524\r\n"), word);
+#endif
+        m_pTimer->Write(2, (uint8_t)(word & 255));
+        return;
+    case 0177526:  // Таймер упр.слово запись
+#if !defined(PRODUCT)
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177526\r\n"), word);
+#endif
+        m_pTimer->WriteCommand((uint8_t)(word & 255));
+        return;
+
     case 0177540:
         return; //STUB
     case 0177546:
@@ -906,9 +947,9 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
     *pwImage++ = 0;  // Reserved for port 177602
     *pwImage++ = m_Port177604;
     pwImage += 8;  // RESERVED
-    *pwImage++ = m_Timer1;
-    *pwImage++ = m_Timer1div;
-    *pwImage++ = m_Timer2;
+    *pwImage++ = 0;
+    *pwImage++ = 0;
+    *pwImage++ = 0;
     *pwImage++ = (uint16_t)m_okSoundOnOff;
 
     // CPU status
@@ -935,9 +976,9 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     *pwImage++;  // Reserved for port 177602
     m_Port177604 = *pwImage++;
     pwImage += 8;  // RESERVED
-    m_Timer1 = *pwImage++;
-    m_Timer1div = *pwImage++;
-    m_Timer2 = *pwImage++;
+    pwImage++;
+    pwImage++;
+    pwImage++;
     m_okSoundOnOff = ((*pwImage++) != 0);
 
     // CPU status
