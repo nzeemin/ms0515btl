@@ -268,8 +268,8 @@ void CMotherboard::ResetHALT()
 
 void CMotherboard::Tick50()  // Vblank
 {
-    if (m_Port177400 & 0400)
-        m_pCPU->TickIRQ2();
+    if (m_Port177400 & 512)  // Бит 9 регистра диспетчера памяти
+        m_pCPU->FireIRQ11();
 }
 
 void CMotherboard::DebugTicks()
@@ -798,6 +798,9 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
     default:
         if ((address & 0177440) == 0177400)  // 177400-177437
         {
+            if ((word ^ m_Port177400) & 256)  // Бит 8 -- инициирование программного запроса прерывания от монитора
+                m_pCPU->FireIRQ2();
+
             m_Port177400 = word;
             return;
         }

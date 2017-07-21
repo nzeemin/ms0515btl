@@ -193,7 +193,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_internalTick = 0;
     m_waitmode = false;
     m_stepmode = false;
-    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = m_IRQ11rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;
 
@@ -210,7 +210,7 @@ void CProcessor::Start ()
 
     m_stepmode = false;
     m_waitmode = false;
-    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = m_IRQ11rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 
@@ -229,7 +229,7 @@ void CProcessor::Stop ()
     m_waitmode = false;
     m_psw = 0340;
     m_internalTick = 0;
-    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = false;
+    m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = m_IRQ11rq = false;
     m_BPT_rq = m_IOT_rq = m_EMT_rq = m_TRAPrq = false;
     m_virqrq = 0;  memset(m_virq, 0, sizeof(m_virq));
 }
@@ -310,7 +310,7 @@ void CProcessor::Execute()
             }
             else if (m_RSVD4rq)  // Reserved instruction trap: JMP / JSR wrong mode
             {
-                intrVector = 000010;  m_RSVDrq = false;
+                intrVector = 000010;  m_RSVD4rq = false;
             }
             else if (m_RSVDrq)  // Reserved instruction trap: illegal and reserved instruction
             {
@@ -327,6 +327,10 @@ void CProcessor::Execute()
             else if (m_IRQ2rq && priority < 4)  // Vblank interrupt, priority 4
             {
                 intrVector = 000064;  m_IRQ2rq = false;
+            }
+            else if (m_IRQ11rq && priority < 6)  // Timer interrupt, priority 6
+            {
+                intrVector = 000100;  m_IRQ11rq = false;
             }
             else if (m_virqrq > 0 && (m_psw & 0200) != 0200)  // VIRQ
             {
@@ -361,13 +365,6 @@ void CProcessor::Execute()
             m_psw = GetWord(intrVector + 2) & 0377;
         }  // end while
     }
-}
-
-void CProcessor::TickIRQ2()
-{
-    if (m_okStopped) return;  // Processor is stopped - nothing to do
-
-    m_IRQ2rq = true;
 }
 
 void CProcessor::InterruptVIRQ(int que, uint16_t interrupt)
