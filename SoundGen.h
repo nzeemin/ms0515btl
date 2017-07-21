@@ -13,11 +13,11 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
-#define BUFSIZE	((SOUNDSAMPLERATE / 25) * 4)
+#define BUFSIZE	((SOUNDSAMPLERATE / 25) * 2)
 #define BLOCK_COUNT	8
 #define BLOCK_SIZE  BUFSIZE
 
 void SoundGen_Initialize(WORD volume);
 void SoundGen_Finalize();
 void SoundGen_SetVolume(WORD volume);
-void CALLBACK SoundGen_FeedDAC(unsigned short L, unsigned short R);
+void CALLBACK SoundGen_FeedDAC(WORD value);

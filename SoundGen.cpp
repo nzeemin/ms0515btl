@@ -26,8 +26,7 @@ static WAVEHDR*         waveBlocks;
 static volatile int     waveFreeBlockCount;
 static int              waveCurrentBlock;
 
-static bool m_SoundGenInitialized = FALSE;
-
+static bool m_SoundGenInitialized = false;
 
 HWAVEOUT hWaveOut;
 
@@ -57,11 +56,9 @@ void SoundGen_Initialize(WORD volume)
     if (m_SoundGenInitialized)
         return;
 
-    unsigned char* mbuffer;
-
     DWORD totalBufferSize = (BLOCK_SIZE + sizeof(WAVEHDR)) * BLOCK_COUNT;
 
-    mbuffer = (unsigned char*) HeapAlloc(
+    unsigned char* mbuffer = (unsigned char*)HeapAlloc(
             GetProcessHeap(),
             HEAP_ZERO_MEMORY,
             totalBufferSize);
@@ -85,7 +82,7 @@ void SoundGen_Initialize(WORD volume)
 
     wfx.nSamplesPerSec  = SOUNDSAMPLERATE;
     wfx.wBitsPerSample  = 16;
-    wfx.nChannels       = 2;
+    wfx.nChannels       = 1;
     wfx.cbSize          = 0;
     wfx.wFormatTag      = WAVE_FORMAT_PCM;
     wfx.nBlockAlign     = (wfx.wBitsPerSample * wfx.nChannels) >> 3;
@@ -98,7 +95,7 @@ void SoundGen_Initialize(WORD volume)
         return;
     }
 
-    waveOutSetVolume(hWaveOut, (DWORD)volume);
+    waveOutSetVolume(hWaveOut, ((DWORD)volume << 16) | ((DWORD)volume));
 
     InitializeCriticalSection(&waveCriticalSection);
     bufcurpos = 0;
@@ -127,7 +124,7 @@ void SoundGen_Finalize()
     HeapFree(GetProcessHeap(), 0, waveBlocks);
     waveBlocks = NULL;
 
-    m_SoundGenInitialized = FALSE;
+    m_SoundGenInitialized = false;
 }
 
 void SoundGen_SetVolume(WORD volume)
@@ -135,20 +132,18 @@ void SoundGen_SetVolume(WORD volume)
     if (!m_SoundGenInitialized)
         return;
 
-    waveOutSetVolume(hWaveOut, (DWORD)volume);
+    waveOutSetVolume(hWaveOut, ((DWORD)volume << 16) | ((DWORD)volume));
 }
 
-void CALLBACK SoundGen_FeedDAC(unsigned short L, unsigned short R)
+void CALLBACK SoundGen_FeedDAC(WORD value)
 {
-    unsigned int word;
     WAVEHDR* current;
 
     if (!m_SoundGenInitialized)
         return;
 
-    word = ((unsigned int)R << 16) + L;
-    memcpy(&buffer[bufcurpos], &word, 4);
-    bufcurpos += 4;
+    memcpy(&buffer[bufcurpos], &value, 2);
+    bufcurpos += 2;
 
     if (bufcurpos >= BUFSIZE)
     {

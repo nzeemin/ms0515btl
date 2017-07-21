@@ -49,7 +49,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 // Sound generator callback function type
-typedef void (CALLBACK* SOUNDGENCALLBACK)(unsigned short L, unsigned short R);
+typedef void (CALLBACK* SOUNDGENCALLBACK)(uint16_t value);
 
 // Serial port callback for receiving
 // Output:

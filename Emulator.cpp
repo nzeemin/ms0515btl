@@ -49,7 +49,7 @@ uint16_t g_wEmulatorCpuPC = 0177777;      // Current PC value
 uint16_t g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
 
-void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R);
+void CALLBACK Emulator_SoundGenCallback(uint16_t value);
 
 //////////////////////////////////////////////////////////////////////
 //Прототип функции преобразования экрана
@@ -426,9 +426,9 @@ int Emulator_SystemFrame()
     return 1;
 }
 
-void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R)
+void CALLBACK Emulator_SoundGenCallback(uint16_t value)
 {
-    SoundGen_FeedDAC(L, R);
+    SoundGen_FeedDAC(value);
 }
 
 // Update cached values after Run or Step

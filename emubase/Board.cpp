@@ -1005,13 +1005,13 @@ void CMotherboard::DoSound(void)
     int soundon = (m_Port177604 >> 6) & 1;  // Бит 6 системного регистра
     if (soundon == 0)
     {
-        (*m_SoundGenCallback)(0, 0);
+        (*m_SoundGenCallback)(0);
         return;
     }
 
     bool soundout = m_pTimer->GetOutput(2);
     uint16_t sound = soundout ? 0x1fff : 0;
-    (*m_SoundGenCallback)(sound, sound);
+    (*m_SoundGenCallback)(sound);
 }
 
 void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)
