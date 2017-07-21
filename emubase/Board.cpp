@@ -33,7 +33,6 @@ CMotherboard::CMotherboard ()
     m_SerialOutCallback = NULL;
     m_ParallelOutCallback = NULL;
     m_okTimer50OnOff = false;
-    m_okSoundOnOff = false;
 
     // Allocate memory for RAM and ROM
     m_pRAM = (uint8_t*) ::malloc(128 * 1024);  ::memset(m_pRAM, 0, 128 * 1024);
@@ -102,7 +101,6 @@ void CMotherboard::Reset ()
     m_pCPU->Stop();
 
     // Reset ports
-    m_okSoundOnOff = false;
     m_Port177400 = 0; //TODO
     m_Port177442r = 0201;
     m_Port177604 = 0; //TODO
@@ -835,25 +833,25 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         return; //STUB
     case 0177520:  // Таймер канал 0 запись
 #if !defined(PRODUCT)
-        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177520\r\n"), word);
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177520 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
 #endif
         m_pTimer->Write(0, (uint8_t)(word & 255));
         return;
     case 0177522:  // Таймер канал 1 запись
 #if !defined(PRODUCT)
-        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177522\r\n"), word);
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177522 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
 #endif
         m_pTimer->Write(1, (uint8_t)(word & 255));
         return;
     case 0177524:  // Таймер канал 2 запись
 #if !defined(PRODUCT)
-        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177524\r\n"), word);
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177524 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
 #endif
         m_pTimer->Write(2, (uint8_t)(word & 255));
         return;
     case 0177526:  // Таймер упр.слово запись
 #if !defined(PRODUCT)
-        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177526\r\n"), word);
+        if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177526 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
 #endif
         m_pTimer->WriteCommand((uint8_t)(word & 255));
         return;
@@ -950,7 +948,7 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
     *pwImage++ = 0;
     *pwImage++ = 0;
     *pwImage++ = 0;
-    *pwImage++ = (uint16_t)m_okSoundOnOff;
+    *pwImage++ = 0;
 
     // CPU status
     uint8_t* pImageCPU = pImage + 160;
@@ -979,7 +977,7 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     pwImage++;
     pwImage++;
     pwImage++;
-    m_okSoundOnOff = ((*pwImage++) != 0);
+    pwImage++;
 
     // CPU status
     const uint8_t* pImageCPU = pImage + 160;
@@ -1001,21 +999,16 @@ void CMotherboard::DoSound(void)
     if (m_SoundGenCallback == NULL)
         return;
 
-    //uint16_t volume = (m_Port170030 >> 3) & 3;  // Громкость 0..3
-    //uint16_t octave = m_Port170030 & 7;  // Октава 1..7
-    //if (!m_okSoundOnOff || volume == 0 || octave == 0)
-    //{
-    //    (*m_SoundGenCallback)(0, 0);
-    //    return;
-    //}
-    //if (m_Timer1 > m_Port170022 / 2)
-    //{
-    //    (*m_SoundGenCallback)(0, 0);
-    //    return;
-    //}
+    int soundon = (m_Port177604 >> 6) & 1;  // Бит 6 системного регистра
+    if (soundon == 0)
+    {
+        (*m_SoundGenCallback)(0, 0);
+        return;
+    }
 
-    //uint16_t sound = 0x1fff >> (3 - volume);
-    //(*m_SoundGenCallback)(sound, sound);
+    bool soundout = m_pTimer->GetOutput(2);
+    uint16_t sound = soundout ? 0x1fff : 0;
+    (*m_SoundGenCallback)(sound, sound);
 }
 
 void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)

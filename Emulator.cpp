@@ -17,7 +17,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emulator.h"
 #include "Views.h"
 #include "emubase\Emubase.h"
-//#include "SoundGen.h"
+#include "SoundGen.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -141,11 +141,11 @@ bool Emulator_Init()
 
     g_pBoard->Reset();
 
-    //if (m_okEmulatorSound)
-    //{
-    //    SoundGen_Initialize(Settings_GetSoundVolume());
-    //    g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
-    //}
+    if (m_okEmulatorSound)
+    {
+        SoundGen_Initialize(Settings_GetSoundVolume());
+        g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
+    }
 
     // Load ROM file
     BYTE buffer[16384];
@@ -236,24 +236,24 @@ bool Emulator_IsBreakpoint()
     return false;
 }
 
-//void Emulator_SetSound(bool soundOnOff)
-//{
-//    if (m_okEmulatorSound != soundOnOff)
-//    {
-//        if (soundOnOff)
-//        {
-//            SoundGen_Initialize(Settings_GetSoundVolume());
-//            g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
-//        }
-//        else
-//        {
-//            g_pBoard->SetSoundGenCallback(NULL);
-//            SoundGen_Finalize();
-//        }
-//    }
-//
-//    m_okEmulatorSound = soundOnOff;
-//}
+void Emulator_SetSound(bool soundOnOff)
+{
+    if (m_okEmulatorSound != soundOnOff)
+    {
+        if (soundOnOff)
+        {
+            SoundGen_Initialize(Settings_GetSoundVolume());
+            g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
+        }
+        else
+        {
+            g_pBoard->SetSoundGenCallback(NULL);
+            SoundGen_Finalize();
+        }
+    }
+
+    m_okEmulatorSound = soundOnOff;
+}
 
 bool CALLBACK Emulator_SerialIn_Callback(BYTE* pByte)
 {
@@ -426,10 +426,10 @@ int Emulator_SystemFrame()
     return 1;
 }
 
-//void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R)
-//{
-//    SoundGen_FeedDAC(L, R);
-//}
+void CALLBACK Emulator_SoundGenCallback(unsigned short L, unsigned short R)
+{
+    SoundGen_FeedDAC(L, R);
+}
 
 // Update cached values after Run or Step
 void Emulator_OnUpdate()

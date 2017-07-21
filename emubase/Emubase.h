@@ -158,6 +158,15 @@ struct CTimerChannel
     uint16_t    latch;
     uint16_t    count;
     uint8_t     control;
+    uint8_t     status;
+    uint8_t     lowcount;
+    int         rmsb;           // 1 = Next read is MSB of 16-bit value
+    int         wmsb;           // 1 = Next write is MSB of 16-bit value
+    int         output;         // 0 = low, 1 = high
+    int         gate;           // gate input (0 = low, 1 = high)
+    int         latched_count;  // number of bytes of count latched
+    int         null_count;     // 1 = mode control or count written, 0 = count loaded
+    int         phase;
 };
 
 class CTimer8253
@@ -167,6 +176,8 @@ private:
 public:
     CTimer8253();
 public:
+    void        SetGate(int channel, bool gate);
+    bool        GetOutput(int channel);
     void        WriteCommand(uint8_t command);
     uint8_t     ReadCommand();
     uint8_t     Read(int channel);

@@ -953,11 +953,11 @@ void MainWindow_DoEmulatorSpeed(WORD speed)
 }
 void MainWindow_DoEmulatorSound()
 {
-    //Settings_SetSound(!Settings_GetSound());
+    Settings_SetSound(!Settings_GetSound());
 
-    //Emulator_SetSound(Settings_GetSound());
+    Emulator_SetSound(Settings_GetSound());
 
-    //MainWindow_UpdateMenu();
+    MainWindow_UpdateMenu();
 }
 
 void MainWindow_DoEmulatorSerial()

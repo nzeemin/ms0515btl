@@ -88,6 +88,7 @@
     <ClInclude Include="Emulator.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="res\Resource.h" />
+    <ClInclude Include="SoundGen.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ToolWindow.h" />
     <ClInclude Include="util\BitmapFile.h" />
@@ -112,6 +113,7 @@
     <ClCompile Include="MemoryView.cpp" />
     <ClCompile Include="ScreenView.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="SoundGen.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="ToolWindow.cpp" />
     <ClCompile Include="util\BitmapFile.cpp" />
