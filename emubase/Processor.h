@@ -107,8 +107,6 @@ public:  // PSW bits control
 public:  // Processor state
     // "Processor stopped" flag
     bool        IsStopped() const { return m_okStopped; }
-    // HALT flag (true - HALT mode, false - USER mode)
-    bool        IsHaltMode() const { return m_haltmode; }
 public:  // Processor control
     void        Start();     // Start processor
     void        Stop();      // Stop processor
@@ -136,11 +134,11 @@ protected:  // Implementation - instruction processing
     void        SetWordDest(uint16_t);
     uint16_t    GetDstWordArgAsBranch();
 protected:  // Implementation - memory access
-    uint16_t    GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address, IsHaltMode()); }
-    uint16_t    GetWord(uint16_t address) { return m_pBoard->GetWord(address, IsHaltMode()); }
-    void        SetWord(uint16_t address, uint16_t word) { m_pBoard->SetWord(address, IsHaltMode(), word); }
-    uint8_t     GetByte(uint16_t address) { return m_pBoard->GetByte(address, IsHaltMode()); }
-    void        SetByte(uint16_t address, uint8_t byte) { m_pBoard->SetByte(address, IsHaltMode(), byte); }
+    uint16_t    GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address); }
+    uint16_t    GetWord(uint16_t address) { return m_pBoard->GetWord(address); }
+    void        SetWord(uint16_t address, uint16_t word) { m_pBoard->SetWord(address, word); }
+    uint8_t     GetByte(uint16_t address) { return m_pBoard->GetByte(address); }
+    void        SetByte(uint16_t address, uint8_t byte) { m_pBoard->SetByte(address, byte); }
 
 protected:  // PSW bits calculations
     bool static CheckForNegative(uint8_t byte) { return (byte & 0200) != 0; }
@@ -197,16 +195,14 @@ protected:  // Implementation - instruction execution
     void        ExecuteBMI ();
     void        ExecuteBVC ();
     void        ExecuteBVS ();
-    //BCC == BHIS
-    //BCS == BLO
     void        ExecuteBGE ();
     void        ExecuteBLT ();
     void        ExecuteBGT ();
     void        ExecuteBLE ();
     void        ExecuteBHI ();
-    void        ExecuteBLOS ();
+    void        ExecuteBLOS ();  //BCC == BHIS
     void        ExecuteBHIS ();
-    void        ExecuteBLO ();
+    void        ExecuteBLO ();   //BCS == BLO
     void        ExecuteJMP ();
     void        ExecuteJSR ();
     void        ExecuteRTS ();
@@ -254,11 +250,6 @@ protected:  // Implementation - instruction execution
     void        ExecuteSENZV ();
     void        ExecuteSCC ();
     void        ExecuteNOP ();
-    // Команды расширенной арифметики
-    void		ExecuteMUL ();
-    void		ExecuteDIV ();
-    void		ExecuteASH ();
-    void		ExecuteASHC ();
 
 };
 

@@ -596,7 +596,7 @@ BOOL DisasmView_GetJumpConditionHint(const WORD* memory, const CProcessor * pPro
     {
         WORD spvalue = pProc->GetSP();
         int addrtype;
-        WORD value = g_pBoard->GetWordView(spvalue, pProc->IsHaltMode(), FALSE, &addrtype);
+        WORD value = g_pBoard->GetWordView(spvalue, FALSE, &addrtype);
         if (instr == 000207)  // RETURN
             _sntprintf(buffer, 32, _T("(SP)=%06o"), value);  // "(SP)=XXXXXX"
         else  // RTS
@@ -728,7 +728,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, WORD base, WORD previ
     for (int idx = 0; idx < nWindowSize; idx++)
     {
         memory[idx] = g_pBoard->GetWordView(
-                (WORD)(current + idx * 2 - 10), pProc->IsHaltMode(), TRUE, addrtype + idx);
+                (WORD)(current + idx * 2 - 10), TRUE, addrtype + idx);
     }
 
     WORD address = current - 10;

@@ -141,29 +141,28 @@ public:  // Callbacks
     void        SetParallelOutCallback(PARALLELOUTCALLBACK outcallback);
 public:  // Memory
     // Read command for execution
-    uint16_t GetWordExec(uint16_t address, bool okHaltMode) { return GetWord(address, okHaltMode, TRUE); }
+    uint16_t GetWordExec(uint16_t address) { return GetWord(address, TRUE); }
     // Read word from memory
-    uint16_t GetWord(uint16_t address, bool okHaltMode) { return GetWord(address, okHaltMode, FALSE); }
+    uint16_t GetWord(uint16_t address) { return GetWord(address, FALSE); }
     // Read word
-    uint16_t GetWord(uint16_t address, bool okHaltMode, bool okExec);
+    uint16_t GetWord(uint16_t address, bool okExec);
     // Write word
-    void SetWord(uint16_t address, bool okHaltMode, uint16_t word);
+    void SetWord(uint16_t address, uint16_t word);
     // Read byte
-    uint8_t GetByte(uint16_t address, bool okHaltMode);
+    uint8_t GetByte(uint16_t address);
     // Write byte
-    void SetByte(uint16_t address, bool okHaltMode, uint8_t byte);
+    void SetByte(uint16_t address, uint8_t byte);
     // Read word from memory for debugger
-    uint16_t GetWordView(uint16_t address, bool okHaltMode, bool okExec, int* pValid);
+    uint16_t GetWordView(uint16_t address, bool okExec, int* pValid);
     // Read word from port for debugger
     uint16_t GetPortView(uint16_t address);
     // Get video buffer address
     const uint8_t* GetVideoBuffer();
 private:
     // Determite memory type for given address - see ADDRTYPE_Xxx constants
-    //   okHaltMode - processor mode (USER/HALT)
     //   okExec - TRUE: read instruction for execution; FALSE: read memory
     //   pOffset - result - offset in memory plane
-    int TranslateAddress(uint16_t address, bool okHaltMode, bool okExec, uint16_t* pOffset);
+    int TranslateAddress(uint16_t address, bool okExec, uint16_t* pOffset);
 private:  // Access to I/O ports
     uint16_t    GetPortWord(uint16_t address);
     void        SetPortWord(uint16_t address, uint16_t word);

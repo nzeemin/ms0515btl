@@ -302,13 +302,11 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
 {
     address &= ~1;  // Line up to even address
 
-    BOOL okHaltMode = pProc->IsHaltMode();
-
     for (int line = 0; line < lines; line++)
     {
         WORD dump[8];
         for (int i = 0; i < 8; i++)
-            dump[i] = g_pBoard->GetWord(address + i * 2, okHaltMode);
+            dump[i] = g_pBoard->GetWord(address + i * 2);
 
         TCHAR buffer[2 + 6 + 2 + 7 * 8 + 1 + 16 + 1 + 2];
         TCHAR* pBuf = buffer;
@@ -348,13 +346,11 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
 // Return value: number of words disassembled
 int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
 {
-    BOOL okHaltMode = pProc->IsHaltMode();
-
     const int nWindowSize = 30;
     WORD memory[nWindowSize + 2];
     int addrtype;
     for (int i = 0; i < nWindowSize + 2; i++)
-        memory[i] = g_pBoard->GetWordView(address + i * 2, okHaltMode, TRUE, &addrtype);
+        memory[i] = g_pBoard->GetWordView(address + i * 2, TRUE, &addrtype);
 
     TCHAR bufaddr[7];
     TCHAR bufvalue[7];

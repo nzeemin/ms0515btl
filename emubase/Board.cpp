@@ -443,10 +443,10 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed)
 // Motherboard: memory management
 
 // Read word from memory for debugger
-uint16_t CMotherboard::GetWordView(uint16_t address, bool okHaltMode, bool okExec, int* pAddrType)
+uint16_t CMotherboard::GetWordView(uint16_t address, bool okExec, int* pAddrType)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
+    int addrtype = TranslateAddress(address, okExec, &offset);
 
     *pAddrType = addrtype;
 
@@ -470,10 +470,10 @@ uint16_t CMotherboard::GetWordView(uint16_t address, bool okHaltMode, bool okExe
     return 0;
 }
 
-uint16_t CMotherboard::GetWord(uint16_t address, bool okHaltMode, bool okExec)
+uint16_t CMotherboard::GetWord(uint16_t address, bool okExec)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, okExec, &offset);
+    int addrtype = TranslateAddress(address, okExec, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -497,10 +497,10 @@ uint16_t CMotherboard::GetWord(uint16_t address, bool okHaltMode, bool okExec)
     return 0;
 }
 
-uint8_t CMotherboard::GetByte(uint16_t address, bool okHaltMode)
+uint8_t CMotherboard::GetByte(uint16_t address)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, false, &offset);
+    int addrtype = TranslateAddress(address, false, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -524,11 +524,11 @@ uint8_t CMotherboard::GetByte(uint16_t address, bool okHaltMode)
     return 0;
 }
 
-void CMotherboard::SetWord(uint16_t address, bool okHaltMode, uint16_t word)
+void CMotherboard::SetWord(uint16_t address, uint16_t word)
 {
     uint16_t offset;
 
-    int addrtype = TranslateAddress(address, okHaltMode, false, &offset);
+    int addrtype = TranslateAddress(address, false, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -558,10 +558,10 @@ void CMotherboard::SetWord(uint16_t address, bool okHaltMode, uint16_t word)
     ASSERT(false);  // If we are here - then addrtype has invalid value
 }
 
-void CMotherboard::SetByte(uint16_t address, bool okHaltMode, uint8_t byte)
+void CMotherboard::SetByte(uint16_t address, uint8_t byte)
 {
     uint16_t offset;
-    int addrtype = TranslateAddress(address, okHaltMode, false, &offset);
+    int addrtype = TranslateAddress(address, false, &offset);
 
     switch (addrtype & ADDRTYPE_MASK)
     {
@@ -588,7 +588,7 @@ void CMotherboard::SetByte(uint16_t address, bool okHaltMode, uint8_t byte)
     ASSERT(false);  // If we are here - then addrtype has invalid value
 }
 
-int CMotherboard::TranslateAddress(uint16_t address, bool okHaltMode, bool okExec, uint16_t* pOffset)
+int CMotherboard::TranslateAddress(uint16_t address, bool okExec, uint16_t* pOffset)
 {
     int window = (address >> 13) & 7;  // Ќомер запрашиваемого окна в основной пам€ти 0..7
 
@@ -1063,17 +1063,15 @@ void CMotherboard::SetParallelOutCallback(PARALLELOUTCALLBACK outcallback)
 
 void TraceInstruction(CProcessor* pProc, CMotherboard* pBoard, uint16_t address, DWORD dwTrace)
 {
-    bool okHaltMode = pProc->IsHaltMode();
-
     uint16_t memory[4];
     int addrtype = ADDRTYPE_RAM;
-    memory[0] = pBoard->GetWordView(address + 0 * 2, okHaltMode, true, &addrtype);
+    memory[0] = pBoard->GetWordView(address + 0 * 2, true, &addrtype);
     if (!((addrtype == ADDRTYPE_RAM || addrtype == ADDRTYPE_HIRAM) && (dwTrace & TRACE_CPURAM)) &&
         !(addrtype == ADDRTYPE_ROM && (dwTrace & TRACE_CPUROM)))
         return;
-    memory[1] = pBoard->GetWordView(address + 1 * 2, okHaltMode, true, &addrtype);
-    memory[2] = pBoard->GetWordView(address + 2 * 2, okHaltMode, true, &addrtype);
-    memory[3] = pBoard->GetWordView(address + 3 * 2, okHaltMode, true, &addrtype);
+    memory[1] = pBoard->GetWordView(address + 1 * 2, true, &addrtype);
+    memory[2] = pBoard->GetWordView(address + 2 * 2, true, &addrtype);
+    memory[3] = pBoard->GetWordView(address + 3 * 2, true, &addrtype);
 
     TCHAR bufaddr[7];
     PrintOctalValue(bufaddr, address);

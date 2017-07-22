@@ -321,7 +321,7 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     DrawOctalValue(hdc, x + cxChar * 3, y + 9 * cyLine, psw);
     DrawHexValue(hdc, x + cxChar * 10, y + 9 * cyLine, psw);
     ::SetTextColor(hdc, colorText);
-    TextOut(hdc, x + cxChar * 15, y + 8 * cyLine, _T("       HP  TNZVC"), 16);
+    TextOut(hdc, x + cxChar * 15, y + 8 * cyLine, _T("        P  TNZVC"), 16);
 
     // PSW value bits colored bit-by-bit
     TCHAR buffera[2];  buffera[1] = 0;
@@ -335,15 +335,10 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
 
     ::SetTextColor(hdc, colorText);
 
-    // Processor mode - HALT or USER
-    BOOL okHaltMode = pProc->IsHaltMode();
-    TextOut(hdc, x, y + 11 * cyLine, okHaltMode ? _T("HALT") : _T("USER"), 4);
-
     // "Stopped" flag
     BOOL okStopped = pProc->IsStopped();
     if (okStopped)
         TextOut(hdc, x + 6 * cxChar, y + 11 * cyLine, _T("STOP"), 4);
-
 }
 
 void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y, WORD oldValue)
@@ -362,7 +357,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     {
         int addrtype;
         memory[idx] = g_pBoard->GetWordView(
-                current + idx * 2 - 14, pProc->IsHaltMode(), okExec, &addrtype);
+                current + idx * 2 - 14, okExec, &addrtype);
     }
 
     WORD address = current - 14;
