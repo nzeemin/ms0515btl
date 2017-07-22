@@ -26,12 +26,11 @@ class CProcessor  // KR1807VM1 processor
 public:  // Constructor / initialization
     CProcessor(CMotherboard* pBoard);
     void        FireHALT() { m_HALTrq = true; }  // Fire HALT interrupt request, same as HALT command
-    void        SetHaltMode(bool halt) { m_haltmode = halt; }
-    void		MemoryError();
-    int			GetInternalTick() const { return m_internalTick; }
+    void        MemoryError();
+    int	        GetInternalTick() const { return m_internalTick; }
     void        SetInternalTick (uint16_t tick) { m_internalTick = tick; }
 
-public:
+public:  // Statics
     static void Init();  // Initialize static tables
     static void Done();  // Release memory used for static tables
 protected:  // Statics
@@ -44,9 +43,8 @@ protected:  // Processor state
     uint16_t    m_psw;              // Processor Status Word (PSW)
     uint16_t    m_R[8];             // Registers (R0..R5, R6=SP, R7=PC)
     bool        m_okStopped;        // "Processor stopped" flag
-    bool        m_haltmode;         // true = HALT mode, false = USER mode
     bool        m_stepmode;         // Read true if it's step mode
-    bool        m_waitmode;			// WAIT
+    bool        m_waitmode;         // WAIT
 
 protected:  // Current instruction processing
     uint16_t    m_instruction;      // Curent instruction
@@ -102,7 +100,6 @@ public:  // PSW bits control
     uint16_t    GetN() const { return (m_psw & PSW_N) != 0; }
     void        SetZ(bool bFlag);
     uint16_t    GetZ() const { return (m_psw & PSW_Z) != 0; }
-    uint16_t    GetHALT() const { return m_haltmode; }
 
 public:  // Processor state
     // "Processor stopped" flag

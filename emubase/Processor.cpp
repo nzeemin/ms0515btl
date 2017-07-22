@@ -17,53 +17,40 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 
 // Timings ///////////////////////////////////////////////////////////
-// Таблицы таймингов основаны на статье Ю. А. Зальцмана, журнал "Персональный компьютер БК" №1 1995.
+// See T11_UsersMan.pdf page A-14 "DCTll-AA Instruction Execution Times at Maximum Operating Frequency"
 
-const int TIMING_BRANCH =   16;  // 5.4 us - BR, BEQ etc.
-const int TIMING_ILLEGAL = 144;
-const int TIMING_WAIT   = 1140;  // 380 us - WAIT and RESET
-const int TIMING_EMT    =   68;  // 22.8 us - IOT, BPT, EMT, TRAP - 42+5t
-const int TIMING_RTI    =   40;  // 13.4 us - RTI and RTT - 24+2t
-const int TIMING_RTS    =   32;  // 10.8 us
-const int TIMING_NOP    =   12;  // 4 us - NOP and all commands without operands and with register operands
-const int TIMING_SOB    =   20;  // 6.8 us
-const int TIMING_BR     =   16;  // 5.4 us
-const int TIMING_MARK   =   36;
+// See Table A-17 XOR and Single-Operand Instructions
+const int TIMING_ONE[8] = { 12, 21, 21, 27, 24, 31, 31, 37 };  // CLR(B), COM(B) etc.
+const int TIMING_TST[8] = { 12, 18, 18, 24, 21, 28, 28, 34 };
+const int TIMING_MTPS[8] = { 24, 30, 30, 36, 33, 40, 40, 46 };
+// See Table A-18 Double-Operand Instructions
+const int TIMING_MOV_SRC_DST04[8] = {  9, 15, 15, 21, 18, 25, 25, 31 };  // MOV, CMP, ADD, SUB etc. by src mode, for dst mode 0..4
+const int TIMING_MOV_SRC_DST57[8] = { 10, 16, 16, 22, 19, 25, 25, 31 };  // MOV, CMP, ADD, SUB etc. by src mode, for dst mode 5..7
+const int TIMING_MOV_DST[8]       = {  3, 12, 12, 18, 15, 21, 21, 27 };  // MOV, ADD, SUB, BIC, BIS by dst mode
+const int TIMING_CMP_DST[8]       = {  3,  9,  9, 15, 12, 18, 18, 24 };  // CMP, BIT by dst mode
+// See Table A-19 Jump and Subroutine Instructions
+const int TIMING_JMP[8] = { 0, 15, 18, 18, 18, 22, 22, 20 };
+const int TIMING_JSR[8] = { 0, 27, 30, 30, 30, 34, 34, 40 };
+const int TIMING_RTS    =   21;  // 2.80 us
+const int TIMING_SOB    =   18;  // 2.40 us
+// See Table A-20 Branch, Trap, and Interrupt Instructions
+const int TIMING_BRANCH =   12;  // 1.60 us - BR, BEQ etc. - See Table A-20 Branch, Trap, and Interrupt Instructions
+const int TIMING_EMT    =   49;  // 6.53 us - IOT, BPT, EMT, TRAP
+const int TIMING_RTI    =   24;  // 3.20 us
+const int TIMING_RTT    =   33;  // 4.40 us
+// See Table A-21 Miscellaneous and Condition Code Instructions
+const int TIMING_HALT   =   43;  // 5.73 us
+const int TIMING_WAIT   =   12;  // 1.60 us
+const int TIMING_RESET  =  110;  // 14.60 us
+const int TIMING_NOP    =   18;  // 2.40 us - NOP, CLC, ..., CCC, SEC, ..., SCC
+const int TIMING_MFPT   =   15;  // 2.00 us
 
-const int TIMING_REGREG =   11;  // Base timing
-const int TIMING_A[8]   = { 0, 12, 12, 20, 12, 20, 20, 28 };  // Source
-const int TIMING_B[8]   = { 0, 20, 20, 32, 20, 32, 32, 40 };  // Destination
-const int TIMING_AB[8]  = { 0, 16, 16, 24, 16, 24, 24, 32 };  // Source and destination are the same
-const int TIMING_A2[8]  = { 0, 20, 20, 28, 20, 28, 28, 36 };
-const int TIMING_DS[8]  = { 0, 32, 32, 40, 32, 40, 40, 48 };
+#define TIMING_MOV(m_methsrc, m_methdest) \
+    ((m_methdest < 5 ? TIMING_MOV_SRC_DST04[m_methsrc] : TIMING_MOV_SRC_DST57[m_methsrc]) + TIMING_MOV_DST[m_methdest])
+#define TIMING_CMP(m_methsrc, m_methdest) \
+    ((m_methdest < 5 ? TIMING_MOV_SRC_DST04[m_methsrc] : TIMING_MOV_SRC_DST57[m_methsrc]) + TIMING_CMP_DST[m_methdest])
 
-#define TIMING_A1 TIMING_A
-#define TIMING_DJ TIMING_A2
-
-#define TIMING_DST (m_methsrc ? TIMING_AB : TIMING_B)
-#define TIMING_CMP (m_methsrc ? TIMING_A1 : TIMING_A2)
-
-uint16_t ASH_TIMING[8] =
-{
-    0x0029,	0x003D, 0x003D, 0x0049, 0x0041, 0x004D, 0x0055, 0x0062
-};
-uint16_t ASH_S_TIMING = 0x0008;
-
-uint16_t ASHC_TIMING[8] =
-{
-    0x0039, 0x004E, 0x004D, 0x005A, 0x0051, 0x005D, 0x0066,	0x0072
-};
-uint16_t ASHC_S_TIMING = 0x0008;
-
-uint16_t MUL_TIMING[8] =
-{
-    0x0034, 0x009B, 0x009B, 0x00A8, 0x009E, 0x00AC, 0x00B5, 0x00C0
-};
-
-uint16_t DIV_TIMING[8] =
-{
-    0x0020, 0x0088, 0x0087, 0x0094, 0x008B, 0x0098,	0x00A0,	0x00AD
-};
+const int TIMING_ILLEGAL = 110; //TODO
 
 
 //////////////////////////////////////////////////////////////////////
@@ -189,7 +176,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
     m_pBoard = pBoard;
     ::memset(m_R, 0, sizeof(m_R));
     m_psw = 0340;
-    m_okStopped = true;  m_haltmode = false;
+    m_okStopped = true;
     m_internalTick = 0;
     m_waitmode = false;
     m_stepmode = false;
@@ -206,8 +193,7 @@ CProcessor::CProcessor (CMotherboard* pBoard)
 
 void CProcessor::Start ()
 {
-    m_okStopped = false;  m_haltmode = true;
-
+    m_okStopped = false;
     m_stepmode = false;
     m_waitmode = false;
     m_RPLYrq = m_RSVDrq = m_RSVD4rq = m_TBITrq = m_HALTrq = m_RPL2rq = m_IRQ5rq = m_IRQ2rq = m_IRQ11rq = false;
@@ -353,7 +339,6 @@ void CProcessor::Execute()
             m_waitmode = false;
 
             uint16_t oldpsw = m_psw;
-            m_haltmode = true;
 
             // Save PC/PSW to stack
             SetSP(GetSP() - 2);
@@ -692,6 +677,8 @@ void CProcessor::ExecuteWAIT ()  // WAIT - Wait for an interrupt
 void CProcessor::ExecuteHALT ()  // HALT - Останов
 {
     m_HALTrq = true;
+
+    m_internalTick = TIMING_HALT;
 }
 
 void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
@@ -723,14 +710,14 @@ void CProcessor::ExecuteRESET ()  // Reset input/output devices
 {
     m_pBoard->ResetDevices();  // INIT signal
 
-    m_internalTick = TIMING_WAIT;
+    m_internalTick = TIMING_RESET;
 }
 
 void CProcessor::ExecuteMFPT()
 {
     SetReg(0, 4);
 
-    m_internalTick = TIMING_NOP;
+    m_internalTick = TIMING_MFPT;
 }
 
 void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
@@ -743,7 +730,7 @@ void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
     SetPSW(new_psw & 0377);
 
     //m_psw |= PSW_T; // set the trap flag ???
-    m_internalTick = TIMING_RTI;
+    m_internalTick = TIMING_RTT;
 }
 
 void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из процедуры
@@ -788,7 +775,7 @@ void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
     {
         SetPC(GetWordAddr(m_methdest, m_regdest));
 
-        m_internalTick = TIMING_DJ[m_methdest];
+        m_internalTick = TIMING_JMP[m_methdest];
     }
 }
 
@@ -810,7 +797,7 @@ void CProcessor::ExecuteSWAB ()
     SetV(0);
     SetC(0);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_ONE[m_methdest];
 }
 
 void CProcessor::ExecuteCLR ()  // CLR
@@ -827,7 +814,7 @@ void CProcessor::ExecuteCLR ()  // CLR
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400));
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -841,7 +828,7 @@ void CProcessor::ExecuteCLR ()  // CLR
         else
             SetReg(m_regdest, 0);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -866,7 +853,7 @@ void CProcessor::ExecuteCOM ()  // COM
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -883,7 +870,7 @@ void CProcessor::ExecuteCOM ()  // COM
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -907,7 +894,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -925,7 +912,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -949,7 +936,7 @@ void CProcessor::ExecuteDEC ()  // DEC - Декремент
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -966,7 +953,7 @@ void CProcessor::ExecuteDEC ()  // DEC - Декремент
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -992,7 +979,7 @@ void CProcessor::ExecuteNEG ()
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1012,7 +999,7 @@ void CProcessor::ExecuteNEG ()
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1037,7 +1024,7 @@ void CProcessor::ExecuteADC ()  // ADC{B}
         SetV(GetC() && (dst == 0200));
         SetC(GetC() && GetZ());
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1057,7 +1044,7 @@ void CProcessor::ExecuteADC ()  // ADC{B}
         SetV(GetC() && (dst == 0100000));
         SetC(GetC() && GetZ());
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1082,7 +1069,7 @@ void CProcessor::ExecuteSBC ()  // SBC{B}
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1101,7 +1088,7 @@ void CProcessor::ExecuteSBC ()  // SBC{B}
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1117,7 +1104,7 @@ void CProcessor::ExecuteTST ()  // TST{B} - test
         SetV(0);
         SetC(0);
 
-        m_internalTick = TIMING_REGREG + TIMING_A1[m_methdest];
+        m_internalTick = TIMING_TST[m_methdest];
     }
     else
     {
@@ -1129,7 +1116,7 @@ void CProcessor::ExecuteTST ()  // TST{B} - test
         SetV(0);
         SetC(0);
 
-        m_internalTick = TIMING_REGREG + TIMING_A1[m_methdest];
+        m_internalTick = TIMING_TST[m_methdest];
     }
 }
 
@@ -1156,7 +1143,7 @@ void CProcessor::ExecuteROR ()  // ROR{B}
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1177,7 +1164,7 @@ void CProcessor::ExecuteROR ()  // ROR{B}
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1204,7 +1191,7 @@ void CProcessor::ExecuteROL ()  // ROL{B}
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1225,7 +1212,7 @@ void CProcessor::ExecuteROL ()  // ROL{B}
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1249,7 +1236,7 @@ void CProcessor::ExecuteASR ()  // ASR{B}
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1268,7 +1255,7 @@ void CProcessor::ExecuteASR ()  // ASR{B}
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1292,7 +1279,7 @@ void CProcessor::ExecuteASL ()  // ASL{B}
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
     else
     {
@@ -1310,7 +1297,7 @@ void CProcessor::ExecuteASL ()  // ASL{B}
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+        m_internalTick = TIMING_ONE[m_methdest];
     }
 }
 
@@ -1324,7 +1311,7 @@ void CProcessor::ExecuteSXT ()  // SXT - sign-extend
     SetZ(!GetN());
     SetV(0);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_ONE[m_methdest];
 }
 
 void CProcessor::ExecuteMTPS ()  // MTPS - move to PS
@@ -1343,7 +1330,7 @@ void CProcessor::ExecuteMTPS ()  // MTPS - move to PS
         SetPSW((GetPSW() & 0420) | (dst & 0357));  // preserve T
     }
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_MTPS[m_methdest];
 }
 
 void CProcessor::ExecuteMFPS ()  // MFPS - move from PS
@@ -1357,13 +1344,13 @@ void CProcessor::ExecuteMFPS ()  // MFPS - move from PS
     SetZ(psw == 0);
     SetV(0);
 
-    m_internalTick = TIMING_REGREG + TIMING_AB[m_methdest];
+    m_internalTick = TIMING_ONE[m_methdest];
 }
 
 void CProcessor::ExecuteBR ()
 {
     SetReg(7, GetPC() + ((short)(char)LOBYTE (m_instruction)) * 2 );
-    m_internalTick = TIMING_BR;
+    m_internalTick = TIMING_BRANCH;
 }
 
 void CProcessor::ExecuteBNE ()
@@ -1523,7 +1510,7 @@ void CProcessor::ExecuteXOR ()  // XOR
     else
         SetReg(m_regdest, dst);
 
-    m_internalTick = TIMING_REGREG + TIMING_A2[m_methdest];
+    m_internalTick = TIMING_ONE[m_methdest];
 }
 
 void CProcessor::ExecuteSOB ()  // SOB - subtract one: R = R - 1 ; if R != 0 : PC = PC - 2*nn
@@ -1556,7 +1543,7 @@ void CProcessor::ExecuteMOV ()
         else
             SetReg(m_regdest, (dst & 0200) ? (0177400 | dst) : dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+        m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
     }
     else  // MOV
     {
@@ -1571,7 +1558,7 @@ void CProcessor::ExecuteMOV ()
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+        m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
     }
 }
 
@@ -1592,7 +1579,7 @@ void CProcessor::ExecuteCMP ()
         SetV( CheckSubForOverflow (src, src2) );
         SetC( CheckSubForCarry (src, src2) );
 
-        m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
+        m_internalTick = TIMING_CMP(m_methsrc, m_methdest);
     }
     else
     {
@@ -1610,7 +1597,7 @@ void CProcessor::ExecuteCMP ()
         SetV( CheckSubForOverflow (src, src2) );
         SetC( CheckSubForCarry (src, src2) );
 
-        m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
+        m_internalTick = TIMING_CMP(m_methsrc, m_methdest);
     }
 }
 
@@ -1632,7 +1619,7 @@ void CProcessor::ExecuteBIT ()  // BIT{B} - bit test
         SetZ(!dst);
         SetV(0);
 
-        m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
+        m_internalTick = TIMING_CMP(m_methsrc, m_methdest);
     }
     else
     {
@@ -1649,7 +1636,7 @@ void CProcessor::ExecuteBIT ()  // BIT{B} - bit test
         SetZ(!dst);
         SetV(0);
 
-        m_internalTick = TIMING_REGREG + TIMING_A1[m_methsrc] + TIMING_CMP[m_methdest];
+        m_internalTick = TIMING_CMP(m_methsrc, m_methdest);
     }
 }
 
@@ -1676,7 +1663,7 @@ void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+        m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
     }
     else
     {
@@ -1698,7 +1685,7 @@ void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+        m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
     }
 }
 
@@ -1725,7 +1712,7 @@ void CProcessor::ExecuteBIS ()  // BIS{B} - bit set
         else
             SetReg(m_regdest, (GetReg(m_regdest) & 0177400) | dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+        m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
     }
     else
     {
@@ -1747,7 +1734,7 @@ void CProcessor::ExecuteBIS ()  // BIS{B} - bit set
         else
             SetReg(m_regdest, dst);
 
-        m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+        m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
     }
 }
 
@@ -1767,17 +1754,15 @@ void CProcessor::ExecuteADD ()  // ADD
     SetV(CheckAddForOverflow (src2, src));
     SetC(CheckAddForCarry (src2, src));
 
-
     dst = src2 + src;
     dst2 = (short)src2 + (short)src;
-
 
     if (m_methdest)
         SetWord(ea, dst);
     else
         SetReg(m_regdest, dst);
 
-    m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+    m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
 }
 
 void CProcessor::ExecuteSUB ()
@@ -1802,7 +1787,7 @@ void CProcessor::ExecuteSUB ()
     else
         SetReg(m_regdest, dst);
 
-    m_internalTick = TIMING_REGREG + TIMING_A[m_methsrc] + TIMING_DST[m_methdest];
+    m_internalTick = TIMING_MOV(m_methsrc, m_methdest);
 }
 
 void CProcessor::ExecuteEMT ()  // EMT - emulator trap
@@ -1840,7 +1825,7 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
 
         SetPC(dst);
 
-        m_internalTick = TIMING_DS[m_methdest];
+        m_internalTick = TIMING_JSR[m_methdest];
     }
 }
 
@@ -1863,11 +1848,11 @@ void CProcessor::SaveToImage(uint8_t* pImage)
     // Saved PC and PSW
     *pwImage++ = 0;  //m_savepc;
     *pwImage++ = 0;  //m_savepsw;
-    // Stopped flag
+    // Modes
     *pwImage++ = (m_okStopped ? 1 : 0);
     *pwImage++ = (m_waitmode ? 1 : 0);
     *pwImage++ = (m_stepmode ? 1 : 0);
-    *pwImage++ = (m_haltmode ? 1 : 0);
+    *pwImage++ = 0;
 }
 
 void CProcessor::LoadFromImage(const uint8_t* pImage)
@@ -1882,11 +1867,11 @@ void CProcessor::LoadFromImage(const uint8_t* pImage)
     // Saved PC and PSW - skip
     pwImage++;
     pwImage++;
-    // Stopped flag
+    // Modes
     m_okStopped = (*pwImage++ != 0);
     m_waitmode = (*pwImage++ != 0);
     m_stepmode = (*pwImage++ != 0);
-    m_haltmode = (*pwImage++ != 0);
+    pwImage++;
 }
 
 uint16_t CProcessor::GetWordAddr (uint8_t meth, uint8_t reg)
