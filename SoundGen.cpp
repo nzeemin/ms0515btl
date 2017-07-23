@@ -64,7 +64,6 @@ void SoundGen_Initialize(WORD volume)
             totalBufferSize);
     if (mbuffer == NULL)
     {
-        //ExitProcess(1);
         return;
     }
 
@@ -101,7 +100,6 @@ void SoundGen_Initialize(WORD volume)
     bufcurpos = 0;
 
     m_SoundGenInitialized = true;
-    //waveOutSetPlaybackRate(hWaveOut,0x00008000);
 }
 
 void SoundGen_Finalize()
@@ -110,7 +108,7 @@ void SoundGen_Finalize()
         return;
 
     while (waveFreeBlockCount < BLOCK_COUNT)
-        Sleep(3);
+        Sleep(1);
 
     for (int i = 0; i < waveFreeBlockCount; i++)
     {

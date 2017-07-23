@@ -761,6 +761,14 @@ uint16_t CMotherboard::GetPortView(uint16_t address)
 {
     switch (address)
     {
+    case 0177400:  // Регистр диспетчера памяти
+        return m_Port177400;
+    case 0177440:  // Клавиатура: буфер данных приёмника
+        return m_Port177440;
+    case 0177442:  // Клавиатура: регистр состояния порта
+        return m_Port177442r;
+    case 0177460:  // Клавиатура: буфер данных передатчика
+        return m_Port177460;
     case 0177600:  // Системный регистр A
         return 0; //STUB
     case 0177602:  // Системный регистр B
