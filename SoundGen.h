@@ -20,4 +20,5 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 void SoundGen_Initialize(WORD volume);
 void SoundGen_Finalize();
 void SoundGen_SetVolume(WORD volume);
+void SoundGen_SetSpeed(WORD speedpercent);
 void CALLBACK SoundGen_FeedDAC(WORD value);
