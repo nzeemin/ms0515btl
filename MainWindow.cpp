@@ -84,17 +84,17 @@ void MainWindow_RegisterClass()
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style			= CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc	= MainWindow_WndProc;
-    wcex.cbClsExtra		= 0;
-    wcex.cbWndExtra		= 0;
-    wcex.hInstance		= g_hInst;
-    wcex.hIcon			= LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MS0515BTL));
-    wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_BTNFACE + 1);
-    wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_MS0515BTL);
-    wcex.lpszClassName	= g_szWindowClass;
-    wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = MainWindow_WndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = g_hInst;
+    wcex.hIcon          = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MS0515BTL));
+    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_BTNFACE + 1);
+    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_MS0515BTL);
+    wcex.lpszClassName  = g_szWindowClass;
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
     RegisterClassEx(&wcex);
 
@@ -312,8 +312,8 @@ void MainWindow_RestorePositionAndShow()
 
     ShowWindow(g_hwnd, Settings_GetWindowMaximized() ? SW_SHOWMAXIMIZED : SW_SHOW);
 
-    if (Settings_GetWindowFullscreen())
-        MainWindow_DoViewFullscreen();
+    //if (Settings_GetWindowFullscreen())
+    //    MainWindow_DoViewFullscreen();
 }
 
 // Processes messages for the main window
@@ -322,10 +322,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
     switch (message)
     {
     case WM_ACTIVATE:
-        if (Settings_GetDebug())
-            ConsoleView_Activate();
-        else
-            SetFocus(g_hwndScreen);
+        SetFocus(g_hwndScreen);
         break;
     case WM_COMMAND:
         {
@@ -356,14 +353,10 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_NOTIFY:
         {
-            int idCtrl = (int) wParam;
+            //int idCtrl = (int) wParam;
             HWND hwndFrom = ((LPNMHDR) lParam)->hwndFrom;
             UINT code = ((LPNMHDR) lParam)->code;
-            if (hwndFrom == m_hwndStatusbar && code == NM_CLICK)
-            {
-                //MainWindow_OnStatusbarClick((LPNMMOUSE) lParam);
-            }
-            else if (code == TTN_SHOW)
+            if (code == TTN_SHOW)
             {
                 return 0;
             }
@@ -392,18 +385,18 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 
 void MainWindow_AdjustWindowSize()
 {
+    const int MAX_DEBUG_WIDTH = 1450;
+    const int MAX_DEBUG_HEIGHT = 1400;
+    const int MIN_NODEBUG_WIDTH = 660;
+
     // If Fullscreen or Maximized then do nothing
-    if (m_MainWindow_Fullscreen)
-        return;
+    //if (m_MainWindow_Fullscreen)
+    //    return;
     WINDOWPLACEMENT placement;
     placement.length = sizeof(WINDOWPLACEMENT);
     ::GetWindowPlacement(g_hwnd, &placement);
     if (placement.showCmd == SW_MAXIMIZE)
         return;
-
-    const int MAX_DEBUG_WIDTH = 1450;
-    const int MAX_DEBUG_HEIGHT = 1400;
-    const int MIN_NODEBUG_WIDTH = 660;
 
     // Get metrics
     RECT rcWorkArea;  SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
@@ -560,9 +553,6 @@ void MainWindow_ShowHideDebug()
             DestroyWindow(g_hwndMemory);
 
         MainWindow_AdjustWindowSize();
-        MainWindow_AdjustWindowLayout();
-
-        SetFocus(g_hwndScreen);
     }
     else  // Debug Views ON
     {
@@ -594,11 +584,13 @@ void MainWindow_ShowHideDebug()
         if (g_hwndMemory == INVALID_HANDLE_VALUE)
             MemoryView_Create(g_hwnd, xDebugLeft, yMemoryTop, cxDebugWidth, cyMemoryHeight);
         m_hwndSplitter = SplitterWindow_Create(g_hwnd, g_hwndDisasm, g_hwndMemory);
-
-        MainWindow_AdjustWindowLayout();
     }
 
+    MainWindow_AdjustWindowLayout();
+
     MainWindow_UpdateMenu();
+
+    SetFocus(g_hwndScreen);
 }
 
 void MainWindow_ShowHideToolbar()
@@ -1088,19 +1080,10 @@ void MainWindow_DoEmulatorFloppy(int slot)
 
         // File Open dialog
         TCHAR bufFileName[MAX_PATH];
-        *bufFileName = 0;
-        OPENFILENAME ofn;
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = g_hwnd;
-        ofn.hInstance = g_hInst;
-        ofn.lpstrTitle = _T("Open floppy image to attach");
-        ofn.lpstrFilter = _T("MS0515 floppy images (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0");
-        ofn.Flags = OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-        ofn.lpstrFile = bufFileName;
-        ofn.nMaxFile = sizeof(bufFileName) / sizeof(TCHAR);
-
-        BOOL okResult = GetOpenFileName(&ofn);
+        BOOL okResult = ShowOpenDialog(g_hwnd,
+                _T("Open floppy image to attach"),
+                _T("MS0515 floppy images (*.dsk)\0*.dsk\0All Files (*.*)\0*.*\0\0"),
+                bufFileName);
         if (! okResult) return;
 
         if (! g_pBoard->AttachFloppyImage(slot, bufFileName))
@@ -1108,6 +1091,7 @@ void MainWindow_DoEmulatorFloppy(int slot)
             AlertWarning(_T("Failed to attach floppy image."));
             return;
         }
+
         Settings_SetFloppyFilePath(slot, bufFileName);
     }
     MainWindow_UpdateMenu();
