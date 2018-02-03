@@ -1,6 +1,8 @@
 # ms0515btl
 **MS0515 Back to Life!** is emulator of **Elektronika MS 0515**, soviet computer based on PDP-11 compatible processor.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/w4qw1x9gm9a2hken?svg=true)](https://ci.appveyor.com/project/nzeemin/ms0515btl)
+
 #### Screenshot
 
 ![](screenshot/MS0515BTL.png)
