@@ -17,14 +17,46 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //////////////////////////////////////////////////////////////////////
 
+static void ExtendPalette16ToPalette256(
+    const uint32_t* palette16, uint32_t* palette256,
+    const uint32_t* pBits, int totalPixelsCount)
+{
+    ::memcpy(palette256, palette16, 16 * 4);
+    ::memset(palette256 + 16, 0, (256 - 16) * 4);
+    int nColors = 16;
+
+    const uint32_t* psrc = pBits;
+    for (int i = 0; i < totalPixelsCount; i++)
+    {
+        uint32_t rgb = *psrc;
+        bool okFound = false;
+        for (int c = 0; c < nColors; c++)
+        {
+            if (palette256[c] == rgb)
+            {
+                okFound = true;
+                break;
+            }
+        }
+        if (!okFound)
+        {
+            palette256[nColors] = rgb;
+            nColors++;
+            if (nColors >= 256)
+                return;
+        }
+        psrc++;
+    }
+}
+
 bool BmpFile_SaveScreenshot(
     const uint32_t* pBits,
-    const uint32_t* palette,
+    const uint32_t* palette16,
     LPCTSTR sFileName,
     int screenWidth, int screenHeight)
 {
     ASSERT(pBits != NULL);
-    ASSERT(palette != NULL);
+    ASSERT(palette16 != NULL);
     ASSERT(sFileName != NULL);
 
     // Create file
@@ -42,9 +74,9 @@ bool BmpFile_SaveScreenshot(
     bih.biSize = sizeof( BITMAPINFOHEADER );
     bih.biWidth = screenWidth;
     bih.biHeight = screenHeight;
-    bih.biSizeImage = bih.biWidth * bih.biHeight / 2;
+    bih.biSizeImage = (DWORD)(bih.biWidth * bih.biHeight);
     bih.biPlanes = 1;
-    bih.biBitCount = 4;
+    bih.biBitCount = 8;
     bih.biCompression = BI_RGB;
     bih.biXPelsPerMeter = bih.biYPelsPerMeter = 2000;
     hdr.bfSize = (uint32_t) sizeof(BITMAPFILEHEADER) + bih.biSize + bih.biSizeImage;
@@ -52,7 +84,15 @@ bool BmpFile_SaveScreenshot(
 
     DWORD dwBytesWritten = 0;
 
-    uint8_t * pData = (uint8_t *) ::calloc(bih.biSizeImage, 1);
+    uint8_t * pData = (uint8_t *) ::calloc(1, bih.biSizeImage);
+    if (pData == NULL)
+    {
+        CloseHandle(hFile);
+        return false;
+    }
+
+    uint32_t* palette256 = (uint32_t*) ::calloc(256, 4);
+    ExtendPalette16ToPalette256(palette16, palette256, pBits, screenWidth * screenHeight);
 
     // Prepare the image data
     const uint32_t * psrc = pBits;
@@ -62,47 +102,45 @@ bool BmpFile_SaveScreenshot(
         uint32_t rgb = *psrc;
         psrc++;
         uint8_t color = 0;
-        for (uint8_t c = 0; c < 16; c++)
+        for (uint8_t c = 0; c < 256; c++)
         {
-            if (palette[c] == rgb)
+            if (palette256[c] == rgb)
             {
                 color = c;
                 break;
             }
         }
-        if ((i & 1) == 0)
-            *pdst = (color << 4);
-        else
-        {
-            *pdst = (*pdst) & 0xf0 | color;
-            pdst++;
-        }
+        *pdst = color;
+        pdst++;
     }
 
     WriteFile(hFile, &hdr, sizeof(BITMAPFILEHEADER), &dwBytesWritten, NULL);
     if (dwBytesWritten != sizeof(BITMAPFILEHEADER))
     {
-        ::free(pData);
+        ::free(pData);  ::free(palette256);  CloseHandle(hFile);
         return false;
     }
     WriteFile(hFile, &bih, sizeof(BITMAPINFOHEADER), &dwBytesWritten, NULL);
     if (dwBytesWritten != sizeof(BITMAPINFOHEADER))
     {
-        ::free(pData);
+        ::free(pData);  ::free(palette256);  CloseHandle(hFile);
         return false;
     }
-    WriteFile(hFile, palette, sizeof(RGBQUAD) * 16, &dwBytesWritten, NULL);
-    if (dwBytesWritten != sizeof(RGBQUAD) * 16)
+    WriteFile(hFile, palette256, sizeof(RGBQUAD) * 256, &dwBytesWritten, NULL);
+    if (dwBytesWritten != sizeof(RGBQUAD) * 256)
     {
-        ::free(pData);
+        ::free(pData);  ::free(palette256);  CloseHandle(hFile);
         return false;
     }
     WriteFile(hFile, pData, bih.biSizeImage, &dwBytesWritten, NULL);
-    ::free(pData);
     if (dwBytesWritten != bih.biSizeImage)
+    {
+        ::free(pData);  ::free(palette256);  CloseHandle(hFile);
         return false;
+    }
 
-    // Close file
+    ::free(pData);
+    ::free(palette256);
     CloseHandle(hFile);
 
     return true;
@@ -185,37 +223,38 @@ bool PngFile_WriteEnd(FILE * fpFile)
     return true;
 }
 
-bool PngFile_WritePalette(FILE * fpFile, const uint32_t* palette, int palsize)
+bool PngFile_WritePalette(FILE * fpFile, const uint32_t* palette256)
 {
-    int chunksize = 12 + palsize * 3;
-    uint8_t PLTEchunk[12 + 16 * 3];
-    SaveValueMSB(PLTEchunk, palsize * 3);
+    uint8_t PLTEchunk[12 + 256 * 3];
+    SaveValueMSB(PLTEchunk, 256 * 3);
     memcpy(PLTEchunk + 4, "PLTE", 4);
     uint8_t * p = PLTEchunk + 8;
-    for (int i = 0; i < palsize; i++)
+    for (int i = 0; i < 256; i++)
     {
-        uint32_t color = *(palette++);
+        uint32_t color = *(palette256++);
         *(p++) = (uint8_t)(color >> 16);
         *(p++) = (uint8_t)(color >> 8);
         *(p++) = (uint8_t)(color >> 0);
     }
     SavePngChunkChecksum(PLTEchunk);
-    size_t dwBytesWritten = ::fwrite(PLTEchunk, 1, chunksize, fpFile);
-    if (dwBytesWritten != chunksize)
+    size_t dwBytesWritten = ::fwrite(PLTEchunk, 1, sizeof(PLTEchunk), fpFile);
+    if (dwBytesWritten != sizeof(PLTEchunk))
         return false;
 
     return true;
 }
 
-bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* pBits, const uint32_t* palette, int screenWidth, int screenHeight)
+bool PngFile_WriteImageData8(FILE * fpFile, uint32_t framenum, const uint32_t* pBits, const uint32_t* palette256, int screenWidth, int screenHeight)
 {
     // The IDAT chunk data format defined by RFC-1950 "ZLIB Compressed Data Format Specification version 3.3"
     // http://www.ietf.org/rfc/rfc1950.txt
     // We use uncomressed DEFLATE format, see RFC-1951
     // http://tools.ietf.org/html/rfc1951
-    uint32_t pDataLength = 8 + 2 + (6 + screenWidth / 2) * screenHeight + 4/*adler*/ + 4;
+    uint32_t pDataLength = 8 + 2 + (6 + screenWidth) * screenHeight + 4/*adler*/ + 4;
     if (framenum > 1) pDataLength += 4;
-    uint8_t * pData = (uint8_t *) ::calloc(pDataLength, 1);
+    uint8_t * pData = (uint8_t *) ::calloc((size_t)pDataLength, 1);
+    if (pData == NULL)
+        return false;
     SaveValueMSB(pData, pDataLength - 12);
     memcpy(pData + 4, (framenum <= 1) ? "IDAT" : "fdAT", 4);
     if (framenum > 1) SaveValueMSB(pData + 8, framenum);
@@ -229,7 +268,7 @@ bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* p
     uint32_t adler = 1L;
     for (int line = 0; line < screenHeight; line++)
     {
-        const uint16_t linelen = (screenWidth / 2) + 1; // Each line is 257-byte block of non-compressed data
+        const uint16_t linelen = (uint16_t) screenWidth + 1;  // Each line is 257-byte block of non-compressed data
         *(pdst++) = (line < screenHeight - 1) ? 0 : 1; // Last?
         *(pdst++) = linelen & 0xff;
         *(pdst++) = (linelen >> 8) & 0xff;
@@ -243,21 +282,16 @@ bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* p
         {
             uint32_t rgb = *(psrc++);
             uint8_t color = 0;
-            for (uint8_t c = 0; c < 16; c++)
+            for (uint8_t c = 0; c < 256; c++)
             {
-                if (palette[c] == rgb)
+                if (palette256[c] == rgb)
                 {
                     color = c;
                     break;
                 }
             }
-            if ((i & 1) == 0)
-                *pdst = (color << 4);
-            else
-            {
-                *pdst = (*pdst) & 0xf0 | color;
-                pdst++;
-            }
+            *pdst = color;
+            pdst++;
         }
 
         adler = update_adler32(adler, pline, linelen);
@@ -278,7 +312,7 @@ bool PngFile_WriteImageData4(FILE * fpFile, uint32_t framenum, const uint32_t* p
 
 bool PngFile_SaveScreenshot(
     const uint32_t* pBits,
-    const uint32_t* palette4,
+    const uint32_t* palette16,
     LPCTSTR sFileName,
     int screenWidth, int screenHeight)
 {
@@ -291,62 +325,34 @@ bool PngFile_SaveScreenshot(
     if (fpFile == NULL)
         return false;
 
-    // Prepare 16-color palette using the given 4-color palette and all colors from the bitmap
-    uint32_t palette16[16];
-    int palsize = 4;
-    {
-        memset(palette16, 0, sizeof(palette16));
-        memcpy(palette16, palette4, sizeof(uint32_t) * 4);
-        for (int line = 0; line < screenHeight; line++)
-        {
-            const uint32_t * psrc = pBits + ((screenHeight - 1 - line) * screenWidth);
-            for (int i = 0; i < screenWidth; i++)
-            {
-                uint32_t rgb = *(psrc++);
-                uint8_t color = 255;
-                for (uint8_t c = 0; c < palsize; c++)
-                {
-                    if (palette16[c] == rgb)
-                    {
-                        color = c;
-                        break;
-                    }
-                }
-                if (color != 255)
-                    continue;
-                if (palsize < 16)
-                {
-                    palette16[palsize] = rgb;
-                    palsize++;
-                }
-            }
-        }
-    }
+    uint32_t* palette256 = (uint32_t*) ::calloc(256, 4);
+    ExtendPalette16ToPalette256(palette16, palette256, pBits, screenWidth * screenHeight);
 
-    if (!PngFile_WriteHeader(fpFile, 4, screenWidth, screenHeight))
+    if (!PngFile_WriteHeader(fpFile, 8, screenWidth, screenHeight))
     {
-        ::fclose(fpFile);
+        ::free(palette256);  ::fclose(fpFile);
         return false;
     }
 
-    if (!PngFile_WritePalette(fpFile, palette16, palsize))
+    if (!PngFile_WritePalette(fpFile, palette256))
     {
-        ::fclose(fpFile);
+        ::free(palette256);  ::fclose(fpFile);
         return false;
     }
 
-    if (!PngFile_WriteImageData4(fpFile, 0, pBits, palette16, screenWidth, screenHeight))
+    if (!PngFile_WriteImageData8(fpFile, 0, pBits, palette256, screenWidth, screenHeight))
     {
-        ::fclose(fpFile);
+        ::free(palette256);  ::fclose(fpFile);
         return false;
     }
 
     if (!PngFile_WriteEnd(fpFile))
     {
-        ::fclose(fpFile);
+        ::free(palette256);  ::fclose(fpFile);
         return false;
     }
 
+    ::free(palette256);
     ::fclose(fpFile);
     return true;
 }
@@ -409,13 +415,10 @@ int crc_table_computed = 0;
 /* Make the table for a fast CRC. */
 void make_crc_table(void)
 {
-    unsigned long c;
-    int n, k;
-
-    for (n = 0; n < 256; n++)
+    for (int n = 0; n < 256; n++)
     {
-        c = (unsigned long) n;
-        for (k = 0; k < 8; k++)
+        unsigned long c = (unsigned long) n;
+        for (int k = 0; k < 8; k++)
         {
             if (c & 1)
                 c = 0xedb88320L ^ (c >> 1);
