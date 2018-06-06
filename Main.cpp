@@ -91,11 +91,9 @@ int APIENTRY _tWinMain(
                 Emulator_Stop();
             else
             {
-                if (Emulator_SystemFrame())
-                {
-                    ScreenView_RedrawScreen();
-                    //MemoryMapView_RedrawMap();
-                }
+                Emulator_SystemFrame();
+
+                ScreenView_RedrawScreen();
             }
         }
 
@@ -128,7 +126,7 @@ int APIENTRY _tWinMain(
                     nFrameDelay = 1000 / 25 * 4 - 1;
                 else if (Settings_GetRealSpeed() == 0x7fff)  // Speed 50%
                     nFrameDelay = 1000 / 25 * 2 - 1;
-                else if (Settings_GetRealSpeed() == 2)
+                else if (Settings_GetRealSpeed() == 2)  // Speed 200%
                     nFrameDelay = 1000 / 25 / 2 - 1;
                 if (nTimeElapsed > 0 && nTimeElapsed < nFrameDelay)
                 {

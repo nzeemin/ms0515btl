@@ -317,7 +317,7 @@ bool PngFile_SaveScreenshot(
     int screenWidth, int screenHeight)
 {
     ASSERT(pBits != NULL);
-    ASSERT(palette4 != NULL);
+    ASSERT(palette16 != NULL);
     ASSERT(sFileName != NULL);
 
     // Create file

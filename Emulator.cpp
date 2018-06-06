@@ -23,7 +23,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
-CMotherboard* g_pBoard = NULL;
+CMotherboard* g_pBoard = nullptr;
 int g_nEmulatorConfiguration;  // Current configuration
 bool g_okEmulatorRunning = false;
 
@@ -37,15 +37,15 @@ bool m_okEmulatorParallel = false;
 bool m_okEmulatorSerial = false;
 HANDLE m_hEmulatorComPort = INVALID_HANDLE_VALUE;
 
-FILE* m_fpEmulatorParallelOut = NULL;
+FILE* m_fpEmulatorParallelOut = nullptr;
 
 long m_nFrameCount = 0;
 uint32_t m_dwTickCount = 0;
 long m_nUptimeFrameCount = 0;
 uint32_t m_dwTotalFrameCount = 0;
 
-BYTE* g_pEmulatorRam;  // RAM values - for change tracking
-BYTE* g_pEmulatorChangedRam;  // RAM change flags
+uint8_t* g_pEmulatorRam = nullptr;  // RAM values - for change tracking
+uint8_t* g_pEmulatorChangedRam = nullptr;  // RAM change flags
 uint16_t g_wEmulatorCpuPC = 0177777;      // Current PC value
 uint16_t g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 
@@ -62,14 +62,14 @@ void CALLBACK Emulator_SoundGenCallback(uint16_t value);
 //   border         Номер цвета бордюра 0..7
 //   blink          Фаза мерцания
 typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(
-    const BYTE* pVideoBuffer, const uint32_t* pPalette, void* pImageBits,
+    const uint8_t* pVideoBuffer, const uint32_t* pPalette, void* pImageBits,
     bool hires, uint8_t border, bool blink);
 
-void CALLBACK Emulator_PrepareScreen640x200(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
-void CALLBACK Emulator_PrepareScreen360x220(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
-void CALLBACK Emulator_PrepareScreen720x440(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
-void CALLBACK Emulator_PrepareScreen880x660(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
-void CALLBACK Emulator_PrepareScreen1080x660(const BYTE*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen640x200(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen360x220(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen720x440(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen880x660(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen1080x660(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
 
 struct ScreenModeStruct
 {
@@ -103,10 +103,10 @@ const LPCTSTR FILENAME_ROM_MS0515 = _T("ms0515.rom");
 
 //////////////////////////////////////////////////////////////////////
 
-bool Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, uint32_t fileOffset, uint32_t bytesToRead)
+bool Emulator_LoadRomFile(LPCTSTR strFileName, uint8_t* buffer, uint32_t fileOffset, uint32_t bytesToRead)
 {
     FILE* fpRomFile = ::_tfsopen(strFileName, _T("rb"), _SH_DENYWR);
-    if (fpRomFile == NULL)
+    if (fpRomFile == nullptr)
         return false;
 
     ::memset(buffer, 0, bytesToRead);
@@ -130,15 +130,15 @@ bool Emulator_LoadRomFile(LPCTSTR strFileName, BYTE* buffer, uint32_t fileOffset
 
 bool Emulator_Init()
 {
-    ASSERT(g_pBoard == NULL);
+    ASSERT(g_pBoard == nullptr);
 
     CProcessor::Init();
 
     g_pBoard = new CMotherboard();
 
     // Allocate memory for old RAM values
-    g_pEmulatorRam = (BYTE*) ::calloc(65536, 1);
-    g_pEmulatorChangedRam = (BYTE*) ::calloc(65536, 1);
+    g_pEmulatorRam = (uint8_t*) ::calloc(65536, 1);
+    g_pEmulatorChangedRam = (uint8_t*) ::calloc(65536, 1);
 
     g_pBoard->Reset();
 
@@ -149,7 +149,7 @@ bool Emulator_Init()
     }
 
     // Load ROM file
-    BYTE buffer[16384];
+    uint8_t buffer[16384];
     if (!Emulator_LoadRomFile(FILENAME_ROM_MS0515, buffer, 0, 16384))
     {
         AlertWarning(_T("Failed to load the ROM."));
@@ -162,14 +162,14 @@ bool Emulator_Init()
 
 void Emulator_Done()
 {
-    ASSERT(g_pBoard != NULL);
+    ASSERT(g_pBoard != nullptr);
 
     CProcessor::Done();
 
-    //g_pBoard->SetSoundGenCallback(NULL);
-    //SoundGen_Finalize();
+    g_pBoard->SetSoundGenCallback(nullptr);
+    SoundGen_Finalize();
 
-    g_pBoard->SetSerialCallbacks(NULL, NULL);
+    g_pBoard->SetSerialCallbacks(nullptr, nullptr);
     if (m_hEmulatorComPort != INVALID_HANDLE_VALUE)
     {
         ::CloseHandle(m_hEmulatorComPort);
@@ -177,7 +177,7 @@ void Emulator_Done()
     }
 
     delete g_pBoard;
-    g_pBoard = NULL;
+    g_pBoard = nullptr;
 
     // Free memory used for old RAM values
     ::free(g_pEmulatorRam);
@@ -189,7 +189,7 @@ void Emulator_Start()
     g_okEmulatorRunning = true;
 
     // Set title bar text
-    SetWindowText(g_hwnd, _T("MS0515 Back to Life [run]"));
+    MainWindow_UpdateWindowTitle(_T("run"));
     MainWindow_UpdateMenu();
 
     m_nFrameCount = 0;
@@ -200,21 +200,21 @@ void Emulator_Stop()
     g_okEmulatorRunning = false;
     m_wEmulatorCPUBreakpoint = 0177777;
 
-    if (m_fpEmulatorParallelOut != NULL)
+    if (m_fpEmulatorParallelOut != nullptr)
         ::fflush(m_fpEmulatorParallelOut);
 
     // Reset title bar message
-    SetWindowText(g_hwnd, _T("MS0515 Back to Life [stop]"));
+    MainWindow_UpdateWindowTitle(_T("stop"));
     MainWindow_UpdateMenu();
     // Reset FPS indicator
-    MainWindow_SetStatusbarText(StatusbarPartFPS, _T(""));
+    MainWindow_SetStatusbarText(StatusbarPartFPS, nullptr);
 
     MainWindow_UpdateAllViews();
 }
 
 void Emulator_Reset()
 {
-    ASSERT(g_pBoard != NULL);
+    ASSERT(g_pBoard != nullptr);
 
     g_pBoard->Reset();
 
@@ -239,7 +239,7 @@ bool Emulator_IsBreakpoint()
 
 void Emulator_SetSpeed(uint16_t realspeed)
 {
-    WORD speedpercent = 100;
+    uint16_t speedpercent = 100;
     switch (realspeed)
     {
     case 0: speedpercent = 500; break;
@@ -267,7 +267,7 @@ void Emulator_SetSound(bool soundOnOff)
         }
         else
         {
-            g_pBoard->SetSoundGenCallback(NULL);
+            g_pBoard->SetSoundGenCallback(nullptr);
             SoundGen_Finalize();
         }
     }
@@ -275,18 +275,18 @@ void Emulator_SetSound(bool soundOnOff)
     m_okEmulatorSound = soundOnOff;
 }
 
-bool CALLBACK Emulator_SerialIn_Callback(BYTE* pByte)
+bool CALLBACK Emulator_SerialIn_Callback(uint8_t* pByte)
 {
     DWORD dwBytesRead;
-    BOOL result = ::ReadFile(m_hEmulatorComPort, pByte, 1, &dwBytesRead, NULL);
+    BOOL result = ::ReadFile(m_hEmulatorComPort, pByte, 1, &dwBytesRead, nullptr);
 
     return result && (dwBytesRead == 1);
 }
 
-bool CALLBACK Emulator_SerialOut_Callback(BYTE byte)
+bool CALLBACK Emulator_SerialOut_Callback(uint8_t byte)
 {
     DWORD dwBytesWritten;
-    ::WriteFile(m_hEmulatorComPort, &byte, 1, &dwBytesWritten, NULL);
+    ::WriteFile(m_hEmulatorComPort, &byte, 1, &dwBytesWritten, nullptr);
 
     return (dwBytesWritten == 1);
 }
@@ -302,7 +302,7 @@ bool Emulator_SetSerial(bool serialOnOff, LPCTSTR serialPort)
             wsprintf(port, _T("\\\\.\\%s"), serialPort);
 
             // Open port
-            m_hEmulatorComPort = ::CreateFile(port, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+            m_hEmulatorComPort = ::CreateFile(port, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
             if (m_hEmulatorComPort == INVALID_HANDLE_VALUE)
             {
                 uint32_t dwError = ::GetLastError();
@@ -346,7 +346,7 @@ bool Emulator_SetSerial(bool serialOnOff, LPCTSTR serialPort)
         }
         else
         {
-            g_pBoard->SetSerialCallbacks(NULL, NULL);  // Reset callbacks
+            g_pBoard->SetSerialCallbacks(nullptr, nullptr);  // Reset callbacks
 
             // Close port
             if (m_hEmulatorComPort != INVALID_HANDLE_VALUE)
@@ -362,9 +362,9 @@ bool Emulator_SetSerial(bool serialOnOff, LPCTSTR serialPort)
     return true;
 }
 
-bool CALLBACK Emulator_ParallelOut_Callback(BYTE byte)
+bool CALLBACK Emulator_ParallelOut_Callback(uint8_t byte)
 {
-    if (m_fpEmulatorParallelOut != NULL)
+    if (m_fpEmulatorParallelOut != nullptr)
     {
         ::fwrite(&byte, 1, 1, m_fpEmulatorParallelOut);
     }
@@ -384,8 +384,8 @@ void Emulator_SetParallel(bool parallelOnOff)
 
     if (!parallelOnOff)
     {
-        g_pBoard->SetParallelOutCallback(NULL);
-        if (m_fpEmulatorParallelOut != NULL)
+        g_pBoard->SetParallelOutCallback(nullptr);
+        if (m_fpEmulatorParallelOut != nullptr)
             ::fclose(m_fpEmulatorParallelOut);
     }
     else
@@ -420,7 +420,7 @@ int Emulator_SystemFrame()
         MainWindow_SetStatusbarText(StatusbarPartFPS, buffer);
 
         bool floppyEngine = g_pBoard->IsFloppyEngineOn();
-        MainWindow_SetStatusbarText(StatusbarPartFloppyEngine, floppyEngine ? _T("Motor") : NULL);
+        MainWindow_SetStatusbarText(StatusbarPartFloppyEngine, floppyEngine ? _T("Motor") : nullptr);
 
         m_nFrameCount = 0;
         m_dwTickCount = dwCurrentTicks;
@@ -460,13 +460,13 @@ void Emulator_OnUpdate()
 
     // Update memory change flags
     {
-        BYTE* pOld = g_pEmulatorRam;
-        BYTE* pChanged = g_pEmulatorChangedRam;
+        uint8_t* pOld = g_pEmulatorRam;
+        uint8_t* pChanged = g_pEmulatorChangedRam;
         uint16_t addr = 0;
         do
         {
-            BYTE newvalue = g_pBoard->GetLORAMByte(addr);  //TODO
-            BYTE oldvalue = *pOld;
+            uint8_t newvalue = g_pBoard->GetLORAMByte(addr);  //TODO
+            uint8_t oldvalue = *pOld;
             *pChanged = (newvalue != oldvalue) ? 255 : 0;
             *pOld = newvalue;
             addr++;
@@ -494,10 +494,10 @@ void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei)
 
 void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
 {
-    if (pImageBits == NULL) return;
+    if (pImageBits == nullptr) return;
 
-    const BYTE* pVideoBuffer = g_pBoard->GetVideoBuffer();
-    ASSERT(pVideoBuffer != NULL);
+    const uint8_t* pVideoBuffer = g_pBoard->GetVideoBuffer();
+    ASSERT(pVideoBuffer != nullptr);
 
     // Render to bitmap
     bool hires = g_pBoard->GetPortView(0177604) & 010;
@@ -519,7 +519,7 @@ const uint32_t * Emulator_GetPalette()
 #define AVERAGERGB13(a, b)  ( ((a) == (b)) ? a : (((a) & 0xfcfcfcffUL) >> 2) + ((b) - (((b) & 0xfcfcfcffUL) >> 2)) )
 
 void CALLBACK Emulator_PrepareScreen640x200(
-    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
+    const uint8_t* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     if (!hires)
     {
@@ -574,7 +574,7 @@ void CALLBACK Emulator_PrepareScreen640x200(
 
 // 320x200 plus 15 pix border at left/right, plus 10 pix border at top/bottom
 void CALLBACK Emulator_PrepareScreen360x220(
-    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
+    const uint8_t* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
@@ -635,7 +635,7 @@ void CALLBACK Emulator_PrepareScreen360x220(
 
 // 640x400, plus 40 pix border at left/right, plus 20 pix border at top/bottom
 void CALLBACK Emulator_PrepareScreen720x440(
-    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
+    const uint8_t* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
@@ -694,7 +694,7 @@ void CALLBACK Emulator_PrepareScreen720x440(
 
 // 800x600 plus 40 pix border for left/right sides, 30 pix border for top/bottom
 void CALLBACK Emulator_PrepareScreen880x660(
-    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
+    const uint8_t* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
@@ -775,7 +775,7 @@ void CALLBACK Emulator_PrepareScreen880x660(
 
 // 960x600 plus 60 pix border for left/right sides, 30 pix border for top/bottom
 void CALLBACK Emulator_PrepareScreen1080x660(
-    const BYTE* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
+    const uint8_t* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
 {
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
@@ -858,12 +858,12 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
 {
     // Create file
     FILE* fpFile = ::_tfsopen(sFilePath, _T("w+b"), _SH_DENYWR);
-    if (fpFile == NULL)
+    if (fpFile == nullptr)
         return false;
 
     // Allocate memory
-    BYTE* pImage = (BYTE*) ::calloc(MS0515IMAGE_SIZE, 1);
-    if (pImage == NULL)
+    uint8_t* pImage = (uint8_t*) ::calloc(MS0515IMAGE_SIZE, 1);
+    if (pImage == nullptr)
     {
         ::fclose(fpFile);
         return false;
@@ -896,7 +896,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
 
     // Open file
     FILE* fpFile = ::_tfsopen(sFilePath, _T("rb"), _SH_DENYWR);
-    if (fpFile == NULL)
+    if (fpFile == nullptr)
         return false;
 
     // Read header
@@ -911,8 +911,8 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check version and size
 
     // Allocate memory
-    BYTE* pImage = (BYTE*) ::calloc(MS0515IMAGE_SIZE, 1);
-    if (pImage == NULL)
+    uint8_t* pImage = (uint8_t*) ::calloc(MS0515IMAGE_SIZE, 1);
+    if (pImage == nullptr)
     {
         ::fclose(fpFile);
         return false;

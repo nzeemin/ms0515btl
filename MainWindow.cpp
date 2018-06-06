@@ -233,11 +233,12 @@ BOOL MainWindow_InitStatusbar()
     if (! m_hwndStatusbar)
         return FALSE;
 
-    int statusbarParts[4];
-    statusbarParts[0] = 380;
+    int statusbarParts[5];
+    statusbarParts[0] = 300;
     statusbarParts[1] = statusbarParts[0] + 50;  // Motor
     statusbarParts[2] = statusbarParts[1] + 50;  // FPS
-    statusbarParts[3] = -1;
+    statusbarParts[3] = statusbarParts[2] + 105; // Uptime
+    statusbarParts[4] = -1;
     SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
 
     return TRUE;
@@ -314,6 +315,13 @@ void MainWindow_RestorePositionAndShow()
 
     //if (Settings_GetWindowFullscreen())
     //    MainWindow_DoViewFullscreen();
+}
+
+void MainWindow_UpdateWindowTitle(LPCTSTR emustate)
+{
+    TCHAR buffer[100];
+    wsprintf(buffer, _T("%s [%s]"), g_szTitle, emustate);
+    SetWindowText(g_hwnd, buffer);
 }
 
 // Processes messages for the main window
