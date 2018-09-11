@@ -144,8 +144,6 @@ void SoundGen_SetSpeed(WORD speedpercent)
 
 void CALLBACK SoundGen_FeedDAC(WORD value)
 {
-    WAVEHDR* current;
-
     if (!m_SoundGenInitialized)
         return;
 
@@ -154,7 +152,7 @@ void CALLBACK SoundGen_FeedDAC(WORD value)
 
     if (bufcurpos >= BUFSIZE)
     {
-        current = &waveBlocks[waveCurrentBlock];
+        WAVEHDR* current = &waveBlocks[waveCurrentBlock];
 
         if (current->dwFlags & WHDR_PREPARED)
             waveOutUnprepareHeader(hWaveOut, current, sizeof(WAVEHDR));

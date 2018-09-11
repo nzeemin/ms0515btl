@@ -27,12 +27,14 @@ CMotherboard::CMotherboard ()
     m_pFloppyCtl = NULL;
     m_pKeyboard = new CKeyboard();
 
+    m_CPUbp = 0177777;
     m_dwTrace = TRACE_NONE;
     m_SoundGenCallback = NULL;
     m_SerialInCallback = NULL;
     m_SerialOutCallback = NULL;
     m_ParallelOutCallback = NULL;
     m_okTimer50OnOff = false;
+    m_okSoundOnOff = false;
 
     // Allocate memory for RAM and ROM
     m_pRAM = (uint8_t*) ::calloc(128 * 1024, 1);
@@ -981,8 +983,8 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     m_Port177440 = *pwImage++;
     m_Port177442r = *pwImage++;
     m_Port177460 = *pwImage++;
-    *pwImage++;  // Reserved for port 177600
-    *pwImage++;  // Reserved for port 177602
+    pwImage++;  // Reserved for port 177600
+    pwImage++;  // Reserved for port 177602
     m_Port177604 = *pwImage++;
     pwImage += 8;  // RESERVED
     pwImage++;

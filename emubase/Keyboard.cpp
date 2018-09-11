@@ -18,6 +18,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 CKeyboard::CKeyboard()
 {
+    memset(m_Queue, 0, sizeof(m_Queue));
     m_nQueueLength = 0;
     m_nTxCounter = 0;
 }

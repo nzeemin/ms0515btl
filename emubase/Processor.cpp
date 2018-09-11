@@ -1568,12 +1568,12 @@ void CProcessor::ExecuteCMP ()
     {
         uint8_t src;
         uint8_t src2;
-        uint8_t dst;
+        //uint8_t dst;
 
         src = m_methsrc ? GetByte(GetByteAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
         src2 = m_methdest ? GetByte(GetByteAddr(m_methdest, m_regdest)) : GetReg(m_regdest);
 
-        dst = src - src2;
+        //dst = src - src2;
         SetN( CheckForNegative((uint8_t)(src - src2)) );
         SetZ( CheckForZero((uint8_t)(src - src2)) );
         SetV( CheckSubForOverflow (src, src2) );
@@ -1585,12 +1585,12 @@ void CProcessor::ExecuteCMP ()
     {
         uint16_t src;
         uint16_t src2;
-        uint16_t dst;
+        //uint16_t dst;
 
         src = m_methsrc ? GetWord(GetWordAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
         src2 = m_methdest ? GetWord(GetWordAddr(m_methdest, m_regdest)) : GetReg(m_regdest);
 
-        dst = src - src2;
+        //dst = src - src2;
 
         SetN( CheckForNegative ((uint16_t)(src - src2)) );
         SetZ( CheckForZero ((uint16_t)(src - src2)) );
@@ -1743,7 +1743,6 @@ void CProcessor::ExecuteADD ()  // ADD
     uint16_t src;
     uint16_t src2;
     signed short dst;
-    signed long dst2;
     uint16_t ea;
 
     src = m_methsrc ? GetWord(GetWordAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
@@ -1755,7 +1754,6 @@ void CProcessor::ExecuteADD ()  // ADD
     SetC(CheckAddForCarry (src2, src));
 
     dst = src2 + src;
-    dst2 = (short)src2 + (short)src;
 
     if (m_methdest)
         SetWord(ea, dst);
@@ -1871,7 +1869,7 @@ void CProcessor::LoadFromImage(const uint8_t* pImage)
     m_okStopped = (*pwImage++ != 0);
     m_waitmode = (*pwImage++ != 0);
     m_stepmode = (*pwImage++ != 0);
-    pwImage++;
+    //pwImage++;
 }
 
 uint16_t CProcessor::GetWordAddr (uint8_t meth, uint8_t reg)

@@ -294,9 +294,9 @@ void ScreenView_ScanKeyboard()
         BYTE keys[256];
         VERIFY(::GetKeyboardState(keys));
 
-        BOOL okShift = ((keys[VK_SHIFT] & 128) != 0);
+        //BOOL okShift = ((keys[VK_SHIFT] & 128) != 0);
         BOOL okCtrl = ((keys[VK_CONTROL] & 128) != 0);
-        HKL hkl = ::GetKeyboardLayout(0);
+        //HKL hkl = ::GetKeyboardLayout(0);
 
         // Check every key for state change
         for (int scan = 0; scan < 256; scan++)
@@ -333,7 +333,7 @@ void ScreenView_ProcessKeyboard()
     if (keyevent != 0)
     {
         bool pressed = ((keyevent & 0x8000) != 0);
-        bool ctrl = ((keyevent & 0x4000) != 0);
+        //bool ctrl = ((keyevent & 0x4000) != 0);
         BYTE scan = LOBYTE(keyevent);
 
 //#if !defined(PRODUCT)

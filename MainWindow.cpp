@@ -408,8 +408,6 @@ void MainWindow_AdjustWindowSize()
 
     // Get metrics
     RECT rcWorkArea;  SystemParametersInfo(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
-    int cxBorder  = ::GetSystemMetrics(SM_CXBORDER);
-    int cyBorder  = ::GetSystemMetrics(SM_CYBORDER);
     int cxFrame   = ::GetSystemMetrics(SM_CXDLGFRAME);
     int cyFrame   = ::GetSystemMetrics(SM_CYDLGFRAME);
     int cyCaption = ::GetSystemMetrics(SM_CYCAPTION);

@@ -87,6 +87,7 @@ CFloppyController::CFloppyController()
     m_drive = -1;  m_pDrive = NULL;
     m_track = 0;
     m_motoron = false;
+    m_okTrace = false;
     m_opercount = 0;
     m_trackchanged = false;
     m_status = m_tshift = 0;
@@ -672,8 +673,6 @@ void CFloppyController::PrepareTrack()
     if (m_okTrace) DebugLogFormat(_T("Floppy%d PREPARE TRACK %d\r\n"), m_drive, m_track);
 #endif
 
-    uint32_t count;
-
     m_trackchanged = false;
     m_pDrive->dataptr = 0;
     m_pDrive->datatrack = m_track;
@@ -684,7 +683,7 @@ void CFloppyController::PrepareTrack()
     if (m_pDrive->fpFile != NULL)
     {
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        count = ::fread(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
+        size_t count = ::fread(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
         //TODO: Контроль ошибок чтения
     }
 
@@ -731,7 +730,7 @@ void CFloppyController::FlushChanges()
     if (decoded)  // Write to the file only if the track was correctly decoded from raw data
     {
         // Track has 10 sectors, 512 bytes each
-        long foffset = foffset = m_pDrive->datatrack * FLOPPY_TRACKSIZE;
+        long foffset = m_pDrive->datatrack * FLOPPY_TRACKSIZE;
 
 //        // Check file length
 //        ::fseek(m_pDrive->fpFile, 0, SEEK_END);
@@ -748,7 +747,7 @@ void CFloppyController::FlushChanges()
 
         // Save data into the file
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        uint32_t dwBytesWritten = ::fwrite(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
+        size_t dwBytesWritten = ::fwrite(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
         //TODO: Проверка на ошибки записи
     }
     else

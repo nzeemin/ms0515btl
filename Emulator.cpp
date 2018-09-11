@@ -610,7 +610,6 @@ void CALLBACK Emulator_PrepareScreen360x220(
         }
         else  // hires
         {
-            uint32_t colorborder = palette[(border & 7) + 16];
             uint32_t colorpaper = palette[border & 7];
             uint32_t colorink = palette[(border & 7) ^ 7];
             const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
