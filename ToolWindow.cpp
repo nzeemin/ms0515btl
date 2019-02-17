@@ -205,7 +205,7 @@ void SplitterWindow_MoveWindows(HWND hwndSplitter, int deltaY)
 
 void SplitterWindow_DrawRect(HWND hwndSplitter, int Y1, int Y2)
 {
-    int deltaY1 = Y1 - m_SplitterWindow_MovingStartY;
+    //int deltaY1 = Y1 - m_SplitterWindow_MovingStartY;
 
     RECT rc;  GetWindowRect(hwndSplitter, &rc);
     rc.top += Y1;  rc.bottom += Y1;
@@ -257,7 +257,7 @@ LRESULT CALLBACK SplitterWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, 
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
-    return (LRESULT)FALSE;
+    //return (LRESULT)FALSE;
 }
 
 

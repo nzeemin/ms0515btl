@@ -49,11 +49,11 @@ protected:  // Processor state
 protected:  // Current instruction processing
     uint16_t    m_instruction;      // Curent instruction
     uint16_t    m_instructionpc;    // Address of the current instruction
-    int         m_regsrc;           // Source register number
-    int         m_methsrc;          // Source address mode
+    uint8_t     m_regsrc;           // Source register number
+    uint8_t     m_methsrc;          // Source address mode
     uint16_t    m_addrsrc;          // Source address
-    int         m_regdest;          // Destination register number
-    int         m_methdest;         // Destination address mode
+    uint8_t     m_regdest;          // Destination register number
+    uint8_t     m_methdest;         // Destination address mode
     uint16_t    m_addrdest;         // Destination address
 
 protected:  // Interrupt processing
@@ -121,8 +121,6 @@ protected:  // Implementation
     void        FetchInstruction();      // Read next instruction
     void        TranslateInstruction();  // Execute the instruction
 protected:  // Implementation - instruction processing
-    uint16_t    CalculateOperAddr (int meth, int reg);
-    uint16_t    CalculateOperAddrSrc (int meth, int reg);
     uint8_t     GetByteSrc();
     uint8_t     GetByteDest();
     void        SetByteDest(uint8_t);
@@ -156,9 +154,9 @@ protected:
     uint16_t	GetByteAddr (uint8_t meth, uint8_t reg);
 
 protected:  // Implementation - instruction execution
-    void        ExecuteUNKNOWN ();  // Нет такой инструкции - просто вызывается TRAP 10
+    void        ExecuteUNKNOWN ();  // There is no such instruction -- just call TRAP 10
 
-    // Одноадресные команды
+    // One field
     void        ExecuteCLR ();
     void        ExecuteCOM ();
     void        ExecuteINC ();
@@ -175,7 +173,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteSWAB ();
     void        ExecuteMTPS ();
     void        ExecuteMFPS ();
-    // Двухадресные команды
+    // Two fields
     void        ExecuteMOV ();
     void        ExecuteCMP ();
     void        ExecuteADD ();
@@ -184,7 +182,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteBIC ();
     void        ExecuteBIS ();
     void        ExecuteXOR ();
-    // Команды управления программой
+    // Branching
     void        ExecuteBR ();
     void        ExecuteBNE ();
     void        ExecuteBEQ ();
@@ -204,7 +202,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteJSR ();
     void        ExecuteRTS ();
     void        ExecuteSOB ();
-    // Команды прерывания программы
+    // Interrupts
     void        ExecuteEMT ();
     void        ExecuteTRAP ();
     void        ExecuteIOT ();
@@ -215,7 +213,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteWAIT ();
     void        ExecuteRESET ();
     void        ExecuteMFPT();
-    // Команды изменения признаков
+    // Flags
     void        ExecuteCLC ();
     void        ExecuteCLV ();
     void        ExecuteCLVC ();
@@ -271,7 +269,7 @@ inline void CProcessor::SetZ (bool bFlag)
 // PSW bits calculations - implementation
 inline bool CProcessor::CheckAddForOverflow (uint8_t a, uint8_t b)
 {
-#ifdef _M_IX86
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -295,7 +293,7 @@ inline bool CProcessor::CheckAddForOverflow (uint8_t a, uint8_t b)
 }
 inline bool CProcessor::CheckAddForOverflow (uint16_t a, uint16_t b)
 {
-#ifdef _M_IX86
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -317,11 +315,10 @@ inline bool CProcessor::CheckAddForOverflow (uint16_t a, uint16_t b)
     return ((~a ^ b) & (a ^ sum)) & 0100000;
 #endif
 }
-//void        CProcessor::SetReg(int regno, uint16_t word)
 
 inline bool CProcessor::CheckSubForOverflow (uint8_t a, uint8_t b)
 {
-#ifdef _M_IX86
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -345,7 +342,7 @@ inline bool CProcessor::CheckSubForOverflow (uint8_t a, uint8_t b)
 }
 inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 {
-#ifdef _M_IX86
+#if defined(_M_IX86) && defined(_MSC_VER) && !defined(_MANAGED)
     bool bOverflow = false;
     _asm
     {
@@ -370,22 +367,22 @@ inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 inline bool CProcessor::CheckAddForCarry (uint8_t a, uint8_t b)
 {
     uint16_t sum = (uint16_t)a + (uint16_t)b;
-    return HIBYTE (sum) != 0;
+    return (uint8_t)((sum >> 8) & 0xff) != 0;
 }
 inline bool CProcessor::CheckAddForCarry (uint16_t a, uint16_t b)
 {
     uint32_t sum = (uint32_t)a + (uint32_t)b;
-    return HIWORD (sum) != 0;
+    return (uint16_t)((sum >> 16) & 0xffff) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint8_t a, uint8_t b)
 {
     uint16_t sum = (uint16_t)a - (uint16_t)b;
-    return HIBYTE (sum) != 0;
+    return (uint8_t)((sum >> 8) & 0xff) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint16_t a, uint16_t b)
 {
     uint32_t sum = (uint32_t)a - (uint32_t)b;
-    return HIWORD (sum) != 0;
+    return (uint16_t)((sum >> 16) & 0xffff) != 0;
 }
 
 

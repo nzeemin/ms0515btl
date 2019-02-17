@@ -302,8 +302,8 @@ bool CMotherboard::SystemFrame()
     const int frameProcTicks = 15;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
     const int floppyTicks = 32;
-    const int serialOutTicks = 20000 / (9600 / 25);
-    int serialTxCount = 0;
+    //const int serialOutTicks = 20000 / (9600 / 25);
+    //int serialTxCount = 0;
     const int keyboardTicks = 20000 / (4950 / 25);
     int keyboardTxCount = 0;
 
@@ -590,7 +590,7 @@ void CMotherboard::SetByte(uint16_t address, uint8_t byte)
     ASSERT(false);  // If we are here - then addrtype has invalid value
 }
 
-int CMotherboard::TranslateAddress(uint16_t address, bool okExec, uint16_t* pOffset)
+int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* pOffset)
 {
     int window = (address >> 13) & 7;  // Ќомер запрашиваемого окна в основной пам€ти 0..7
 
@@ -1071,7 +1071,7 @@ void CMotherboard::SetParallelOutCallback(PARALLELOUTCALLBACK outcallback)
 
 #if !defined(PRODUCT)
 
-void TraceInstruction(CProcessor* pProc, CMotherboard* pBoard, uint16_t address, DWORD dwTrace)
+void TraceInstruction(CProcessor* /*pProc*/, CMotherboard* pBoard, uint16_t address, DWORD dwTrace)
 {
     uint16_t memory[4];
     int addrtype = ADDRTYPE_RAM;

@@ -86,6 +86,7 @@ BOOL InputBoxOctal(HWND hwndOwner, LPCTSTR strTitle, LPCTSTR strPrompt, WORD* pV
 
 INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
     case WM_INITDIALOG:
@@ -213,7 +214,7 @@ void Dialogs_DoCreateDisk()
     ::CloseHandle(hFile);
 
     ::MessageBox(g_hwnd, _T("New disk file created successfully.\nPlease initialize the disk using INIT command."),
-            _T("MS0515BTL"), MB_OK | MB_ICONINFORMATION);
+            g_szTitle, MB_OK | MB_ICONINFORMATION);
 }
 
 
@@ -258,6 +259,7 @@ void FillDebugFontCombo(HWND hCombo)
 
 INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    UNREFERENCED_PARAMETER(lParam);
     switch (message)
     {
     case WM_INITDIALOG:

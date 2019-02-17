@@ -39,9 +39,6 @@
     <ClInclude Include="emubase\Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="emubase\Disasm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="emubase\Emubase.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -63,7 +63,7 @@ void CTimer8253::Reset()
 void CTimer8253::WriteCommand(uint8_t data)
 {
     int channel = (data >> 6) & 3;
-    if (channel = 3) channel = 2;  // channel = 0..2
+    if (channel == 3) channel = 2;  // channel = 0..2
     CTimerChannel * timer = m_timers + channel;
 
     if (CTRL_ACCESS(data) == 0)
@@ -124,7 +124,7 @@ uint8_t CTimer8253::Read(int channel)
             if (timer->wmsb)
                 data = ~timer->lowcount;
             else
-                data = value >> (timer->rmsb ? 8 : 0);
+                data = (uint8_t)(value >> (timer->rmsb ? 8 : 0));
             timer->rmsb = 1 - timer->rmsb;
             break;
         }
@@ -259,7 +259,7 @@ void decrease_counter_value(CTimerChannel* timer)
     uint8_t hundreds = (value >> 8) & 0xf;
     uint8_t thousands = (value >> 12) & 0xf;
     units--;
-    if (units = 255)
+    if (units == 255)
     {
         units = 9;  tens--;
         if (tens == 255)

@@ -67,19 +67,16 @@ protected:
     CFloppyDrive m_drivedata[8];  // Четыре привода по две стороны
     int m_drive;            // Drive number: from 0 to 7; -1 if not selected
     CFloppyDrive* m_pDrive; // Current drive; NULL if not selected
-    bool m_trackchanged;    // TRUE = data was changed - need to save it into the file
     bool m_motoron;         // Motor ON flag
-    bool m_okTrace;         // Trace mode on/off
-
     int  m_opercount;       // Operation counter - countdown of current operation stage
     int  m_tshift;
     int  m_state;
     int  m_statenext;
     uint8_t m_cmd;
     uint8_t m_data;
-    int m_track;            // Track number: from 0 to ??
-    int m_side;
-    int m_sector;
+    uint16_t m_track;       // Track number: from 0 to ??
+    uint16_t m_side;
+    uint16_t m_sector;
     int m_direction;
     uint8_t m_rqs;
     uint16_t m_status;      // See FLOPPY_ST_XXX defines
@@ -89,6 +86,8 @@ protected:
     int  m_rwlen;
     uint16_t m_crc;
     int  m_startcrc;
+    bool m_trackchanged;    // TRUE = data was changed - need to save it into the file
+    bool m_okTrace;         // Trace mode on/off
 
 public:
     CFloppyController();
@@ -103,8 +102,8 @@ public:
     bool IsEngineOn() const { return m_motoron; }
     uint16_t GetStatus();           // Reading status
     uint16_t GetData();             // Reading data
-    uint8_t  GetTrack() const { return m_track; }
-    uint8_t  GetSector() const { return m_sector; }
+    uint8_t  GetTrack() const { return (uint8_t)m_track; }
+    uint8_t  GetSector() const { return (uint8_t)m_sector; }
     uint16_t GetStateView() const { return m_status; }  // Get state value for debugger
     uint16_t GetDataView() const { return m_data; }  // Get data value for debugger
     void SetControl(uint8_t data);

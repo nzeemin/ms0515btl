@@ -37,7 +37,7 @@ void ClearConsole();
 void PrintConsolePrompt();
 void PrintRegister(LPCTSTR strName, WORD value);
 void PrintMemoryDump(CProcessor* pProc, WORD address, int lines);
-void SaveMemoryDump(CProcessor* pProc);
+BOOL SaveMemoryDump();
 void DoConsoleCommand();
 void ConsoleView_AdjustWindowLayout();
 LRESULT CALLBACK ConsoleEditWndProc(HWND, UINT, WPARAM, LPARAM);
@@ -272,43 +272,49 @@ void PrintRegister(LPCTSTR strName, WORD value)
     ConsoleView_Print(buffer);
 }
 
-void SaveMemoryDump(CProcessor *pProc)
+BOOL SaveMemoryDump()
 {
-    // Create file
-    HANDLE file;
-    file = CreateFile(_T("memdump.bin"),
+    const TCHAR fname[] = _T("memdump.bin");
+    HANDLE file = ::CreateFile(fname,
             GENERIC_WRITE, FILE_SHARE_READ, NULL,
             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-    //SetFilePointer(Common_LogFile, 0, NULL, FILE_END);
 
     WORD buf[32768];
     DWORD dwBytesWritten = 0;
 
     for (int i = 0; i < 32768; i++)
     {
-        buf[i] = g_pBoard->GetWord(i * 2, TRUE);
+        buf[i] = g_pBoard->GetLORAMWord(WORD(i * 2));
     }
-    WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
+    ::WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
+    if (dwBytesWritten != 65536)
+    {
+        ::CloseHandle(file);
+        return FALSE;
+    }
 
     for (int i = 0; i < 32768; i++)
     {
-        buf[i] = g_pBoard->GetHIRAMWord(i * 2);
+        buf[i] = g_pBoard->GetHIRAMWord(WORD(i * 2));
     }
-    WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
 
-    CloseHandle(file);
+    ::WriteFile(file, buf, 65536, &dwBytesWritten, NULL);
+    ::CloseHandle(file);
+    if (dwBytesWritten != 65536)
+        return FALSE;
+
+    return TRUE;
 }
 
 // Print memory dump
-void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
+void PrintMemoryDump(CProcessor* /*pProc*/, WORD address, int lines)
 {
     address &= ~1;  // Line up to even address
 
     for (int line = 0; line < lines; line++)
     {
         WORD dump[8];
-        for (int i = 0; i < 8; i++)
+        for (uint16_t i = 0; i < 8; i++)
             dump[i] = g_pBoard->GetWord(address + i * 2);
 
         TCHAR buffer[2 + 6 + 2 + 7 * 8 + 1 + 16 + 1 + 2];
@@ -347,22 +353,22 @@ void PrintMemoryDump(CProcessor* pProc, WORD address, int lines)
 }
 // Print disassembled instructions
 // Return value: number of words disassembled
-int PrintDisassemble(CProcessor* pProc, WORD address, BOOL okOneInstr, BOOL okShort)
+uint16_t PrintDisassemble(CProcessor* /*pProc*/, WORD address, BOOL okOneInstr, BOOL okShort)
 {
     const int nWindowSize = 30;
     WORD memory[nWindowSize + 2];
     int addrtype;
-    for (int i = 0; i < nWindowSize + 2; i++)
+    for (uint16_t i = 0; i < nWindowSize + 2; i++)
         memory[i] = g_pBoard->GetWordView(address + i * 2, TRUE, &addrtype);
 
     TCHAR bufaddr[7];
     TCHAR bufvalue[7];
     TCHAR buffer[64];
 
-    int totalLength = 0;
+    uint16_t totalLength = 0;
     int lastLength = 0;
     int length = 0;
-    for (int index = 0; index < nWindowSize; index++)  // Рисуем строки
+    for (int index = 0; index < nWindowSize; index++)  // Draw strings
     {
         PrintOctalValue(bufaddr, address);
         WORD value = memory[index];
@@ -539,8 +545,8 @@ void DoConsoleCommand()
         }
         else if (command[1] == _T('o'))  // "so" - Step Over
         {
-            int instrLength = PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
-            WORD bpaddress = pProc->GetPC() + instrLength * 2;
+            uint16_t instrLength = PrintDisassemble(pProc, pProc->GetPC(), TRUE, FALSE);
+            uint16_t bpaddress = pProc->GetPC() + instrLength * 2;
 
             Emulator_SetCPUBreakpoint(bpaddress);
             Emulator_Start();
@@ -567,14 +573,14 @@ void DoConsoleCommand()
                 break;
             }
 
-            int length = PrintDisassemble(pProc, address, FALSE, okShort);
+            uint16_t length = PrintDisassemble(pProc, address, FALSE, okShort);
             TCHAR buffer[32];  buffer[0] = command[0];
             PrintOctalValue(buffer + 1, address + length * 2);
             SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM)buffer);
         }
         break;
     case _T('u'):
-        SaveMemoryDump(pProc);
+        SaveMemoryDump();
         break;
     case _T('m'):
         if (command[1] == 0)  // "m" - dump memory at current address

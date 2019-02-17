@@ -449,7 +449,7 @@ void MemoryView_Scroll(int nDelta)
 {
     if (nDelta == 0) return;
 
-    m_wBaseAddress += nDelta;
+    m_wBaseAddress = (WORD)(m_wBaseAddress + nDelta);
     m_wBaseAddress = m_wBaseAddress & ((WORD)~1);
     Settings_SetDebugMemoryAddress(m_wBaseAddress);
 

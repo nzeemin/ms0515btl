@@ -41,7 +41,7 @@ void DebugView_DoDraw(HDC hdc);
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw);
 void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y, WORD oldValue);
-void DebugView_DrawPorts(HDC hdc, const CMotherboard* pBoard, int x, int y);
+void DebugView_DrawPorts(HDC hdc, int x, int y);
 void DebugView_UpdateWindowText();
 
 
@@ -266,7 +266,7 @@ void DebugView_DoDraw(HDC hdc)
     // Draw stack for the current processor
     DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 35 * cxChar, 2 + 0 * cyLine, oldSP);
 
-    DebugView_DrawPorts(hdc, g_pBoard, 30 + 57 * cxChar, 2 + 0 * cyLine);
+    DebugView_DrawPorts(hdc, 30 + 57 * cxChar, 2 + 0 * cyLine);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -353,26 +353,26 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     // Читаем из памяти процессора в буфер
     WORD memory[16];
     int addrtype[16];
-    for (int idx = 0; idx < 16; idx++)
+    for (uint16_t idx = 0; idx < 16; idx++)
     {
         memory[idx] = g_pBoard->GetWordView(
                 current + idx * 2 - 14, okExec, addrtype + idx);
     }
 
     WORD address = current - 14;
-    for (int index = 0; index < 14; index++)    // Рисуем строки
+    for (int index = 0; index < 14; index++)    // Draw strings
     {
-        // Адрес
+        // Address
         SetTextColor(hdc, colorText);
         DrawOctalValue(hdc, x + 4 * cxChar, y, address);
 
-        // Значение по адресу
+        // Value at the address
         WORD value = memory[index];
         WORD wChanged = Emulator_GetChangeRamStatus(address);
         SetTextColor(hdc, (wChanged != 0) ? COLOR_RED : colorText);
         DrawOctalValue(hdc, x + 12 * cxChar, y, value);
 
-        // Текущая позиция
+        // Current position
         if (address == current)
         {
             SetTextColor(hdc, colorText);
@@ -393,7 +393,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     SetTextColor(hdc, colorOld);
 }
 
-void DebugView_DrawPorts(HDC hdc, const CMotherboard* pBoard, int x, int y)
+void DebugView_DrawPorts(HDC hdc, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 

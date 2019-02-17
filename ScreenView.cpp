@@ -130,7 +130,7 @@ void ScreenView_Create(HWND hwndParent, int x, int y)
     g_hwndScreen = CreateWindow(
             CLASSNAME_SCREENVIEW, NULL,
             WS_CHILD | WS_VISIBLE,
-            xLeft, 0, cxWidth, cyHeight,
+            xLeft, yTop, cxWidth, cyHeight,
             hwndParent, NULL, g_hInst, NULL);
 
     // Initialize m_ScreenKeyState

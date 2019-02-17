@@ -13,7 +13,6 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #include "stdafx.h"
 #include "Processor.h"
-#include "Disasm.h"
 
 
 // Timings ///////////////////////////////////////////////////////////
@@ -250,7 +249,7 @@ void CProcessor::Execute()
     }
     else  // Processing interrupts
     {
-        while (true)
+        for (;;)
         {
             m_TBITrq = (m_psw & 020);  // T-bit
 
@@ -370,149 +369,6 @@ void CProcessor::MemoryError()
 
 
 //////////////////////////////////////////////////////////////////////
-
-
-// Вычисление адреса операнда, в зависимости от метода адресации
-//   meth - метод адресации
-//   reg  - номер регистра
-uint16_t CProcessor::CalculateOperAddrSrc (int meth, int reg)
-{
-    uint16_t arg;
-
-    switch (meth)
-    {
-    case 0:  // R0,     PC
-        return GetReg(reg);
-    case 1:  // (R0),   (PC)
-        return GetReg(reg);
-    case 2:  // (R0)+,  #012345
-        //if(reg==7) // is it immediate?
-        //	arg = GetWord(GetReg(reg));
-        //else
-        arg = GetReg(reg);
-        if ((m_instruction & 0100000) && (reg < 6))
-            SetReg(reg, GetReg(reg) + 1);
-        else
-            SetReg(reg, GetReg(reg) + 2);
-        return arg;
-    case 3:  // @(R0)+, @#012345
-        //if(reg==7) //abs index
-        //	arg =  GetWord(GetWord(GetReg(reg))) ;
-        //else
-        arg =  GetWord(GetReg(reg)) ;
-        //if ((m_instruction & 0100000)&&(reg!=7))
-        //		SetReg(reg, GetReg(reg) + 1);
-        //		else
-        SetReg(reg, GetReg(reg) + 2);
-        return arg;
-    case 4:  // -(R0),  -(PC)
-        if ((m_instruction & 0100000) && (reg < 6))
-            SetReg(reg, GetReg(reg) - 1);
-        else
-            SetReg(reg, GetReg(reg) - 2);
-        return GetReg(reg);
-    case 5:  // @-(R0), @-(PC)
-        //		if (m_instruction & 0100000)
-        //			SetReg(reg, GetReg(reg) - 1);
-        //		else
-        SetReg(reg, GetReg(reg) - 2);
-        return  GetWord(GetReg(reg));
-    case 6:    // 345(R0),  345
-        {
-            uint16_t pc = 0;
-            //if(reg==7) //relative direct
-            //	pc = GetWord(GetWordExec( GetPC() ));
-            //else
-            pc = (GetWordExec( GetPC() ));
-
-            SetPC( GetPC() + 2 );
-            arg = (uint16_t)(pc + GetReg(reg));
-            return arg;
-        }
-    case 7:    // @345(R0),@345
-        {
-            uint16_t pc;
-            //if(reg==7) //relative direct
-            //	pc = GetWord(GetWordExec( GetPC() ));
-            //else
-            pc = GetWordExec( GetPC() );
-            SetPC( GetPC() + 2 );
-            arg = ( GetWord(pc + GetReg(reg)) );
-            return arg;
-        }
-    }
-
-    return 0;
-}
-
-uint16_t CProcessor::CalculateOperAddr (int meth, int reg)
-{
-    uint16_t arg;
-    switch (meth)
-    {
-    case 0:  // R0,     PC
-        return reg;
-    case 1:  // (R0),   (PC)
-        return GetReg(reg);
-    case 2:  // (R0)+,  #012345
-        //if(reg==7) // is it immediate?
-        //	arg = GetWord(GetReg(reg));
-        //else
-        arg = GetReg(reg);
-        if ((m_instruction & 0100000) && (reg < 6))
-            SetReg(reg, GetReg(reg) + 1);
-        else
-            SetReg(reg, GetReg(reg) + 2);
-        return arg;
-    case 3:  // @(R0)+, @#012345
-        //if(reg==7) //abs index
-        //arg =  GetWord(GetWord(GetReg(reg))) ;
-        //else
-        arg =  GetWord(GetReg(reg)) ;
-        //if ((m_instruction & 0100000)&&(reg!=7))
-        //	SetReg(reg, GetReg(reg) + 1);
-        //else
-        SetReg(reg, GetReg(reg) + 2);
-        return arg;
-    case 4:  // -(R0),  -(PC)
-        if ((m_instruction & 0100000) && (reg < 6))
-            SetReg(reg, GetReg(reg) - 1);
-        else
-            SetReg(reg, GetReg(reg) - 2);
-        return GetReg(reg);
-    case 5:  // @-(R0), @-(PC)
-        //if (m_instruction & 0100000)
-        //	SetReg(reg, GetReg(reg) - 1);
-        //else
-        SetReg(reg, GetReg(reg) - 2);
-        return  GetWord(GetReg(reg));
-    case 6:    // 345(R0),  345
-        {
-            uint16_t pc = 0;
-            //if(reg==7) //relative direct
-            // pc = GetWord(GetWordExec( GetPC() ));
-            //else
-            pc = (GetWordExec( GetPC() ));
-
-            SetPC( GetPC() + 2 );
-            arg = (uint16_t)(pc + GetReg(reg));
-            return arg;
-        }
-    case 7:    // @345(R0),@345
-        {
-            uint16_t pc = 0;
-            //if(reg==7)
-            //	pc = GetWord(GetWordExec( GetPC() ));
-            //else
-            pc = GetWordExec( GetPC() );
-            SetPC( GetPC() + 2 );
-            arg = ( GetWord(pc + GetReg(reg)) );
-            return arg;
-        }
-    }
-
-    return 0;
-}
 
 
 uint8_t CProcessor::GetByteSrc ()
@@ -781,7 +637,7 @@ void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
 
 void CProcessor::ExecuteSWAB ()
 {
-    uint16_t ea;
+    uint16_t ea = 0;
     uint16_t dst;
 
     dst = m_methdest ? GetWord(ea = GetWordAddr(m_methdest, m_regdest)) : GetReg(m_regdest);
@@ -834,7 +690,8 @@ void CProcessor::ExecuteCLR ()  // CLR
 
 void CProcessor::ExecuteCOM ()  // COM
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t dst;
@@ -876,7 +733,8 @@ void CProcessor::ExecuteCOM ()  // COM
 
 void CProcessor::ExecuteINC ()  // INC - Инкремент
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t dst;
@@ -918,7 +776,8 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
 
 void CProcessor::ExecuteDEC ()  // DEC - Декремент
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t dst;
@@ -959,7 +818,7 @@ void CProcessor::ExecuteDEC ()  // DEC - Декремент
 
 void CProcessor::ExecuteNEG ()
 {
-    uint16_t ea;
+    uint16_t ea = 0;
 
     if (m_instruction & 0100000)
     {
@@ -1005,7 +864,8 @@ void CProcessor::ExecuteNEG ()
 
 void CProcessor::ExecuteADC ()  // ADC{B}
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t dst;
@@ -1050,7 +910,7 @@ void CProcessor::ExecuteADC ()  // ADC{B}
 
 void CProcessor::ExecuteSBC ()  // SBC{B}
 {
-    uint16_t ea;
+    uint16_t ea = 0;
 
     if (m_instruction & 0100000)
     {
@@ -1122,7 +982,7 @@ void CProcessor::ExecuteTST ()  // TST{B} - test
 
 void CProcessor::ExecuteROR ()  // ROR{B}
 {
-    uint16_t ea;
+    uint16_t ea = 0;
 
     if (m_instruction & 0100000)
     {
@@ -1170,7 +1030,7 @@ void CProcessor::ExecuteROR ()  // ROR{B}
 
 void CProcessor::ExecuteROL ()  // ROL{B}
 {
-    uint16_t ea;
+    uint16_t ea = 0;
 
     if (m_instruction & 0100000)
     {
@@ -1218,7 +1078,8 @@ void CProcessor::ExecuteROL ()  // ROL{B}
 
 void CProcessor::ExecuteASR ()  // ASR{B}
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t src;
@@ -1261,7 +1122,8 @@ void CProcessor::ExecuteASR ()  // ASR{B}
 
 void CProcessor::ExecuteASL ()  // ASL{B}
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t src;
@@ -1496,7 +1358,7 @@ void CProcessor::ExecuteBLO ()
 void CProcessor::ExecuteXOR ()  // XOR
 {
     uint16_t dst;
-    uint16_t ea;
+    uint16_t ea = 0;
 
     dst = m_methdest ? GetWord(ea = GetWordAddr(m_methdest, m_regdest)) : GetReg(m_regdest);
     dst = dst ^ GetReg(m_regsrc);
@@ -1642,7 +1504,8 @@ void CProcessor::ExecuteBIT ()  // BIT{B} - bit test
 
 void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t src;
@@ -1691,7 +1554,8 @@ void CProcessor::ExecuteBIC ()  // BIC{B} - bit clear
 
 void CProcessor::ExecuteBIS ()  // BIS{B} - bit set
 {
-    uint16_t ea;
+    uint16_t ea = 0;
+
     if (m_instruction & 0100000)
     {
         uint8_t src;
@@ -1743,7 +1607,7 @@ void CProcessor::ExecuteADD ()  // ADD
     uint16_t src;
     uint16_t src2;
     signed short dst;
-    uint16_t ea;
+    uint16_t ea = 0;
 
     src = m_methsrc ? GetWord(GetWordAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
     src2 = m_methdest ? GetWord(ea = GetWordAddr(m_methdest, m_regdest)) : GetReg(m_regdest);
@@ -1768,7 +1632,7 @@ void CProcessor::ExecuteSUB ()
     uint16_t src;
     uint16_t src2;
     uint16_t dst;
-    uint16_t ea;
+    uint16_t ea = 0;
 
     src = m_methsrc ? GetWord(GetWordAddr(m_methsrc, m_regsrc)) : GetReg(m_regsrc);
     src2 = m_methdest ? GetWord(ea = GetWordAddr(m_methdest, m_regdest)) : GetReg(m_regdest);

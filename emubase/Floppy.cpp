@@ -57,7 +57,7 @@ enum eRequest { R_NONE, R_DRQ = 0x40, R_INTRQ = 0x80 };
 const int MAX_PHYS_CYL = 86;	// don't seek over it
 
 static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker, uint16_t track, uint16_t side);
-static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest, uint16_t track);
+static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest);
 
 //////////////////////////////////////////////////////////////////////
 
@@ -90,11 +90,13 @@ CFloppyController::CFloppyController()
     m_okTrace = false;
     m_opercount = 0;
     m_trackchanged = false;
-    m_status = m_tshift = 0;
+    m_status = 0;
+    m_tshift = 0;
     m_data = m_cmd = 0;
     m_system = 0;
     m_state = S_IDLE;  m_statenext = S_IDLE;
-    m_track = m_side = m_sector = m_direction = 0;
+    m_track = m_side = m_sector = 0;
+    m_direction = 0;
     m_rqs = R_NONE;  m_endwaitingam = 0;
     m_rwptr = m_rwlen = 0;
     m_crc = 0;  m_startcrc = -1;
@@ -284,7 +286,7 @@ void CFloppyController::WriteData(uint16_t data)
     m_data = data & 0xff;
 }
 
-static uint8_t FloppyLastState = 0;//DEBUG
+static int FloppyLastState = 0;//DEBUG
 void CFloppyController::Periodic()
 {
     if (IsEngineOn())  // Вращаем дискеты только если включен мотор
@@ -598,7 +600,7 @@ void CFloppyController::Periodic()
             if (cyl > MAX_PHYS_CYL) cyl = MAX_PHYS_CYL;
 
             //if ((m_cmd & 0xe0) == 0 || (m_cmd & CB_SEEK_TRKUPD))
-            m_track = cyl;
+            m_track = (uint16_t)cyl;
 
             PrepareTrack();
 
@@ -696,7 +698,7 @@ void CFloppyController::PrepareTrack()
 
 //    //DEBUG: Test DecodeTrackData()
 //    uint8_t data2[FLOPPY_TRACKSIZE];
-//    bool parsed = DecodeTrackData(m_pDrive->data, data2, m_track);
+//    bool parsed = DecodeTrackData(m_pDrive->data, data2);
 //    ASSERT(parsed);
 //    bool tested = true;
 //    for (int i = 0; i < FLOPPY_TRACKSIZE; i++)
@@ -725,7 +727,7 @@ void CFloppyController::FlushChanges()
 
     // Decode track data from m_data
     uint8_t data[FLOPPY_TRACKSIZE];  memset(data, 0, FLOPPY_TRACKSIZE);
-    bool decoded = DecodeTrackData(m_pDrive->data, data, m_pDrive->datatrack);
+    bool decoded = DecodeTrackData(m_pDrive->data, data);
 
     if (decoded)  // Write to the file only if the track was correctly decoded from raw data
     {
@@ -854,7 +856,7 @@ static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker,
 // pRaw is array of FLOPPY_RAWTRACKSIZE bytes
 // pDest is array of 5120 bytes = FLOPPY_TRACKSIZE
 // Returns: true - decoded, false - parse error
-static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest, uint16_t track)
+static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest)
 {
     uint16_t dataptr = 0;  // Offset in raw track array
     uint16_t destptr = 0;  // Offset in data array

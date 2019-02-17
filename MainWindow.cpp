@@ -378,7 +378,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_DRAWITEM:
         {
-            int idCtrl = (int) wParam;
+            //int idCtrl = (int) wParam;
             HWND hwndItem = ((LPDRAWITEMSTRUCT) lParam)->hwndItem;
             if (hwndItem == m_hwndStatusbar)
                 ; //MainWindow_OnStatusbarDrawItem((LPDRAWITEMSTRUCT) lParam);

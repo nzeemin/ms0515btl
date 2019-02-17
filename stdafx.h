@@ -20,7 +20,7 @@
 
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
-#endif						
+#endif
 
 #ifndef _WIN32_WINDOWS		// Allow use of features specific to Windows 98 or later.
 #define _WIN32_WINDOWS 0x0410 // Change this to the appropriate value to target Windows Me or later.
@@ -43,10 +43,10 @@
 
 // Define C99 stdint.h types for VS2008
 #ifdef _MSC_VER
-   typedef unsigned __int8   uint8_t;
-   typedef unsigned __int16  uint16_t;
-   typedef unsigned __int32  uint32_t;
-   typedef unsigned __int64  uint64_t;
+typedef unsigned __int8   uint8_t;
+typedef unsigned __int16  uint16_t;
+typedef unsigned __int32  uint32_t;
+typedef unsigned __int64  uint64_t;
 
 #  define false   0
 #  define true    1
