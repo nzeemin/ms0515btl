@@ -70,6 +70,7 @@ void CALLBACK Emulator_PrepareScreen360x220(const uint8_t*, const uint32_t*, voi
 void CALLBACK Emulator_PrepareScreen720x440(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
 void CALLBACK Emulator_PrepareScreen880x660(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
 void CALLBACK Emulator_PrepareScreen1080x660(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
+void CALLBACK Emulator_PrepareScreen1280x880(const uint8_t*, const uint32_t*, void*, bool, uint8_t, bool);
 
 struct ScreenModeStruct
 {
@@ -79,12 +80,13 @@ struct ScreenModeStruct
 }
 static ScreenModeReference[] =
 {
-    // wid  hei  callback                               size   scaleX  scaleY  notes
-    {  640, 200, Emulator_PrepareScreen640x200  },  //                   1      Debug mode
-    {  360, 220, Emulator_PrepareScreen360x220  },  // 320x200   0.5     1
-    {  720, 440, Emulator_PrepareScreen720x440  },  // 640x400   1       2
-    {  880, 660, Emulator_PrepareScreen880x660  },  // 800x600   1.25    3
-    { 1080, 660, Emulator_PrepareScreen1080x660 },  // 960x600   1.5     3      Interlaced
+    // wid  hei  callback                                 size   scaleX  scaleY  notes
+    {  640, 200, Emulator_PrepareScreen640x200  },  //  640x200   1       1      Debug mode
+    {  360, 220, Emulator_PrepareScreen360x220  },  //  320x200   0.5     1
+    {  720, 440, Emulator_PrepareScreen720x440  },  //  640x400   1       2
+    {  880, 660, Emulator_PrepareScreen880x660  },  //  800x600   1.25    3      4:3
+    { 1080, 660, Emulator_PrepareScreen1080x660 },  //  960x600   1.5     3      Interlaced
+    { 1280, 880, Emulator_PrepareScreen1280x880 },  // 1120x800   1.75    4      Interlaced
 };
 
 const uint32_t Emulator_Palette[24] =
@@ -839,6 +841,106 @@ void CALLBACK Emulator_PrepareScreen1080x660(
         }
         for (int i = 0; i < 60; i++)  // Border at the right
             *pBits1++ = *pBits2++ = colorborder;
+    }
+}
+
+// 1120x800 plus 80 pix border for left/right sides, 40 pix border for top/bottom
+void CALLBACK Emulator_PrepareScreen1280x880(
+    const uint8_t* pVideoBuffer, const uint32_t* palette, void* pImageBits, bool hires, uint8_t border, bool blink)
+{
+    uint32_t colorborder = palette[(border & 7) + 16];
+    for (int y = 0; y < 220; y++)
+    {
+        uint32_t* pBits1 = (uint32_t*)pImageBits + (880 - 1 - y * 4) * 1280;
+        uint32_t* pBits2 = (uint32_t*)pImageBits + (880 - 2 - y * 4) * 1280;
+        uint32_t* pBits3 = (uint32_t*)pImageBits + (880 - 3 - y * 4) * 1280;
+
+        if (y < 10 || y >= 210)  // Border at the top/bottom
+        {
+            for (int i = 0; i < 1280; i++)
+                *pBits1++ = *pBits2++ = *pBits3++ = colorborder;
+            continue;
+        }
+        for (int i = 0; i < 80; i++)  // Border at the left
+            *pBits1++ = *pBits2++ = *pBits3++ = colorborder;
+        if (!hires)
+        {
+            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + (y - 10) * 320 / 4);
+            for (int x = 0; x < 320 / 8; x++)
+            {
+                uint16_t value = *pVideo++;
+                uint32_t colorpaper = palette[(value >> 11) & 7];
+                uint32_t colorink = palette[(value >> 8) & 7];
+                if ((value & 0x8000) && blink)
+                {
+                    uint32_t temp = colorink;  colorink = colorpaper;  colorpaper = temp;
+                }
+                uint16_t mask = 0x80;
+                for (int f = 0; f < 2; f++)
+                {
+                    uint32_t color1 = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                    uint32_t color2 = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                    uint32_t color3 = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                    uint32_t color4 = (value & mask) ? colorink : colorpaper;
+                    mask = mask >> 1;
+                    uint32_t color12 = AVERAGERGB(color1, color2);
+                    uint32_t color23 = AVERAGERGB(color2, color3);
+                    uint32_t color34 = AVERAGERGB(color3, color4);
+                    *pBits1++ = *pBits2++ = *pBits3++ = color1;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color1;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color12;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color12;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color2;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color2;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color23;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color23;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color3;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color3;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color34;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color34;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color4;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color4;
+                }
+            }
+        }
+        else  // hires
+        {
+            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
+            uint32_t colorpaper = palette[border & 7];
+            uint32_t colorink = palette[(border & 7) ^ 7];
+            for (int x = 0; x < 640; x += 8)
+            {
+                uint8_t value = *pVideo++;
+                uint8_t mask1 = 0x80;
+                uint8_t mask2 = 0x40;
+                for (int f = 0; f < 2; f++)
+                {
+                    uint32_t color1 = (value & mask1) ? colorink : colorpaper;
+                    uint32_t color2 = (value & mask2) ? colorink : colorpaper;
+                    mask1 = mask1 >> 2;
+                    mask2 = mask2 >> 2;
+                    uint32_t color3 = (value & mask1) ? colorink : colorpaper;
+                    uint32_t color4 = (value & mask2) ? colorink : colorpaper;
+                    mask1 = mask1 >> 2;
+                    mask2 = mask2 >> 2;
+                    uint32_t color12 = AVERAGERGB(color1, color2);
+                    uint32_t color23 = AVERAGERGB(color2, color3);
+                    uint32_t color34 = AVERAGERGB(color3, color4);
+                    *pBits1++ = *pBits2++ = *pBits3++ = color1;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color12;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color2;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color23;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color3;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color34;
+                    *pBits1++ = *pBits2++ = *pBits3++ = color4;
+                }
+            }
+        }
+        for (int i = 0; i < 80; i++)  // Border at the right
+            *pBits1++ = *pBits2++ = *pBits3++ = colorborder;
     }
 }
 

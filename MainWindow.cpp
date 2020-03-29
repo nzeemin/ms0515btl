@@ -761,6 +761,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_VIEW_SCREENMODE4:
         MainWindow_DoViewScreenMode(4);
         break;
+    case ID_VIEW_SCREENMODE5:
+        MainWindow_DoViewScreenMode(5);
+        break;
     case ID_EMULATOR_RUN:
         MainWindow_DoEmulatorRun();
         break;
