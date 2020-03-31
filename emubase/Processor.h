@@ -22,7 +22,6 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 class CProcessor  // KR1807VM1 processor
 {
-
 public:  // Constructor / initialization
     CProcessor(CMotherboard* pBoard);
     void        FireHALT() { m_HALTrq = true; }  // Fire HALT interrupt request, same as HALT command
@@ -245,7 +244,6 @@ protected:  // Implementation - instruction execution
     void        ExecuteSENZV ();
     void        ExecuteSCC ();
     void        ExecuteNOP ();
-
 };
 
 // PSW bits control - implementation

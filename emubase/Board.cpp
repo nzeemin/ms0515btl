@@ -928,7 +928,6 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 
     case 0177770:
         return; //STUB
-
     }
 }
 

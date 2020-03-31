@@ -58,7 +58,6 @@ public:
 public:
     uint8_t  GetCurrentByte() { return data[dataptr]; }
     void     SetCurrentByte(uint8_t b) { data[dataptr] = b; }
-
 };
 
 class CFloppyController
@@ -118,7 +117,6 @@ private:
     void ReadFirstByte();
     void PrepareTrack();
     void FlushChanges();  // If current track was changed - save it
-
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -145,7 +143,6 @@ public:
 
 private:
     void PutByteToQueue(uint8_t);
-
 };
 
 //////////////////////////////////////////////////////////////////////
