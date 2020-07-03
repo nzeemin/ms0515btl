@@ -22,5 +22,5 @@ environment:
     - toolchain: msvc13
 
 build:
-  project: MS0515BTL.sln
+  project: emulator\MS0515BTL.sln
 
