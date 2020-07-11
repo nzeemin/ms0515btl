@@ -119,7 +119,7 @@ void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
     SendMessage(m_hwndDebugToolbar, TB_BUTTONSTRUCTSIZE, (WPARAM) sizeof(TBBUTTON), 0);
     SendMessage(m_hwndDebugToolbar, TB_SETBUTTONSIZE, 0, (LPARAM) MAKELONG (26, 26));
 
-    TBBUTTON buttons[2];
+    TBBUTTON buttons[3];
     ZeroMemory(buttons, sizeof(buttons));
     for (int i = 0; i < sizeof(buttons) / sizeof(TBBUTTON); i++)
     {
@@ -127,10 +127,13 @@ void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
         buttons[i].fsStyle = BTNS_BUTTON;
         buttons[i].iString = -1;
     }
-    buttons[0].idCommand = ID_DEBUG_STEPINTO;
-    buttons[0].iBitmap = 15;
-    buttons[1].idCommand = ID_DEBUG_STEPOVER;
-    buttons[1].iBitmap = 16;
+    buttons[0].idCommand = ID_VIEW_DEBUG;
+    buttons[0].iBitmap = ToolbarImageDebugger;
+    buttons[0].fsState = TBSTATE_ENABLED | TBSTATE_WRAP | TBSTATE_CHECKED;
+    buttons[1].idCommand = ID_DEBUG_STEPINTO;
+    buttons[1].iBitmap = ToolbarImageStepInto;
+    buttons[2].idCommand = ID_DEBUG_STEPOVER;
+    buttons[2].iBitmap = ToolbarImageStepOver;
 
     SendMessage(m_hwndDebugToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
 }
@@ -350,7 +353,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     WORD previous = oldValue;
     BOOL okExec = (reg == 7);
 
-    // Читаем из памяти процессора в буфер
+    // Reading from CPU memory into the buffer
     WORD memory[16];
     int addrtype[16];
     for (uint16_t idx = 0; idx < 16; idx++)

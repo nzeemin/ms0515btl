@@ -676,7 +676,7 @@ void CFloppyController::PrepareTrack()
 #endif
 
     m_trackchanged = false;
-    m_pDrive->dataptr = 0;
+    //NOTE: Not changing m_pDrive->dataptr
     m_pDrive->datatrack = m_track;
 
     long foffset = m_track * FLOPPY_TRACKSIZE;

@@ -55,6 +55,7 @@ enum ToolbarButtons
     // Separator
     ToolbarButtonColor = 3,
 };
+
 enum ToolbarButtonImages
 {
     ToolbarImageRun = 0,
@@ -70,6 +71,11 @@ enum ToolbarButtonImages
     ToolbarImageColorScreen = 10,
     ToolbarImageBWScreen = 11,
     ToolbarImageScreenshot = 12,
+    ToolbarImageDebugger = 14,
+    ToolbarImageStepInto = 15,
+    ToolbarImageStepOver = 16,
+    ToolbarImageWordByte = 18,
+    ToolbarImageGotoAddress = 19,
 };
 
 enum StatusbarParts
