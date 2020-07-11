@@ -30,6 +30,8 @@ CMotherboard::CMotherboard ()
     m_CPUbp = 0177777;
     m_dwTrace = TRACE_NONE;
     m_SoundGenCallback = NULL;
+    m_SoundGenCallback = nullptr;
+    m_SoundPrevValue = 0;
     m_SerialInCallback = NULL;
     m_SerialOutCallback = NULL;
     m_ParallelOutCallback = NULL;
@@ -301,6 +303,7 @@ bool CMotherboard::SystemFrame()
 {
     const int frameProcTicks = 15;
     const int audioticks = 20286 / (SOUNDSAMPLERATE / 25);
+    m_SoundChanges = 0;
     const int floppyTicks = 32;
     //const int serialOutTicks = 20000 / (9600 / 25);
     //int serialTxCount = 0;
@@ -1008,19 +1011,21 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
 
 void CMotherboard::DoSound(void)
 {
-    if (m_SoundGenCallback == NULL)
-        return;
+    int soundValue = 0;
 
     int soundon = (m_Port177604 >> 6) & 1;  // Бит 6 системного регистра
-    if (soundon == 0)
-    {
-        (*m_SoundGenCallback)(0);
-        return;
-    }
+    if (soundon != 0)
+        soundValue = m_pTimer->GetOutput(2);
 
-    bool soundout = m_pTimer->GetOutput(2);
-    uint16_t sound = soundout ? 0x1fff : 0;
-    (*m_SoundGenCallback)(sound);
+    if (m_SoundPrevValue == 0 && soundValue != 0)
+        m_SoundChanges++;
+    m_SoundPrevValue = soundValue;
+
+    if (m_SoundGenCallback != nullptr)
+    {
+        uint16_t sound = soundValue ? 0x1fff : 0;
+        (*m_SoundGenCallback)(sound);
+    }
 }
 
 void CMotherboard::SetSoundGenCallback(SOUNDGENCALLBACK callback)

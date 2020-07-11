@@ -129,6 +129,7 @@ public:
     void        ExecuteCPU();  // Execute one CPU instruction
     bool        SystemFrame();  // Do one frame -- use for normal run
     void        KeyboardEvent(uint8_t scancode, bool okPressed);  // Key pressed or released
+    int         GetSoundChanges() const { return m_SoundChanges; }  ///< Sound signal 0 to 1 changes since the beginning of the frame
 public:  // Floppy
     bool        AttachFloppyImage(int slot, LPCTSTR sFileName);
     void        DetachFloppyImage(int slot);
@@ -181,6 +182,8 @@ private:
     uint16_t    m_CPUbp;  // CPU breakpoint address
     uint32_t    m_dwTrace;  // Trace flags
     bool        m_okSoundOnOff;
+    int         m_SoundPrevValue;  ///< Previous value of the sound signal
+    int         m_SoundChanges;  ///< Sound signal 0 to 1 changes since the beginning of the frame
 private:
     SOUNDGENCALLBACK m_SoundGenCallback;
     SERIALINCALLBACK    m_SerialInCallback;

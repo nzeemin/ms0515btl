@@ -233,12 +233,13 @@ BOOL MainWindow_InitStatusbar()
     if (! m_hwndStatusbar)
         return FALSE;
 
-    int statusbarParts[5];
+    int statusbarParts[6];
     statusbarParts[0] = 300;
-    statusbarParts[1] = statusbarParts[0] + 50;  // Motor
-    statusbarParts[2] = statusbarParts[1] + 50;  // FPS
-    statusbarParts[3] = statusbarParts[2] + 105; // Uptime
-    statusbarParts[4] = -1;
+    statusbarParts[1] = statusbarParts[0] + 50;  // Sound
+    statusbarParts[2] = statusbarParts[1] + 50;  // Motor
+    statusbarParts[3] = statusbarParts[2] + 50;  // FPS
+    statusbarParts[4] = statusbarParts[3] + 105; // Uptime
+    statusbarParts[5] = -1;
     SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
 
     return TRUE;
