@@ -19,6 +19,8 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 
 
+const int MAX_BREAKPOINTCOUNT = 16;
+
 extern CMotherboard* g_pBoard;
 extern int g_nEmulatorConfiguration;  // Current configuration
 extern bool g_okEmulatorRunning;
@@ -35,15 +37,22 @@ extern uint16_t g_wEmulatorPrevCpuPC;  // Previous PC value
 bool Emulator_Init();
 bool Emulator_InitConfiguration(int configuration);
 void Emulator_Done();
-void Emulator_SetCPUBreakpoint(uint16_t address);
+
+bool Emulator_AddCPUBreakpoint(uint16_t address);
+bool Emulator_RemoveCPUBreakpoint(uint16_t address);
+void Emulator_SetTempCPUBreakpoint(uint16_t address);
+const uint16_t* Emulator_GetCPUBreakpointList();
 bool Emulator_IsBreakpoint();
+bool Emulator_IsBreakpoint(uint16_t address);
+void Emulator_RemoveAllBreakpoints();
+
 void Emulator_SetSound(bool soundOnOff);
 //bool Emulator_SetSerial(bool serialOnOff, LPCTSTR serialPort);
 //void Emulator_SetParallel(bool parallelOnOff);
 void Emulator_Start();
 void Emulator_Stop();
 void Emulator_Reset();
-int  Emulator_SystemFrame();
+bool Emulator_SystemFrame();
 void Emulator_SetSpeed(uint16_t realspeed);
 
 void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei);

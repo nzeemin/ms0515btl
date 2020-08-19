@@ -27,7 +27,7 @@ public:  // Constructor / initialization
     void        FireHALT() { m_HALTrq = true; }  // Fire HALT interrupt request, same as HALT command
     void        MemoryError();
     int	        GetInternalTick() const { return m_internalTick; }
-    void        SetInternalTick (uint16_t tick) { m_internalTick = tick; }
+    void        ClearInternalTick() { m_internalTick = 0; }
 
 public:  // Statics
     static void Init();  // Initialize static tables

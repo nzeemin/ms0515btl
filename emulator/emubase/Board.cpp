@@ -27,9 +27,8 @@ CMotherboard::CMotherboard ()
     m_pFloppyCtl = NULL;
     m_pKeyboard = new CKeyboard();
 
-    m_CPUbp = 0177777;
+    m_CPUbps = nullptr;
     m_dwTrace = TRACE_NONE;
-    m_SoundGenCallback = NULL;
     m_SoundGenCallback = nullptr;
     m_SoundPrevValue = 0;
     m_SerialInCallback = NULL;
@@ -278,7 +277,7 @@ void CMotherboard::Tick50()  // Vblank
 
 void CMotherboard::DebugTicks()
 {
-    m_pCPU->SetInternalTick(0);
+    m_pCPU->ClearInternalTick();
     m_pCPU->Execute();
     if (m_pFloppyCtl != NULL)
         m_pFloppyCtl->Periodic();
@@ -319,8 +318,11 @@ bool CMotherboard::SystemFrame()
                 TraceInstruction(m_pCPU, this, m_pCPU->GetPC(), m_dwTrace);
 #endif
             m_pCPU->Execute();
-            if (m_pCPU->GetPC() == m_CPUbp)
-                return false;  // Breakpoint
+            if (m_CPUbps != nullptr)  // Check for breakpoints
+            {
+                const uint16_t* pbps = m_CPUbps;
+                while (*pbps != 0177777) { if (m_pCPU->GetPC() == *pbps++) return false; }
+            }
 
             if (procticks % 4 == 0)  // on procticks: 0, 4, 8, 12
                 m_pTimer->ClockTick();

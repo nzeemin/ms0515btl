@@ -130,6 +130,7 @@ BOOL CreateMainWindow()
         return FALSE;
 
     DebugView_Init();
+    DisasmView_Init();
     ScreenView_Init();
     KeyboardView_Init();
 
