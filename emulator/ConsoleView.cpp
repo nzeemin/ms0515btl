@@ -492,6 +492,7 @@ void ConsoleView_RunToAddress(WORD address)
     Emulator_SetTempCPUBreakpoint(address);
     Emulator_Start();
 }
+
 void ConsoleView_ShowBreakpoints()
 {
     const uint16_t* pbps = Emulator_GetCPUBreakpointList();

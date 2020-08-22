@@ -200,11 +200,17 @@ void Emulator_Start()
     g_okEmulatorRunning = true;
 
     // Set title bar text
-    MainWindow_UpdateWindowTitle(_T("run"));
+    MainWindow_UpdateWindowTitle();
     MainWindow_UpdateMenu();
 
     m_nFrameCount = 0;
     m_dwTickCount = GetTickCount();
+
+    // For proper breakpoint processing
+    if (m_wEmulatorCPUBpsCount != 0)
+    {
+        g_pBoard->GetCPU()->ClearInternalTick();
+    }
 }
 void Emulator_Stop()
 {
@@ -216,7 +222,7 @@ void Emulator_Stop()
         ::fflush(m_fpEmulatorParallelOut);
 
     // Reset title bar message
-    MainWindow_UpdateWindowTitle(_T("stop"));
+    MainWindow_UpdateWindowTitle();
     MainWindow_UpdateMenu();
 
     // Reset FPS indicator

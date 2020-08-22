@@ -108,6 +108,7 @@ void MainWindow_RegisterClass()
     MemoryView_RegisterClass();
     DebugView_RegisterClass();
     //MemoryMapView_RegisterClass();
+    //SpriteView_RegisterClass();
     DisasmView_RegisterClass();
     ConsoleView_RegisterClass();
 }
@@ -319,8 +320,9 @@ void MainWindow_RestorePositionAndShow()
     //    MainWindow_DoViewFullscreen();
 }
 
-void MainWindow_UpdateWindowTitle(LPCTSTR emustate)
+void MainWindow_UpdateWindowTitle()
 {
+    LPCTSTR emustate = g_okEmulatorRunning ? _T("run") : _T("stop");
     TCHAR buffer[100];
     wsprintf(buffer, _T("%s [%s]"), g_szTitle, emustate);
     SetWindowText(g_hwnd, buffer);
@@ -336,7 +338,7 @@ LRESULT CALLBACK MainWindow_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
         break;
     case WM_COMMAND:
         {
-            int wmId    = LOWORD(wParam);
+            int wmId = LOWORD(wParam);
             //int wmEvent = HIWORD(wParam);
             bool okProcessed = MainWindow_DoCommand(wmId);
             if (!okProcessed)
