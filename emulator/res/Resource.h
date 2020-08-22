@@ -14,7 +14,8 @@
 #define IDB_KEYBOARD                    142
 #define IDB_TOOLBAR                     143
 #define IDD_CREATEDISK                  144
-#define IDD_SETTINGS                    146
+#define IDD_SETTINGS                    145
+#define IDD_SETTINGS_COLORS             146
 #define IDD_DCB_EDITOR                  148
 #define IDB_KEYBOARDMASK                149
 #define IDC_EDIT1                       1000
@@ -40,6 +41,7 @@
 #define IDC_DSRSENSITIVITY              1024
 #define IDC_BUTTON1                     1025
 #define IDC_BUTTON2                     1026
+#define IDC_LIST1                       1029
 #define IDC_DEBUGFONT                   1030
 #define ID_VIEW                         32771
 #define ID_VIEW_MEMORY                  32772
@@ -76,8 +78,9 @@
 #define ID_VIEW_SCREENMODE3             32830
 #define ID_VIEW_SCREENMODE4             32831
 #define ID_VIEW_SCREENMODE5             32832
+#define ID_FILE_SAVESCREENSHOTAS        32841
 #define ID_FILE_SETTINGS                32842
-#define ID_FILE_SAVESCREENSHOTAS        32843
+#define ID_FILE_SETTINGS_COLORS         32843
 #define ID_DEBUG_MEMORY_WORDBYTE        32870
 #define ID_DEBUG_MEMORY_GOTO            32871
 #define IDC_STATIC                      -1

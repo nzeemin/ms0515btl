@@ -73,6 +73,7 @@ void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileScreenshotSaveAs();
 void MainWindow_DoFileCreateDisk();
 void MainWindow_DoFileSettings();
+void MainWindow_DoFileSettingsColors();
 void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP);
 
 
@@ -846,6 +847,9 @@ bool MainWindow_DoCommand(int commandId)
     case ID_FILE_SETTINGS:
         MainWindow_DoFileSettings();
         break;
+    case ID_FILE_SETTINGS_COLORS:
+        MainWindow_DoFileSettingsColors();
+        break;
     default:
         return false;
     }
@@ -1074,6 +1078,14 @@ void MainWindow_DoFileScreenshotSaveAs()
 void MainWindow_DoFileSettings()
 {
     ShowSettingsDialog();
+}
+
+void MainWindow_DoFileSettingsColors()
+{
+    if (ShowSettingsColorsDialog())
+    {
+        RedrawWindow(g_hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+    }
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)
