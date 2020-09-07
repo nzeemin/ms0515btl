@@ -264,69 +264,69 @@ INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
     switch (message)
     {
     case WM_INITDIALOG:
-    {
-        HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
-        SendMessage(hVolume, TBM_SETRANGEMIN, 0, (LPARAM)0);
-        SendMessage(hVolume, TBM_SETRANGEMAX, 0, (LPARAM)0xffff);
-        SendMessage(hVolume, TBM_SETTICFREQ, 0x1000, 0);
-        SendMessage(hVolume, TBM_SETPOS, TRUE, (LPARAM)Settings_GetSoundVolume());
+        {
+            HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
+            SendMessage(hVolume, TBM_SETRANGEMIN, 0, (LPARAM)0);
+            SendMessage(hVolume, TBM_SETRANGEMAX, 0, (LPARAM)0xffff);
+            SendMessage(hVolume, TBM_SETTICFREQ, 0x1000, 0);
+            SendMessage(hVolume, TBM_SETPOS, TRUE, (LPARAM)Settings_GetSoundVolume());
 
-        TCHAR buffer[10];
+            TCHAR buffer[10];
 
-        Settings_GetSerialPort(buffer);
-        SetDlgItemText(hDlg, IDC_SERIALPORT, buffer);
+            Settings_GetSerialPort(buffer);
+            SetDlgItemText(hDlg, IDC_SERIALPORT, buffer);
 
-        SetDlgItemInt(hDlg, IDC_NETWORKSTATION, Settings_GetNetStation(), FALSE);
+            SetDlgItemInt(hDlg, IDC_NETWORKSTATION, Settings_GetNetStation(), FALSE);
 
-        Settings_GetNetComPort(buffer);
-        SetDlgItemText(hDlg, IDC_NETWORKPORT, buffer);
+            Settings_GetNetComPort(buffer);
+            SetDlgItemText(hDlg, IDC_NETWORKPORT, buffer);
 
-        Settings_GetSerialConfig(&m_DialogSettings_SerialConfig);
-        Settings_GetNetComConfig(&m_DialogSettings_NetComConfig);
+            Settings_GetSerialConfig(&m_DialogSettings_SerialConfig);
+            Settings_GetNetComConfig(&m_DialogSettings_NetComConfig);
 
-        return (INT_PTR)FALSE;
-    }
+            return (INT_PTR)FALSE;
+        }
     case WM_COMMAND:
         switch (LOWORD(wParam))
         {
         case IDOK:
-        {
-            HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
-            DWORD volume = SendMessage(hVolume, TBM_GETPOS, 0, 0);
-            Settings_SetSoundVolume((WORD)volume);
+            {
+                HWND hVolume = GetDlgItem(hDlg, IDC_VOLUME);
+                DWORD volume = SendMessage(hVolume, TBM_GETPOS, 0, 0);
+                Settings_SetSoundVolume((WORD)volume);
 
-            TCHAR buffer[32];
+                TCHAR buffer[32];
 
-            GetDlgItemText(hDlg, IDC_SERIALPORT, buffer, 10);
-            Settings_SetSerialPort(buffer);
+                GetDlgItemText(hDlg, IDC_SERIALPORT, buffer, 10);
+                Settings_SetSerialPort(buffer);
 
-            int netStation = GetDlgItemInt(hDlg, IDC_NETWORKSTATION, 0, FALSE);
-            Settings_SetNetStation(netStation);
+                int netStation = GetDlgItemInt(hDlg, IDC_NETWORKSTATION, 0, FALSE);
+                Settings_SetNetStation(netStation);
 
-            GetDlgItemText(hDlg, IDC_NETWORKPORT, buffer, 10);
-            Settings_SetNetComPort(buffer);
+                GetDlgItemText(hDlg, IDC_NETWORKPORT, buffer, 10);
+                Settings_SetNetComPort(buffer);
 
-            Settings_SetSerialConfig(&m_DialogSettings_SerialConfig);
-            Settings_SetNetComConfig(&m_DialogSettings_NetComConfig);
-        }
+                Settings_SetSerialConfig(&m_DialogSettings_SerialConfig);
+                Settings_SetNetComConfig(&m_DialogSettings_NetComConfig);
+            }
 
-        EndDialog(hDlg, LOWORD(wParam));
-        return (INT_PTR)TRUE;
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
         case IDCANCEL:
             EndDialog(hDlg, LOWORD(wParam));
             return (INT_PTR)TRUE;
         case IDC_BUTTON1:
-        {
-            ShowSerialPortSettings(&m_DialogSettings_SerialConfig);
-            SetFocus(GetDlgItem(hDlg, IDC_BUTTON1));
-        }
-        break;
+            {
+                ShowSerialPortSettings(&m_DialogSettings_SerialConfig);
+                SetFocus(GetDlgItem(hDlg, IDC_BUTTON1));
+            }
+            break;
         case IDC_BUTTON2:
-        {
-            ShowSerialPortSettings(&m_DialogSettings_NetComConfig);
-            SetFocus(GetDlgItem(hDlg, IDC_BUTTON2));
-        }
-        break;
+            {
+                ShowSerialPortSettings(&m_DialogSettings_NetComConfig);
+                SetFocus(GetDlgItem(hDlg, IDC_BUTTON2));
+            }
+            break;
         default:
             return (INT_PTR)FALSE;
         }

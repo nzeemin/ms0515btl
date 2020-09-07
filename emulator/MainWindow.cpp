@@ -228,7 +228,7 @@ BOOL MainWindow_InitToolbar()
 BOOL MainWindow_InitStatusbar()
 {
     TCHAR buffer[100];
-    wsprintf(buffer, _T("MS0515BTL - version %s"), _T(MS0515BTL_VERSION_STRING));
+    wsprintf(buffer, _T("%s - version %s"), g_szTitle, _T(MS0515BTL_VERSION_STRING));
     m_hwndStatusbar = CreateStatusWindow(
             WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
             buffer,
@@ -243,7 +243,7 @@ BOOL MainWindow_InitStatusbar()
     statusbarParts[3] = statusbarParts[2] + 50;  // FPS
     statusbarParts[4] = statusbarParts[3] + 105; // Uptime
     statusbarParts[5] = -1;
-    SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM) statusbarParts);
+    SendMessage(m_hwndStatusbar, SB_SETPARTS, sizeof(statusbarParts) / sizeof(int), (LPARAM)statusbarParts);
 
     return TRUE;
 }
