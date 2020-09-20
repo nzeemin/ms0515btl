@@ -38,6 +38,7 @@ BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw);
 void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, int x, int y, WORD oldValue);
 void DebugView_DrawPorts(HDC hdc, int x, int y);
+BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y);
 void DebugView_UpdateWindowText();
 
 
@@ -54,17 +55,17 @@ void DebugView_RegisterClass()
     WNDCLASSEX wcex;
     wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style			= CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc	= DebugViewViewerWndProc;
-    wcex.cbClsExtra		= 0;
-    wcex.cbWndExtra		= 0;
-    wcex.hInstance		= g_hInst;
-    wcex.hIcon			= NULL;
-    wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW + 1);
-    wcex.lpszMenuName	= NULL;
-    wcex.lpszClassName	= CLASSNAME_DEBUGVIEW;
-    wcex.hIconSm		= NULL;
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = DebugViewViewerWndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = g_hInst;
+    wcex.hIcon          = NULL;
+    wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName   = NULL;
+    wcex.lpszClassName  = CLASSNAME_DEBUGVIEW;
+    wcex.hIconSm        = NULL;
 
     RegisterClassEx(&wcex);
 }
@@ -132,6 +133,11 @@ void DebugView_Create(HWND hwndParent, int x, int y, int width, int height)
     buttons[2].iBitmap = ToolbarImageStepOver;
 
     SendMessage(m_hwndDebugToolbar, TB_ADDBUTTONS, (WPARAM) sizeof(buttons) / sizeof(TBBUTTON), (LPARAM) &buttons);
+}
+
+void DebugView_Redraw()
+{
+    RedrawWindow(g_hwndDebug, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
 }
 
 // Adjust position of client windows
@@ -220,7 +226,7 @@ void DebugView_UpdateWindowText()
 void DebugView_OnUpdate()
 {
     CProcessor* pCPU = g_pBoard->GetCPU();
-    ASSERT(pCPU != NULL);
+    ASSERT(pCPU != nullptr);
 
     // Get new register values and set change flags
     m_wDebugCpuR6Old = m_wDebugCpuR[6];
@@ -242,7 +248,7 @@ void DebugView_OnUpdate()
 
 void DebugView_DoDraw(HDC hdc)
 {
-    ASSERT(g_pBoard != NULL);
+    ASSERT(g_pBoard != nullptr);
 
     // Create and select font
     HFONT hFont = CreateMonospacedFont();
@@ -252,7 +258,7 @@ void DebugView_DoDraw(HDC hdc)
     COLORREF colorBkOld = SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
 
     CProcessor* pDebugPU = g_pBoard->GetCPU();
-    ASSERT(pDebugPU != NULL);
+    ASSERT(pDebugPU != nullptr);
     WORD* arrR = m_wDebugCpuR;
     BOOL* arrRChanged = m_okDebugCpuRChanged;
     WORD oldPsw = m_wDebugCpuPswOld;
@@ -266,6 +272,8 @@ void DebugView_DoDraw(HDC hdc)
     DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 35 * cxChar, 2 + 0 * cyLine, oldSP);
 
     DebugView_DrawPorts(hdc, 30 + 57 * cxChar, 2 + 0 * cyLine);
+
+    DebugView_DrawBreakpoints(hdc, 30 + 83 * cxChar, 2 + 0 * cyLine);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -349,12 +357,12 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     COLORREF colorPrev = Settings_GetColor(ColorDebugPrevious);
     COLORREF colorOld = SetTextColor(hdc, colorText);
 
-    WORD current = pProc->GetReg(reg);
-    WORD previous = oldValue;
-    BOOL okExec = (reg == 7);
+    uint16_t current = pProc->GetReg(reg);
+    uint16_t previous = oldValue;
+    bool okExec = (reg == 7);
 
     // Reading from memory into the buffer
-    WORD memory[16];
+    uint16_t memory[16];
     int addrtype[16];
     for (uint16_t idx = 0; idx < 16; idx++)
     {
@@ -379,7 +387,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
         if (address == current)
         {
             SetTextColor(hdc, colorText);
-            TextOut(hdc, x + 2 * cxChar, y, _T(">>"), 2);
+            TextOut(hdc, x + 2 * cxChar, y, _T(">"), 1);
             if (current != previous) SetTextColor(hdc, colorChanged);
             TextOut(hdc, x, y, REGISTER_NAME[reg], 2);
         }
@@ -466,6 +474,25 @@ void DebugView_DrawPorts(HDC hdc, int x, int y)
     //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
     ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
     //TextOut(hdc, x + 16 * cxChar, y, _T("floppy data"), 11);
+}
+
+BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y)
+{
+    const uint16_t* pbps = Emulator_GetCPUBreakpointList();
+    if (*pbps == 0177777)
+        return FALSE;
+
+    int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+
+    TextOut(hdc, x, y, _T("Breakpts:"), 9);
+    y += cyLine;
+    while (*pbps != 0177777)
+    {
+        DrawOctalValue(hdc, x, y, *pbps);
+        y += cyLine;
+        pbps++;
+    }
+    return TRUE;
 }
 
 
