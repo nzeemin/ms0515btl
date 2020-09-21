@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectName>MS0515BTL</ProjectName>
     <ProjectGuid>{84273B95-1083-49B2-904E-37F37D6B1B07}</ProjectGuid>
     <RootNamespace>MS0515BTL</RootNamespace>
   </PropertyGroup>

@@ -137,7 +137,7 @@ public:  // Floppy
     bool        IsFloppyReadOnly(int slot) const;
     bool        IsFloppyEngineOn() const;
 public:  // Callbacks
-    void		SetSoundGenCallback(SOUNDGENCALLBACK callback);
+    void        SetSoundGenCallback(SOUNDGENCALLBACK callback);
     void        SetSerialCallbacks(SERIALINCALLBACK incallback, SERIALOUTCALLBACK outcallback);
     void        SetParallelOutCallback(PARALLELOUTCALLBACK outcallback);
 public:  // Memory

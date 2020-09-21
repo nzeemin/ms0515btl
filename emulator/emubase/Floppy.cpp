@@ -54,7 +54,7 @@ enum eState
 };
 enum eRequest { R_NONE, R_DRQ = 0x40, R_INTRQ = 0x80 };
 
-const int MAX_PHYS_CYL = 86;	// don't seek over it
+const int MAX_PHYS_CYL = 86;    // don't seek over it
 
 static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker, uint16_t track, uint16_t side);
 static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest);

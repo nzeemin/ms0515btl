@@ -26,7 +26,7 @@ public:  // Constructor / initialization
     CProcessor(CMotherboard* pBoard);
     void        FireHALT() { m_HALTrq = true; }  // Fire HALT interrupt request, same as HALT command
     void        MemoryError();
-    int	        GetInternalTick() const { return m_internalTick; }
+    int         GetInternalTick() const { return m_internalTick; }
     void        ClearInternalTick() { m_internalTick = 0; }
 
 public:  // Statics
@@ -149,8 +149,8 @@ protected:  // PSW bits calculations
     bool static CheckSubForCarry(uint16_t a, uint16_t b);
 
 protected:
-    uint16_t	GetWordAddr (uint8_t meth, uint8_t reg);
-    uint16_t	GetByteAddr (uint8_t meth, uint8_t reg);
+    uint16_t    GetWordAddr (uint8_t meth, uint8_t reg);
+    uint16_t    GetByteAddr (uint8_t meth, uint8_t reg);
 
 protected:  // Implementation - instruction execution
     void        ExecuteUNKNOWN ();  // There is no such instruction -- just call TRAP 10
