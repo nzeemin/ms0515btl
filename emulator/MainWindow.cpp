@@ -58,6 +58,7 @@ void MainWindow_DoViewToolbar();
 void MainWindow_DoViewKeyboard();
 void MainWindow_DoViewFullscreen();
 void MainWindow_DoViewScreenMode(int newMode);
+void MainWindow_DoViewSpriteViewer();
 void MainWindow_DoEmulatorRun();
 void MainWindow_DoEmulatorAutostart();
 void MainWindow_DoEmulatorReset();
@@ -109,9 +110,10 @@ void MainWindow_RegisterClass()
     MemoryView_RegisterClass();
     DebugView_RegisterClass();
     //MemoryMapView_RegisterClass();
-    //SpriteView_RegisterClass();
+    SpriteView_RegisterClass();
     DisasmView_RegisterClass();
     ConsoleView_RegisterClass();
+    //TapeView_RegisterClass();
 }
 
 BOOL CreateMainWindow()
@@ -143,6 +145,7 @@ BOOL CreateMainWindow()
 
     MainWindow_ShowHideToolbar();
     MainWindow_ShowHideKeyboard();
+    //MainWindow_ShowHideTape();
     MainWindow_ShowHideDebug();
 
     MainWindow_RestorePositionAndShow();
@@ -654,6 +657,19 @@ void MainWindow_ShowHideMemoryMap()
     //}
 }
 
+void MainWindow_ShowHideSpriteViewer()
+{
+    if (g_hwndSprite == INVALID_HANDLE_VALUE)
+    {
+        RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
+        SpriteView_Create(rcScreen.right, rcScreen.top - 4 - ::GetSystemMetrics(SM_CYSMCAPTION));
+    }
+    else
+    {
+        ::SetFocus(g_hwndSprite);
+    }
+}
+
 void MainWindow_UpdateMenu()
 {
     // Get main menu
@@ -784,6 +800,9 @@ bool MainWindow_DoCommand(int commandId)
         if (!g_okEmulatorRunning && Settings_GetDebug())
             ConsoleView_StepOver();
         break;
+    case ID_DEBUG_SPRITES:
+        MainWindow_DoViewSpriteViewer();
+        break;
     case ID_DEBUG_MEMORY_WORDBYTE:
         MemoryView_SwitchWordByte();
         break;
@@ -876,6 +895,10 @@ void MainWindow_DoViewKeyboard()
 {
     Settings_SetKeyboard(!Settings_GetKeyboard());
     MainWindow_ShowHideKeyboard();
+}
+void MainWindow_DoViewSpriteViewer()
+{
+    MainWindow_ShowHideSpriteViewer();
 }
 
 void MainWindow_DoViewScreenMode(int newMode)
@@ -1169,6 +1192,8 @@ void MainWindow_UpdateAllViews()
         InvalidateRect(g_hwndMemory, NULL, TRUE);
     //if (g_hwndMemoryMap != NULL)
     //    InvalidateRect(g_hwndMemoryMap, NULL, TRUE);
+    if (g_hwndSprite != NULL)
+        InvalidateRect(g_hwndSprite, NULL, TRUE);
 }
 
 void MainWindow_SetToolbarImage(int commandId, int imageIndex)

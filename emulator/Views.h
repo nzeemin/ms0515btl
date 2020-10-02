@@ -16,13 +16,16 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 //////////////////////////////////////////////////////////////////////
 // Window class names
 
-const LPCTSTR CLASSNAME_SCREENVIEW  = _T("MS0515BTLSCREEN");
-const LPCTSTR CLASSNAME_KEYBOARDVIEW = _T("MS0515BTLKEYBOARD");
-const LPCTSTR CLASSNAME_DEBUGVIEW   = _T("MS0515BTLDEBUG");
-const LPCTSTR CLASSNAME_DISASMVIEW  = _T("MS0515BTLDISASM");
-const LPCTSTR CLASSNAME_MEMORYVIEW  = _T("MS0515BTLMEMORY");
-const LPCTSTR CLASSNAME_CONSOLEVIEW = _T("MS0515BTLCONSOLE");
-const LPCTSTR CLASSNAME_TAPEVIEW    = _T("MS0515BTLTAPE");
+#define CLASSNAMEPREFIX _T("MS0515BTL")
+
+const LPCTSTR CLASSNAME_SCREENVIEW      = CLASSNAMEPREFIX _T("SCREEN");
+const LPCTSTR CLASSNAME_KEYBOARDVIEW    = CLASSNAMEPREFIX _T("KEYBOARD");
+const LPCTSTR CLASSNAME_DEBUGVIEW       = CLASSNAMEPREFIX _T("DEBUG");
+const LPCTSTR CLASSNAME_DISASMVIEW      = CLASSNAMEPREFIX _T("DISASM");
+const LPCTSTR CLASSNAME_MEMORYVIEW      = CLASSNAMEPREFIX _T("MEMORY");
+const LPCTSTR CLASSNAME_SPRITEVIEW      = CLASSNAMEPREFIX _T("SPRITE");
+const LPCTSTR CLASSNAME_CONSOLEVIEW     = CLASSNAMEPREFIX _T("CONSOLE");
+const LPCTSTR CLASSNAME_TAPEVIEW        = CLASSNAMEPREFIX _T("TAPE");
 
 
 //////////////////////////////////////////////////////////////////////
@@ -98,6 +101,17 @@ LRESULT CALLBACK MemoryViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MemoryViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 void MemoryView_SwitchWordByte();
 void MemoryView_SelectAddress();
+
+
+//////////////////////////////////////////////////////////////////////
+// SpriteView
+
+extern HWND g_hwndSprite;  // Sprite view window handler
+
+void SpriteView_RegisterClass();
+void SpriteView_Create(int x, int y);
+LRESULT CALLBACK SpriteViewWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK SpriteViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 
 //////////////////////////////////////////////////////////////////////

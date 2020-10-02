@@ -41,6 +41,7 @@ void MainWindow_ShowHideDebug();
 void MainWindow_ShowHideToolbar();
 void MainWindow_ShowHideKeyboard();
 void MainWindow_ShowHideTape();
+void MainWindow_ShowHideSpriteViewer();
 void MainWindow_AdjustWindowSize();
 
 void MainWindow_SetToolbarImage(int commandId, int imageIndex);
@@ -76,6 +77,7 @@ enum ToolbarButtonImages
     ToolbarImageStepOver = 16,
     ToolbarImageWordByte = 18,
     ToolbarImageGotoAddress = 19,
+    ToolbarImageSpriteViewer = 20,
 };
 
 enum StatusbarParts
@@ -152,6 +154,10 @@ void Settings_SetKeyboard(BOOL flag);
 BOOL Settings_GetKeyboard();
 void Settings_SetTape(BOOL flag);
 BOOL Settings_GetTape();
+WORD Settings_GetSpriteAddress();
+void Settings_SetSpriteAddress(WORD value);
+WORD Settings_GetSpriteWidth();
+void Settings_SetSpriteWidth(WORD value);
 void Settings_SetSerial(BOOL flag);
 BOOL Settings_GetSerial();
 void Settings_GetSerialPort(LPTSTR buffer);
