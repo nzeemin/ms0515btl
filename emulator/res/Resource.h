@@ -6,9 +6,9 @@
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
 #define IDM_EXIT                        105
-#define IDI_MS0515BTL                   107
+#define IDI_APPICON                     107
 #define IDI_SMALL                       108
-#define IDC_MS0515BTL                   109
+#define IDC_APPLICATION                 109
 #define IDR_MAINFRAME                   128
 #define IDD_INPUTBOX                    129
 #define IDB_KEYBOARD                    142

@@ -89,10 +89,10 @@ void MainWindow_RegisterClass()
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = g_hInst;
-    wcex.hIcon          = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_MS0515BTL));
+    wcex.hIcon          = LoadIcon(g_hInst, MAKEINTRESOURCE(IDI_APPICON));
     wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_BTNFACE + 1);
-    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_MS0515BTL);
+    wcex.lpszMenuName   = MAKEINTRESOURCE(IDC_APPLICATION);
     wcex.lpszClassName  = g_szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -229,7 +229,7 @@ BOOL MainWindow_InitToolbar()
 BOOL MainWindow_InitStatusbar()
 {
     TCHAR buffer[100];
-    wsprintf(buffer, _T("%s - version %s"), g_szTitle, _T(MS0515BTL_VERSION_STRING));
+    wsprintf(buffer, _T("%s - version %s"), g_szTitle, _T(APP_VERSION_STRING));
     m_hwndStatusbar = CreateStatusWindow(
             WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
             buffer,
