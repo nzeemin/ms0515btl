@@ -24,7 +24,6 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Dialogs.h"
 #include "Views.h"
 
-
 //////////////////////////////////////////////////////////////////////
 // Global Variables
 

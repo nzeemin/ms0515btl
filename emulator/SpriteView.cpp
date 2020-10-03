@@ -19,7 +19,6 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emulator.h"
 #include "emubase\Emubase.h"
 
-
 //////////////////////////////////////////////////////////////////////
 
 
@@ -352,11 +351,11 @@ void SpriteView_PrepareBitmap()
 
                 for (int i = 0; i < 8; i++)
                 {
-                    COLORREF color = (value & 1) ? 0xffffff : 0;
+                    COLORREF color = (value & 0x80) ? 0xffffff : 0;
                     *pBits = color;
                     pBits++;
 
-                    value = value >> 1;
+                    value = value << 1;
                 }
 
                 address++;

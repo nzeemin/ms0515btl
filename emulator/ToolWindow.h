@@ -12,13 +12,16 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
-
 //////////////////////////////////////////////////////////////////////
 
 
-const LPCTSTR CLASSNAME_TOOLWINDOW = _T("MS0515BTLTOOLWINDOW");
-const LPCTSTR CLASSNAME_OVERLAPPEDWINDOW = _T("MS0515BTLOVERLAPPEDWINDOW");
-const LPCTSTR CLASSNAME_SPLITTERWINDOW = _T("MS0515BTLSPLITTERWINDOW");
+#define CLASSNAMEPREFIX _T("MS0515BTL")
+
+const LPCTSTR CLASSNAME_TOOLWINDOW = CLASSNAMEPREFIX _T("TOOLWINDOW");
+const LPCTSTR CLASSNAME_OVERLAPPEDWINDOW = CLASSNAMEPREFIX _T("OVERLAPPEDWINDOW");
+const LPCTSTR CLASSNAME_SPLITTERWINDOW = CLASSNAMEPREFIX _T("SPLITTERWINDOW");
+
+const int TOOLWINDOW_CAPTION_HEIGHT = 16;
 
 void ToolWindow_RegisterClass();
 LRESULT CALLBACK ToolWindow_WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -31,4 +34,3 @@ HWND SplitterWindow_Create(HWND hwndParent, HWND hwndTop, HWND hwndBottom);
 
 
 //////////////////////////////////////////////////////////////////////
-

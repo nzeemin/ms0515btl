@@ -9,9 +9,11 @@ See the GNU Lesser General Public License for more details.
 MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // SoundGen.h
-//
 
 #pragma once
+
+//////////////////////////////////////////////////////////////////////
+
 
 #define BUFSIZE     ((SOUNDSAMPLERATE / 25) * 2)
 #define BLOCK_COUNT 8
@@ -22,3 +24,6 @@ void SoundGen_Finalize();
 void SoundGen_SetVolume(WORD volume);
 void SoundGen_SetSpeed(WORD speedpercent);
 void CALLBACK SoundGen_FeedDAC(WORD value);
+
+
+//////////////////////////////////////////////////////////////////////

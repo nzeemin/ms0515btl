@@ -15,8 +15,8 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Views.h"
 #include "Emulator.h"
 
-
 //////////////////////////////////////////////////////////////////////
+
 
 #define COLOR_KEYBOARD_BACKGROUND   RGB(220,220,220)
 #define COLOR_KEYBOARD_LITE         RGB(240,240,240)
