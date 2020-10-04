@@ -17,6 +17,14 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 //////////////////////////////////////////////////////////////////////
 
+enum EmulatorConfiguration
+{
+    EMU_CONF_ROMA = 1,
+    EMU_CONF_ROMB = 2,
+};
+
+
+//////////////////////////////////////////////////////////////////////
 
 const int MAX_BREAKPOINTCOUNT = 16;
 const int MAX_WATCHPOINTCOUNT = 16;

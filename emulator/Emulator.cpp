@@ -104,35 +104,11 @@ const uint32_t Emulator_Palette[24] =
 //////////////////////////////////////////////////////////////////////
 
 
-const LPCTSTR FILENAME_ROM_MS0515 = _T("ms0515.rom");
+const LPCTSTR FILENAME_ROM_MS0515   = _T("ms0515.rom");
 
 
 //////////////////////////////////////////////////////////////////////
 
-bool Emulator_LoadRomFile(LPCTSTR strFileName, uint8_t* buffer, uint32_t fileOffset, uint32_t bytesToRead)
-{
-    FILE* fpRomFile = ::_tfsopen(strFileName, _T("rb"), _SH_DENYWR);
-    if (fpRomFile == nullptr)
-        return false;
-
-    ::memset(buffer, 0, bytesToRead);
-
-    if (fileOffset > 0)
-    {
-        ::fseek(fpRomFile, fileOffset, SEEK_SET);
-    }
-
-    uint32_t dwBytesRead = ::fread(buffer, 1, bytesToRead, fpRomFile);
-    if (dwBytesRead != bytesToRead)
-    {
-        ::fclose(fpRomFile);
-        return false;
-    }
-
-    ::fclose(fpRomFile);
-
-    return true;
-}
 
 bool Emulator_Init()
 {
@@ -165,15 +141,6 @@ bool Emulator_Init()
         g_pBoard->SetSoundGenCallback(Emulator_SoundGenCallback);
     }
 
-    // Load ROM file
-    uint8_t buffer[16384];
-    if (!Emulator_LoadRomFile(FILENAME_ROM_MS0515, buffer, 0, 16384))
-    {
-        AlertWarning(_T("Failed to load the ROM."));
-        return false;
-    }
-    g_pBoard->LoadROM(buffer);
-
     return true;
 }
 
@@ -199,6 +166,53 @@ void Emulator_Done()
     // Free memory used for old RAM values
     ::free(g_pEmulatorRam);
     ::free(g_pEmulatorChangedRam);
+}
+
+bool Emulator_InitConfiguration(int configuration)
+{
+    g_pBoard->SetConfiguration((uint16_t)configuration);
+
+    uint8_t buffer[16384];
+
+    // Load ROM from the file, if found
+    FILE* fpFile = ::_tfsopen(FILENAME_ROM_MS0515, _T("rb"), _SH_DENYWR);
+    if (fpFile != nullptr)
+    {
+        size_t dwBytesRead = ::fread(buffer, 1, 16384, fpFile);
+        ::fclose(fpFile);
+        if (dwBytesRead != 16384)
+        {
+            AlertWarning(_T("Failed to load the ROM file."));
+            return false;
+        }
+    }
+    else  // ms0515.rom not found, use ROM image from resources
+    {
+        int romresid = configuration == 1 ? IDR_ROMA : IDR_ROMB;
+
+        HRSRC hRes = NULL;
+        DWORD dwDataSize = 0;
+        HGLOBAL hResLoaded = NULL;
+        void * pResData = nullptr;
+        if ((hRes = ::FindResource(NULL, MAKEINTRESOURCE(romresid), _T("BIN"))) == NULL ||
+            (dwDataSize = ::SizeofResource(NULL, hRes)) < 16384 ||
+            (hResLoaded = ::LoadResource(NULL, hRes)) == NULL ||
+            (pResData = ::LockResource(hResLoaded)) == NULL)
+        {
+            AlertWarning(_T("Failed to load the ROM resource."));
+            return false;
+        }
+        ::memcpy(buffer, pResData, 16384);
+    }
+    g_pBoard->LoadROM(buffer);
+
+    g_nEmulatorConfiguration = configuration;
+
+    g_pBoard->Reset();
+
+    m_nUptimeFrameCount = 0;
+
+    return true;
 }
 
 void Emulator_Start()

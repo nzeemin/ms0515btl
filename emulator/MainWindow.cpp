@@ -718,14 +718,13 @@ void MainWindow_UpdateMenu()
     MainWindow_SetToolbarImage(ID_EMULATOR_SOUND, (Settings_GetSound() ? ToolbarImageSoundOn : ToolbarImageSoundOff));
     EnableMenuItem(hMenu, ID_DEBUG_STEPINTO, (g_okEmulatorRunning ? MF_DISABLED : MF_ENABLED));
 
-    //UINT configcmd = 0;
-    //switch (g_nEmulatorConfiguration)
-    //{
-    //case EMU_CONF_NEMIGA303: configcmd = ID_CONF_NEMIGA303; break;
-    //case EMU_CONF_NEMIGA405: configcmd = ID_CONF_NEMIGA405; break;
-    //case EMU_CONF_NEMIGA406: configcmd = ID_CONF_NEMIGA406; break;
-    //}
-    //CheckMenuRadioItem(hMenu, ID_CONF_NEMIGA303, ID_CONF_NEMIGA406, configcmd, MF_BYCOMMAND);
+    UINT configcmd = 0;
+    switch (g_nEmulatorConfiguration)
+    {
+    case EMU_CONF_ROMA: configcmd = ID_CONF_ROMA; break;
+    case EMU_CONF_ROMB: configcmd = ID_CONF_ROMB; break;
+    }
+    CheckMenuRadioItem(hMenu, ID_CONF_ROMA, ID_CONF_ROMB, configcmd, MF_BYCOMMAND);
 
     // Emulator|FloppyX
     CheckMenuItem(hMenu, ID_EMULATOR_FLOPPY0, (g_pBoard->IsFloppyImageAttached(0) ? MF_CHECKED : MF_UNCHECKED));
@@ -861,6 +860,12 @@ bool MainWindow_DoCommand(int commandId)
         //case ID_FILE_CREATEDISK:
         //    MainWindow_DoFileCreateDisk();
         //    break;
+    case ID_CONF_ROMA:
+        MainWindow_DoEmulatorConf(EMU_CONF_ROMA);
+        break;
+    case ID_CONF_ROMB:
+        MainWindow_DoEmulatorConf(EMU_CONF_ROMB);
+        break;
     case ID_FILE_SETTINGS:
         MainWindow_DoFileSettings();
         break;
@@ -1107,6 +1112,26 @@ void MainWindow_DoFileSettingsColors()
     {
         RedrawWindow(g_hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
     }
+}
+
+void MainWindow_DoEmulatorConf(int configuration)
+{
+    // Check if configuration changed
+    if (g_nEmulatorConfiguration == configuration)
+        return;
+
+    // Ask user -- we have to reset machine to change configuration
+    if (!AlertOkCancel(_T("Reset required after configuration change.\nAre you agree?")))
+        return;
+
+    // Change configuration
+    Emulator_InitConfiguration(configuration);
+
+    Settings_SetConfiguration(configuration);
+
+    MainWindow_UpdateMenu();
+    MainWindow_UpdateAllViews();
+    //KeyboardView_Update();
 }
 
 void MainWindow_DoEmulatorFloppy(int slot)

@@ -18,6 +18,8 @@
 #define IDD_SETTINGS_COLORS             146
 #define IDD_DCB_EDITOR                  148
 #define IDB_KEYBOARDMASK                149
+#define IDR_ROMA                        151
+#define IDR_ROMB                        152
 #define IDC_EDIT1                       1000
 #define IDC_BUILDDATE                   1001
 #define IDC_EDITADDR                    1001
@@ -70,6 +72,8 @@
 #define ID_EMULATOR_FLOPPY2             32806
 #define ID_EMULATOR_FLOPPY3             32807
 #define ID_EMULATOR_CONF                32808
+#define ID_CONF_ROMA                    32809
+#define ID_CONF_ROMB                    32810
 #define ID_EMULATOR_SERIAL              32812
 #define ID_EMULATOR_PARALLEL            32818
 #define ID_EMULATOR_SOUND               32831

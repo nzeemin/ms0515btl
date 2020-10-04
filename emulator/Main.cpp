@@ -178,6 +178,11 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
     if (!Emulator_Init())
         return FALSE;
 
+    int conf = Settings_GetConfiguration();
+    if (conf == 0) conf = EMU_CONF_ROMA;
+    if (!Emulator_InitConfiguration(conf))
+        return FALSE;
+
     Emulator_SetSound(Settings_GetSound());
     Emulator_SetSpeed(Settings_GetRealSpeed());
 
