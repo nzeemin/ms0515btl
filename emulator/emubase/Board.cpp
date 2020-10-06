@@ -348,9 +348,9 @@ bool CMotherboard::SystemFrame()
             if ((m_Port177442r & 2) == 0 && m_pKeyboard->HasByteReady())
             {
                 m_Port177440 = m_pKeyboard->ReceiveByte();
-#if !defined(PRODUCT)
+
                 if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard received %03o\r\n"), m_Port177440);
-#endif
+
                 m_Port177442r |= 2;  // Установка флага "готовность приёмника"
                 m_pCPU->FireIRQ5();
             }
@@ -432,7 +432,6 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed)
     {
         m_pKeyboard->KeyPressed(scancode);
 
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_KEYBOARD)
         {
             if (scancode >= ' ' && scancode <= 127)
@@ -440,7 +439,7 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed)
             else
                 DebugLogFormat(_T("Keyboard 0x%02x\r\n"), scancode);
         }
-#endif
+
         return;
     }
 }
@@ -549,10 +548,7 @@ void CMotherboard::SetWord(uint16_t address, uint16_t word)
         SetVRAMWord(offset & 0177776, word);
         return;
     case ADDRTYPE_ROM:  // Writing to ROM: exception
-        //m_pCPU->MemoryError();
-#if !defined(PRODUCT)
         DebugLogFormat(_T("SetWord WRITE TO ROM addr=%06o val=%06o at PC=%06o\r\n"), address, word, m_pCPU->GetInstructionPC());
-#endif
         return;
     case ADDRTYPE_IO:
         SetPortWord(address, word);
@@ -658,21 +654,17 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
             return m_Port177400;  // Регистр диспетчера памяти
 
         m_pCPU->MemoryError();
-#if !defined(PRODUCT)
+
         DebugLogFormat(_T("GetPort UNKNOWN port %06o at %06o\r\n"), address, m_pCPU->GetInstructionPC());
-#endif
+
         return 0;
 
     case 0177440:  // Клавиатура: буфер данных приёмника, READ ONLY
         m_Port177442r &= ~2;  // Reset Ready flag
-//#if !defined(PRODUCT)
 //        if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard 177440 read %06o\r\n"), m_Port177442r);
-//#endif
         return m_Port177440;
     case 0177442: // Клавиатура: регистр состояния порта, READ
-//#if !defined(PRODUCT)
 //        if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard 177440 read %06o\r\n"), m_Port177442r);
-//#endif
         return m_Port177442r;
     case 0177460:  // Клавиатура: буфер данных передатчика
         return m_Port177460;
@@ -682,33 +674,25 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     case 0177500:  // Таймер
         {
             uint8_t value = m_pTimer->Read(0);
-#if !defined(PRODUCT)
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177500 read %02x\r\n"), value);
-#endif
             return (uint16_t)value;
         }
     case 0177502:  // Таймер
         {
             uint8_t value = m_pTimer->Read(1);
-#if !defined(PRODUCT)
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177502 read %02x\r\n"), value);
-#endif
             return (uint16_t)value;
         }
     case 0177504:  // Таймер
         {
             uint8_t value = m_pTimer->Read(2);
-#if !defined(PRODUCT)
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177504 read %02x\r\n"), value);
-#endif
             return (uint16_t)value;
         }
     case 0177506:  // Таймер: управляющее слово
         {
             uint8_t value = m_pTimer->ReadCommand();
-#if !defined(PRODUCT)
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177506 read %02x\r\n"), value);
-#endif
             return (uint16_t)value;
         }
 
@@ -821,24 +805,19 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         }
 
         m_pCPU->MemoryError();
-#if !defined(PRODUCT)
+
         DebugLogFormat(_T("SetPort UNKNOWN port %06o\r\n"), address);
-#endif
         break;
 
     case 0177440:
         return; //STUB
     case 0177442: // Клавиатура: регистр инструкций
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard %06o -> 177442\r\n"), word);
-#endif
         return; //STUB
     case 0177460:
         m_Port177460 = word;
         m_Port177442r &= ~1;  // Reset Ready flag
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard %06o -> 177460\r\n"), word);
-#endif
         return; //STUB
 
     case 0177462:
@@ -850,27 +829,19 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
     case 0177506:  // Таймер упр.слово чтение
         return; //STUB
     case 0177520:  // Таймер канал 0 запись
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177520 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
-#endif
         m_pTimer->Write(0, (uint8_t)(word & 255));
         return;
     case 0177522:  // Таймер канал 1 запись
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177522 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
-#endif
         m_pTimer->Write(1, (uint8_t)(word & 255));
         return;
     case 0177524:  // Таймер канал 2 запись
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177524 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
-#endif
         m_pTimer->Write(2, (uint8_t)(word & 255));
         return;
     case 0177526:  // Таймер упр.слово запись
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177526 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
-#endif
         m_pTimer->WriteCommand((uint8_t)(word & 255));
         return;
 
@@ -879,9 +850,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
     case 0177546:
         return; //STUB
     case 0177600:  // Системный регистр A
-//#if !defined(PRODUCT)
 //        DebugLogFormat(_T("SysRegA %06o -> 177600\r\n"), word);
-//#endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetControl(word & 017);
         return; //STUB
@@ -894,30 +863,22 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         return; //STUB
 
     case 0177640:  // НГМД: регистр команд
-//#if !defined(PRODUCT)
 //        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy %06o -> 177640\r\n"), word);
-//#endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetCommand(word & 0xff);
         return;
     case 0177642:  // НГМД: регистр дорожки
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
-#endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetTrack(word & 0xff);
         return;
     case 0177644:  // НГМД: регистр сектора
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET SECTOR %d\r\n"), (int)word);
-#endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetSector(word & 0xff);
         return;
     case 0177646:  // НГМД: регистр данных
-#if !defined(PRODUCT)
         if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET DATA %02X\r\n"), word);
-#endif
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->WriteData(word);
         return; //STUB

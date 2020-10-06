@@ -308,9 +308,7 @@ void ScreenView_ScanKeyboard()
 
             BYTE vkey = (BYTE) scan;
 
-//#if !defined(PRODUCT)
 //            if (newstate & 128) DebugPrintFormat(_T("Key PC: 0x%0x %d %d\r\n"), vkey, okShift, okCtrl);
-//#endif
 
             BYTE key = arrPcChar2MS7004scan[vkey];
             if (key == 0)
@@ -336,9 +334,7 @@ void ScreenView_ProcessKeyboard()
         //bool ctrl = ((keyevent & 0x4000) != 0);
         BYTE scan = LOBYTE(keyevent);
 
-//#if !defined(PRODUCT)
 //        DebugPrintFormat(_T("KeyEvent: 0x%0x %d %d\r\n"), scan, pressed, ctrl);
-//#endif
 
         g_pBoard->KeyboardEvent(scan, pressed);
     }

@@ -260,9 +260,9 @@ void CProcessor::Execute()
             {
                 //intrVector = 0172004;  intrMode = true;
                 m_HALTrq = false;
-#if !defined(PRODUCT)
+
                 DebugLogFormat(_T("HALT interrupt at PC=%06o\r\n"), m_instructionpc);
-#endif
+
                 // Save PC/PSW to stack
                 SetSP(GetSP() - 2);
                 SetWord(GetSP(), m_psw);
@@ -513,9 +513,7 @@ void CProcessor::TranslateInstruction ()
 
 void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается TRAP 10
 {
-#if !defined(PRODUCT)
     DebugLogFormat(_T("CPU: Invalid OPCODE %06o at PC=%06o\r\n"), m_instruction, m_instructionpc);
-#endif
 
     m_RSVDrq = true;
 }

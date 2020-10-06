@@ -110,9 +110,7 @@ CFloppyController::~CFloppyController()
 
 void CFloppyController::Reset()
 {
-#if !defined(PRODUCT)
     if (m_okTrace) DebugLog(_T("Floppy RESET\r\n"));
-#endif
 
     FlushChanges();
 
@@ -175,13 +173,11 @@ uint16_t CFloppyController::GetStatus(void)
     m_rqs &= ~R_INTRQ;
     uint16_t res = m_status;
 
-//#if !defined(PRODUCT)
 //    if (m_okTrace && Floppy_LastStatus != m_status)
 //    {
 //        DebugLogFormat(_T("Floppy GET STATUS %02X\r\n"), res);
 //        Flopy_LastStatus = m_status;
 //    }
-//#endif
 
     return res;
 }
@@ -189,13 +185,11 @@ uint16_t CFloppyController::GetStatus(void)
 static uint8_t Floppy_LastControl = 0x0f;  //DEBUG
 void CFloppyController::SetControl(uint8_t data)
 {
-#if !defined(PRODUCT)
     if (m_okTrace && data != Floppy_LastControl)
     {
         DebugLogFormat(_T("Floppy%d CONTROL %02X\r\n"), m_drive, data);
         Floppy_LastControl = data;
     }
-#endif
 
     bool okPrepareTrack = false;  // Нужно ли считывать дорожку в буфер
 
@@ -208,9 +202,8 @@ void CFloppyController::SetControl(uint8_t data)
         m_drive = newdrive;
         m_pDrive = (newdrive < 0) ? NULL : m_drivedata + m_drive;
         okPrepareTrack = true;
-#if !defined(PRODUCT)
+
         if (m_okTrace) DebugLogFormat(_T("Floppy CURRENT DRIVE %d\r\n"), newdrive);
-#endif
     }
 
     m_motoron = ((data & 4) == 0);
@@ -221,9 +214,7 @@ void CFloppyController::SetControl(uint8_t data)
 
 void CFloppyController::SetCommand(uint8_t cmd)
 {
-#if !defined(PRODUCT)
     if (m_okTrace) DebugLogFormat(_T("Floppy%d SET COMMAND %02X =====\r\n"), m_drive, cmd);
-#endif
 
     m_opercount = -1;
 
@@ -262,11 +253,9 @@ void CFloppyController::SetCommand(uint8_t cmd)
 
 uint16_t CFloppyController::GetData(void)
 {
-#if !defined(PRODUCT)
     uint16_t offset = m_pDrive->dataptr;
     if (m_okTrace && offset >= 160 && (offset - 160) % 614 == 0)
         DebugLogFormat(_T("Floppy%d READ %02X POS%04d TR%02d SC%02d\r\n"), m_drive, m_data, offset, m_track, (offset - 160) / 614 + 1);
-#endif
 
     m_status &= ~ST_DRQ;
     m_rqs &= ~R_DRQ;
@@ -275,11 +264,9 @@ uint16_t CFloppyController::GetData(void)
 
 void CFloppyController::WriteData(uint16_t data)
 {
-#if !defined(PRODUCT)
     uint16_t offset = m_pDrive->dataptr;
     if (m_okTrace && offset >= 160 && (offset - 160) % 614 == 0)
         DebugLogFormat(_T("Floppy%d WRITE %02X POS%04d TR%02d SC%02d\r\n"), m_drive, data, offset, m_track, (offset - 160) / 614 + 1);
-#endif
 
     m_rqs &= ~R_DRQ;
     m_status &= ~ST_DRQ;
@@ -319,13 +306,12 @@ void CFloppyController::Periodic()
             m_status |= ST_INDEX;
     }
 
-#if !defined(PRODUCT)
     if (m_okTrace && m_state != FloppyLastState)
     {
         DebugLogFormat(_T("Floppy state changed %d -> %d\r\n"), (int)FloppyLastState, (int)m_state);
         FloppyLastState = m_state;
     }
-#endif
+
     switch (m_state)
     {
     case S_IDLE:
@@ -671,9 +657,7 @@ void CFloppyController::PrepareTrack()
 
     if (m_pDrive == NULL) return;
 
-#if !defined(PRODUCT)
     if (m_okTrace) DebugLogFormat(_T("Floppy%d PREPARE TRACK %d\r\n"), m_drive, m_track);
-#endif
 
     m_trackchanged = false;
     //NOTE: Not changing m_pDrive->dataptr
@@ -716,9 +700,7 @@ void CFloppyController::FlushChanges()
     if (!IsAttached(m_drive)) return;
     if (!m_trackchanged) return;
 
-#if !defined(PRODUCT)
     if (m_okTrace) DebugLogFormat(_T("Floppy%d FLUSH track %d\r\n"), m_drive, (int)m_pDrive->datatrack);
-#endif
 
     //TCHAR filename[32];  wsprintf(filename, _T("rawtrack%02d.bin"), (int)m_pDrive->datatrack);
     //FILE* fpTrack = ::_tfopen(filename, _T("w+b"));
@@ -754,9 +736,7 @@ void CFloppyController::FlushChanges()
     }
     else
     {
-#if !defined(PRODUCT)
-        if (m_okTrace) DebugLog(_T("Floppy FLUSH FAILED\r\n"));  //DEBUG
-#endif
+        if (m_okTrace) DebugLog(_T("Floppy FLUSH FAILED\r\n"));
     }
 
     m_trackchanged = false;
