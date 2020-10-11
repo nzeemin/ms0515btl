@@ -267,12 +267,10 @@ void DebugView_DoDraw(HDC hdc)
     WORD oldPsw = m_wDebugCpuPswOld;
     WORD oldSP = m_wDebugCpuR6Old;
 
-    //TextOut(hdc, cxChar * 1, 2 + 1 * cyLine, _T("CPU"), 3);
-
     DebugView_DrawProcessor(hdc, pDebugPU, 30 + cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged, oldPsw);
 
     // Draw stack for the current processor
-    DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 35 * cxChar, 2 + 0 * cyLine, oldSP);
+    DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 36 * cxChar, 2 + 0 * cyLine, oldSP);
 
     BOOL okWatches = DebugView_DrawWatchpoints(hdc, 30 + 57 * cxChar, 2 + 0 * cyLine);
     if (!okWatches)
@@ -375,18 +373,18 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
                 current + idx * 2 - 14, okExec, addrtype + idx);
     }
 
-    WORD address = current - 14;
-    for (int index = 0; index < 14; index++)    // Draw strings
+    WORD address = current - 16;
+    for (int index = 0; index < 16; index++)    // Draw strings
     {
         // Address
         SetTextColor(hdc, colorText);
-        DrawOctalValue(hdc, x + 4 * cxChar, y, address);
+        DrawOctalValue(hdc, x + 3 * cxChar, y, address);
 
         // Value at the address
         WORD value = memory[index];
         WORD wChanged = Emulator_GetChangeRamStatus(address);
         SetTextColor(hdc, (wChanged != 0) ? colorChanged : colorText);
-        DrawOctalValue(hdc, x + 12 * cxChar, y, value);
+        DrawOctalValue(hdc, x + 11 * cxChar, y, value);
 
         // Current position
         if (address == current)

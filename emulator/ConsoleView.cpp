@@ -232,7 +232,7 @@ void ConsoleView_Print(LPCTSTR message)
     // Put selection to the end of text
     SendMessage(m_hwndConsoleLog, EM_SETSEL, 0x100000, 0x100000);
     // Insert the message
-    SendMessage(m_hwndConsoleLog, EM_REPLACESEL, (WPARAM) FALSE, (LPARAM) message);
+    SendMessage(m_hwndConsoleLog, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)message);
     // Scroll to caret
     SendMessage(m_hwndConsoleLog, EM_SCROLLCARET, 0, 0);
 }
@@ -241,7 +241,7 @@ void ConsoleView_ClearConsole()
 {
     if (m_hwndConsoleLog == INVALID_HANDLE_VALUE) return;
 
-    SendMessage(m_hwndConsoleLog, WM_SETTEXT, 0, (LPARAM) _T(""));
+    SendMessage(m_hwndConsoleLog, WM_SETTEXT, 0, (LPARAM)_T(""));
 }
 
 void ConsoleView_PrintConsolePrompt()
@@ -410,14 +410,21 @@ uint16_t ConsoleView_PrintDisassemble(WORD address, BOOL okOneInstr, BOOL okShor
 void ConsoleView_StepInto()
 {
     // Put command to console prompt
-    SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM) _T("s"));
+    SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM)_T("s"));
     // Execute command
     ConsoleView_DoConsoleCommand();
 }
 void ConsoleView_StepOver()
 {
     // Put command to console prompt
-    SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM) _T("so"));
+    SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM)_T("so"));
+    // Execute command
+    ConsoleView_DoConsoleCommand();
+}
+void ConsoleView_DeleteAllBreakpoints()
+{
+    // Put command to console prompt
+    SendMessage(m_hwndConsoleEdit, WM_SETTEXT, 0, (LPARAM)_T("bc"));
     // Execute command
     ConsoleView_DoConsoleCommand();
 }

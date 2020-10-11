@@ -96,6 +96,8 @@
 #define ID_VIEW_MEMORYMAP               32887
 #define ID_DEBUG_MEMORY_WORDBYTE        32894
 #define ID_DEBUG_MEMORY_GOTO            32895
+#define ID_DEBUG_CLEARCONSOLE           32896
+#define ID_DEBUG_DELETEALLBREAKPTS      32897
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
