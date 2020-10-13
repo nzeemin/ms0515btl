@@ -106,6 +106,7 @@ void CMotherboard::Reset ()
     // Reset ports
     m_Port177400 = 0; //TODO
     m_Port177442r = 0201;
+    m_Port177600 = 0; //TODO
     m_Port177604 = 0; //TODO
     //TODO
 
@@ -630,7 +631,11 @@ int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* 
         return ADDRTYPE_IO;
     }
     // Если это окно 6, то возможно это тоже ПЗУ
-    //TODO if (window == 6 && )
+    if (window == 6 && (m_Port177600 & 0200) != 0)  // Выбор ПЗУ - бит 7 системного регистра A
+    {
+        *pOffset = (address - 0140000) & 037777;  // 0..8192
+        return ADDRTYPE_ROM;
+    }
 
     bool isprimary = ((m_Port177400 >> window) & 1) != 0;  // Признак того что выбрано основное ОЗУ
     *pOffset = address;
@@ -712,7 +717,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     case 0177546:  // ИРПР: регистр управления
         return 0; //STUB
     case 0177600:  // Системный регистр A
-        return 0; //STUB
+        return m_Port177600;
     case 0177602:  // Системный регистр B
         return 0; //STUB
     case 0177604:  // Системный регистр C
@@ -761,7 +766,7 @@ uint16_t CMotherboard::GetPortView(uint16_t address)
     case 0177460:  // Клавиатура: буфер данных передатчика
         return m_Port177460;
     case 0177600:  // Системный регистр A
-        return 0; //STUB
+        return m_Port177600;
     case 0177602:  // Системный регистр B
         return 0; //STUB
     case 0177604:  // Системный регистр C
@@ -850,10 +855,11 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
     case 0177546:
         return; //STUB
     case 0177600:  // Системный регистр A
-//        DebugLogFormat(_T("SysRegA %06o -> 177600\r\n"), word);
+        DebugLogFormat(_T("SysRegA %06o -> 177600\r\n"), word);
+        m_Port177600 = word;
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetControl(word & 017);
-        return; //STUB
+        return;
     case 0177602:  // Системный регистр B
         return; //STUB
     case 0177604:  // Системный регистр C
@@ -919,7 +925,7 @@ void CMotherboard::SaveToImage(uint8_t* pImage)
     *pwImage++ = m_Port177440;
     *pwImage++ = m_Port177442r;
     *pwImage++ = m_Port177460;
-    *pwImage++ = 0;  // Reserved for port 177600
+    *pwImage++ = m_Port177600;
     *pwImage++ = 0;  // Reserved for port 177602
     *pwImage++ = m_Port177604;
     pwImage += 8;  // RESERVED
@@ -948,7 +954,7 @@ void CMotherboard::LoadFromImage(const uint8_t* pImage)
     m_Port177440 = *pwImage++;
     m_Port177442r = *pwImage++;
     m_Port177460 = *pwImage++;
-    pwImage++;  // Reserved for port 177600
+    m_Port177600 = *pwImage++;
     pwImage++;  // Reserved for port 177602
     m_Port177604 = *pwImage++;
     pwImage += 8;  // RESERVED

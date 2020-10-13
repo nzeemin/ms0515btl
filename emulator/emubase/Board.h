@@ -177,6 +177,7 @@ private:  // Ports: implementation
     uint16_t    m_Port177440;       // Клавиатура: буфер данных приёмника
     uint16_t    m_Port177442r;      // Клавиатура: регистр состояния порта
     uint16_t    m_Port177460;       // Клавиатура: буфер данных передатчика
+    uint16_t    m_Port177600;       // Системный регистр A
     uint16_t    m_Port177604;       // Системный регистр C
 private:
     const uint16_t* m_CPUbps;  // CPU breakpoint list, ends with 177777 value

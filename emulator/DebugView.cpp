@@ -39,6 +39,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
 BOOL DebugView_DrawWatchpoints(HDC hdc, int x, int y);
 void DebugView_DrawPorts(HDC hdc, int x, int y);
 BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y);
+void DebugView_DrawMemoryMap(HDC hdc, int x, int y);
 void DebugView_UpdateWindowText();
 
 
@@ -276,7 +277,10 @@ void DebugView_DoDraw(HDC hdc)
     if (!okWatches)
         DebugView_DrawPorts(hdc, 30 + 57 * cxChar, 2 + 0 * cyLine);
 
-    DebugView_DrawBreakpoints(hdc, 30 + 83 * cxChar, 2 + 0 * cyLine);
+    BOOL okBreakpoints = DebugView_DrawBreakpoints(hdc, 30 + 83 * cxChar, 2 + 0 * cyLine);
+
+    int xMemoryMap = 30 + (83 + (okBreakpoints ? 10 : 0)) * cxChar;
+    DebugView_DrawMemoryMap(hdc, xMemoryMap, 0 * cyLine);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -439,76 +443,37 @@ BOOL DebugView_DrawWatchpoints(HDC hdc, int x, int y)
     return TRUE;
 }
 
+struct DebugViewPortWatch
+{
+    uint16_t address;
+    LPCTSTR description;
+}
+m_DebugViewPorts[] =
+{
+    { 0177400, _T("memory") },
+    { 0177440, _T("keyin") },
+    { 0177442, _T("key st") },
+    { 0177460, _T("keyout") },
+    { 0177600, _T("sys A") },
+    { 0177604, _T("sys C") },
+};
+
 void DebugView_DrawPorts(HDC hdc, int x, int y)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 
     TextOut(hdc, x, y, _T("Ports:"), 6);
 
-    WORD value;
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177400);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177400);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("memory"), 6);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177440);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177440);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("keyin"), 5);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177442);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177442);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("VDATA"), 5);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177460);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177460);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("keyout"), 6);
-    y += cyLine;
-    value = g_pBoard->GetPortView(0177604);
-    DrawOctalValue(hdc, x + 0 * cxChar, y, 0177604);
-    DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    //DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    TextOut(hdc, x + 16 * cxChar, y, _T("sys C"), 5);
-    y += cyLine;
-    //value = g_pBoard->GetPortView(0177106);
-    //DrawOctalValue(hdc, x + 0 * cxChar, y, 0177106);
-    //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("FDD timer"), 9);
-    //y += cyLine;
-    //value = g_pBoard->GetPortView(0177712);
-    //DrawOctalValue(hdc, x + 0 * cxChar, y, 0177712);
-    //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("timer manage"), 12);
-    //y += cyLine;
-    //value = g_pBoard->GetPortView(0177514);
-    //DrawOctalValue(hdc, x + 0 * cxChar, y, 0177514);
-    //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("parallel"), 8);
-    //y += cyLine;
-    //value = g_pBoard->GetPortView(0177716);
-    //DrawOctalValue(hdc, x + 0 * cxChar, y, 0177716);
-    //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("system"), 6);
-    //y += cyLine;
-    //value = g_pBoard->GetPortView(0177130);
-    //DrawOctalValue(hdc, x + 0 * cxChar, y, 0177130);
-    //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("floppy state"), 12);
-    //y += cyLine;
-    //value = g_pBoard->GetPortView(0177132);
-    //DrawOctalValue(hdc, x + 0 * cxChar, y, 0177132);
-    //DrawOctalValue(hdc, x + 8 * cxChar, y, value);
-    ////DrawBinaryValue(hdc, x + 15 * cxChar, y, value);
-    //TextOut(hdc, x + 16 * cxChar, y, _T("floppy data"), 11);
+    int portsCount = sizeof(m_DebugViewPorts) / sizeof(m_DebugViewPorts[0]);
+    for (int i = 0; i < portsCount; i++)
+    {
+        const DebugViewPortWatch& watch = m_DebugViewPorts[i];
+        uint16_t value = g_pBoard->GetPortView(watch.address);
+        DrawOctalValue(hdc, x + 0 * cxChar, y, watch.address);
+        DrawOctalValue(hdc, x + 8 * cxChar, y, value);
+        TextOut(hdc, x + 16 * cxChar, y, watch.description, _tcslen(watch.description));
+        y += cyLine;
+    }
 }
 
 BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y)
@@ -528,6 +493,72 @@ BOOL DebugView_DrawBreakpoints(HDC hdc, int x, int y)
         pbps++;
     }
     return TRUE;
+}
+
+void DebugView_DrawMemoryMap(HDC hdc, int x, int y)
+{
+    uint16_t port177400 = g_pBoard->GetPortView(0177400);
+    uint16_t port177600 = g_pBoard->GetPortView(0177600);
+    bool vramturedon = (port177400 & 0200) != 0;
+    int vramwindow0 = -1, vramwindow1 = -1;
+    if (vramturedon)
+    {
+        int vramflags = (port177400 >> 10) & 3;
+        switch (vramflags)
+        {
+        case 0:
+            vramwindow0 = 0;  vramwindow1 = 1;  break;
+        case 1:
+            vramwindow0 = 2;  vramwindow1 = 3;  break;
+        default:
+            vramwindow0 = 4;  vramwindow1 = 5;  break;
+        }
+    }
+
+    int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+
+    int x1 = x + cxChar * 7;
+    int y1 = y + cxChar / 2;
+    int x2 = x1 + cxChar * 14;
+    int y2 = y1 + cyLine * 16;
+    int xtype = x1 + cxChar * 3;
+
+    HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR_BTNSHADOW));
+    PatBlt(hdc, x1, y1, 1, y2 - y1, PATCOPY);
+    PatBlt(hdc, x2, y1, 1, y2 - y1 + 1, PATCOPY);
+    PatBlt(hdc, x1, y1, x2 - x1, 1, PATCOPY);
+
+    for (uint16_t window = 0; window < 8; window++)
+    {
+        int yp = y2 - window * cyLine * 2;
+        uint16_t address = window << 13;
+        DrawOctalValue(hdc, x, yp - cyLine / 2, address);
+        PatBlt(hdc, x1, yp, x2 - x1, 1, PATCOPY);
+
+        LPCTSTR szMapping = NULL;
+        TCHAR buffer[10];
+        if (window == 7)
+            szMapping = _T("ROM");
+        else if (window == 6 && (port177600 & 0200) != 0)
+            szMapping = _T("ROM");
+        else if (window == vramwindow0)
+            szMapping = _T("VRAM0");
+        else if (window == vramwindow1)
+            szMapping = _T("VRAM1");
+        if (szMapping == NULL)
+        {
+            bool isprimary = ((port177400 >> window) & 1) != 0;
+            LPCTSTR szFormat = isprimary ? _T("RAM%d pri") : _T("RAM%d ext");
+            wsprintf(buffer, szFormat, window);
+            szMapping = buffer;
+        }
+
+        TextOut(hdc, xtype, yp - cyLine * 4 / 3, szMapping, (int)_tcslen(szMapping));
+
+    }
+
+    PatBlt(hdc, x1, y1 + cyLine / 4, x2 - x1, 1, PATCOPY);
+    ::SelectObject(hdc, hOldBrush);
 }
 
 
