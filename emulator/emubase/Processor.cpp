@@ -45,9 +45,9 @@ const int TIMING_NOP    =   18;  // 2.40 us - NOP, CLC, ..., CCC, SEC, ..., SCC
 const int TIMING_MFPT   =   15;  // 2.00 us
 
 #define TIMING_MOV(m_methsrc, m_methdest) \
-    ((m_methdest < 5 ? TIMING_MOV_SRC_DST04[m_methsrc] : TIMING_MOV_SRC_DST57[m_methsrc]) + TIMING_MOV_DST[m_methdest])
+    (((m_methdest) < 5 ? TIMING_MOV_SRC_DST04[m_methsrc] : TIMING_MOV_SRC_DST57[m_methsrc]) + TIMING_MOV_DST[m_methdest])
 #define TIMING_CMP(m_methsrc, m_methdest) \
-    ((m_methdest < 5 ? TIMING_MOV_SRC_DST04[m_methsrc] : TIMING_MOV_SRC_DST57[m_methsrc]) + TIMING_CMP_DST[m_methdest])
+    (((m_methdest) < 5 ? TIMING_MOV_SRC_DST04[m_methsrc] : TIMING_MOV_SRC_DST57[m_methsrc]) + TIMING_CMP_DST[m_methdest])
 
 const int TIMING_ILLEGAL = 110; //TODO
 

@@ -64,7 +64,7 @@ static bool DecodeTrackData(const uint8_t* pRaw, uint8_t* pDest);
 
 CFloppyDrive::CFloppyDrive()
 {
-    fpFile = NULL;
+    fpFile = nullptr;
     okReadOnly = false;
     datatrack = 0;
     dataptr = 0;
@@ -84,8 +84,7 @@ void CFloppyDrive::Reset()
 
 CFloppyController::CFloppyController()
 {
-    m_drive = -1;  m_pDrive = NULL;
-    m_track = 0;
+    m_drive = -1;  m_pDrive = nullptr;
     m_motoron = false;
     m_okTrace = false;
     m_opercount = 0;
@@ -114,7 +113,7 @@ void CFloppyController::Reset()
 
     FlushChanges();
 
-    m_drive = -1;  m_pDrive = NULL;
+    m_drive = -1;  m_pDrive = nullptr;
     m_track = 0;
     m_opercount = 0;
     m_data = 0;
@@ -124,21 +123,21 @@ void CFloppyController::Reset()
 
 bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
 {
-    ASSERT(sFileName != NULL);
+    ASSERT(sFileName != nullptr);
 
     // If image attached - detach one first
-    if (m_drivedata[drive].fpFile != NULL)
+    if (m_drivedata[drive].fpFile != nullptr)
         DetachImage(drive);
 
     // Open file
     m_drivedata[drive].okReadOnly = false;
     m_drivedata[drive].fpFile = ::_tfopen(sFileName, _T("r+b"));
-    if (m_drivedata[drive].fpFile == NULL)
+    if (m_drivedata[drive].fpFile == nullptr)
     {
         m_drivedata[drive].okReadOnly = true;
         m_drivedata[drive].fpFile = ::_tfopen(sFileName, _T("rb"));
     }
-    if (m_drivedata[drive].fpFile == NULL)
+    if (m_drivedata[drive].fpFile == nullptr)
         return false;
 
     m_track = m_drivedata[drive].datatrack = 0;
@@ -155,12 +154,12 @@ bool CFloppyController::AttachImage(int drive, LPCTSTR sFileName)
 
 void CFloppyController::DetachImage(int drive)
 {
-    if (m_drivedata[drive].fpFile == NULL) return;
+    if (m_drivedata[drive].fpFile == nullptr) return;
 
     FlushChanges();
 
     ::fclose(m_drivedata[drive].fpFile);
-    m_drivedata[drive].fpFile = NULL;
+    m_drivedata[drive].fpFile = nullptr;
     m_drivedata[drive].okReadOnly = false;
     m_drivedata[drive].Reset();
 }
@@ -200,7 +199,7 @@ void CFloppyController::SetControl(uint8_t data)
     {
         FlushChanges();
         m_drive = newdrive;
-        m_pDrive = (newdrive < 0) ? NULL : m_drivedata + m_drive;
+        m_pDrive = (newdrive < 0) ? nullptr : m_drivedata + m_drive;
         okPrepareTrack = true;
 
         if (m_okTrace) DebugLogFormat(_T("Floppy CURRENT DRIVE %d\r\n"), newdrive);
@@ -290,7 +289,7 @@ void CFloppyController::Periodic()
     if (m_opercount > 0)  // Уменьшаем счётчик текущей операции
         m_opercount--;
 
-    bool diskpresent = (m_pDrive != NULL) && (IsAttached(m_drive));
+    bool diskpresent = (m_pDrive != nullptr) && (IsAttached(m_drive));
     if (diskpresent)
         m_status &= ~ST_NOTRDY;
     else
@@ -300,9 +299,9 @@ void CFloppyController::Periodic()
     {
         m_status &= ~(ST_TRK00 | ST_INDEX);
 
-        if (m_pDrive != NULL && m_pDrive->datatrack == 0)
+        if (m_pDrive != nullptr && m_pDrive->datatrack == 0)
             m_status |= ST_TRK00;
-        if (m_pDrive != NULL && m_pDrive->dataptr < FLOPPY_INDEXLENGTH)
+        if (m_pDrive != nullptr && m_pDrive->dataptr < FLOPPY_INDEXLENGTH)
             m_status |= ST_INDEX;
     }
 
@@ -333,7 +332,7 @@ void CFloppyController::Periodic()
         break;
     case S_CMD_RW:
         if (((m_cmd & 0xe0) == 0xa0 || (m_cmd & 0xf0) == 0xf0) &&
-            m_pDrive != NULL && m_pDrive->okReadOnly)  // Write operation on Write-Protected disk
+            m_pDrive != nullptr && m_pDrive->okReadOnly)  // Write operation on Write-Protected disk
         {
             m_status |= ST_WRITEP;
             m_state = S_IDLE;
@@ -348,7 +347,7 @@ void CFloppyController::Periodic()
         }
         if ((m_cmd & 0xc0) == 0x80 || (m_cmd & 0xf8) == 0xc0)  // read/write sectors or read AM -- find next AM
         {
-            if (m_pDrive != NULL)
+            if (m_pDrive != nullptr)
             {
                 if (m_startcrc < 0)
                 {
@@ -401,7 +400,7 @@ void CFloppyController::Periodic()
         m_state = S_IDLE;
         break;
     case S_FOUND_NEXT_ID:
-        if (m_pDrive == NULL) //TODO: Not accurate implementation for now
+        if (m_pDrive == nullptr) //TODO: Not accurate implementation for now
         {
             m_status |= ST_NOTFOUND;
             m_state = S_IDLE;
@@ -495,7 +494,7 @@ void CFloppyController::Periodic()
         }
         break;
     case S_WRTRACK:
-        if (m_pDrive == NULL)
+        if (m_pDrive == nullptr)
         {
             m_state = S_IDLE;
             break;
@@ -512,7 +511,7 @@ void CFloppyController::Periodic()
         m_rwlen = 0;
         m_startcrc = -1;
     case S_WR_TRACK_DATA:
-        if (m_pDrive == NULL)
+        if (m_pDrive == nullptr)
         {
             m_state = S_IDLE;
             break;
@@ -567,7 +566,7 @@ void CFloppyController::Periodic()
     case S_TYPE1_CMD:
         m_status = (m_status | ST_BUSY) & ~(ST_DRQ | ST_CRCERR | ST_SEEKERR | ST_WRITEP);
         m_rqs = R_NONE;
-        if (m_pDrive != NULL && m_pDrive->okReadOnly)
+        if (m_pDrive != nullptr && m_pDrive->okReadOnly)
             m_status |= ST_WRITEP;
         //TODO: Motor
         m_statenext = S_SEEKSTART;
@@ -581,7 +580,7 @@ void CFloppyController::Periodic()
         break;
     case S_STEP:
         {
-            int cyl = ((m_pDrive != NULL) ? m_pDrive->datatrack : 0) + m_direction;
+            int cyl = ((m_pDrive != nullptr) ? m_pDrive->datatrack : 0) + m_direction;
             if (cyl < 0) cyl = 0;
             if (cyl > MAX_PHYS_CYL) cyl = MAX_PHYS_CYL;
 
@@ -612,7 +611,7 @@ void CFloppyController::Periodic()
         m_state = S_STEP;
         break;
     case S_VERIFY:
-        if ((m_cmd & CB_SEEK_VERIFY) == 0 || m_pDrive == NULL)
+        if ((m_cmd & CB_SEEK_VERIFY) == 0 || m_pDrive == nullptr)
         {
             m_state = S_IDLE;
             break;
@@ -627,7 +626,7 @@ void CFloppyController::Periodic()
         }
         break;
     case S_RESET: //seek to trk0, but don't be busy
-        if (m_pDrive != NULL && m_pDrive->datatrack == 0)
+        if (m_pDrive != nullptr && m_pDrive->datatrack == 0)
         {
             m_state = S_IDLE;
         }
@@ -655,7 +654,7 @@ void CFloppyController::PrepareTrack()
 {
     FlushChanges();
 
-    if (m_pDrive == NULL) return;
+    if (m_pDrive == nullptr) return;
 
     if (m_okTrace) DebugLogFormat(_T("Floppy%d PREPARE TRACK %d\r\n"), m_drive, m_track);
 
@@ -666,10 +665,10 @@ void CFloppyController::PrepareTrack()
     long foffset = m_track * FLOPPY_TRACKSIZE;
     uint8_t data[FLOPPY_TRACKSIZE];  memset(data, 0, FLOPPY_TRACKSIZE);
 
-    if (m_pDrive->fpFile != NULL)
+    if (m_pDrive->fpFile != nullptr)
     {
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        size_t count = ::fread(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
+        size_t count = ::fread(data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
         //TODO: Контроль ошибок чтения
     }
 
@@ -731,7 +730,7 @@ void CFloppyController::FlushChanges()
 
         // Save data into the file
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
-        size_t dwBytesWritten = ::fwrite(&data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
+        size_t dwBytesWritten = ::fwrite(data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
         //TODO: Проверка на ошибки записи
     }
     else
@@ -748,7 +747,7 @@ void CFloppyController::FlushChanges()
 
 uint16_t CalculateChecksum(const uint8_t* buffer, int length)
 {
-    ASSERT(buffer != NULL);
+    ASSERT(buffer != nullptr);
     ASSERT(length > 0);
     uint16_t sum = 0;
     while (length > 0)
