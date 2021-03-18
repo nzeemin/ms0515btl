@@ -45,6 +45,7 @@ void ScreenView_RedrawScreen();  // Force to call PrepareScreen and to draw the 
 void ScreenView_Create(HWND hwndParent, int x, int y);
 LRESULT CALLBACK ScreenViewWndProc(HWND, UINT, WPARAM, LPARAM);
 BOOL ScreenView_SaveScreenshot(LPCTSTR sFileName);
+HGLOBAL ScreenView_GetScreenshotAsDIB();
 void ScreenView_KeyEvent(BYTE keyscan, BOOL pressed);
 
 
@@ -88,6 +89,7 @@ void DisasmView_Redraw();
 LRESULT CALLBACK DisasmViewWndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK DisasmViewViewerWndProc(HWND, UINT, WPARAM, LPARAM);
 void DisasmView_OnUpdate();
+void DisasmView_LoadUnloadSubtitles();
 
 
 //////////////////////////////////////////////////////////////////////

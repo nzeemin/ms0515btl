@@ -63,6 +63,7 @@ void MainWindow_DoFileLoadState();
 void MainWindow_DoEmulatorFloppy(int slot);
 void MainWindow_DoEmulatorConf(int configuration);
 void MainWindow_DoFileScreenshot();
+void MainWindow_DoFileScreenshotToClipboard();
 void MainWindow_DoFileScreenshotSaveAs();
 void MainWindow_DoFileCreateDisk();
 void MainWindow_DoFileSettings();
@@ -726,14 +727,32 @@ bool MainWindow_DoCommand(int commandId)
 {
     switch (commandId)
     {
-    case IDM_ABOUT:
-        ShowAboutBox();
+    case ID_FILE_LOADSTATE:
+        MainWindow_DoFileLoadState();
+        break;
+    case ID_FILE_SAVESTATE:
+        MainWindow_DoFileSaveState();
+        break;
+    case ID_FILE_SCREENSHOT:
+        MainWindow_DoFileScreenshot();
+        break;
+    case ID_FILE_SCREENSHOTTOCLIPBOARD:
+        MainWindow_DoFileScreenshotToClipboard();
+        break;
+    case ID_FILE_SAVESCREENSHOTAS:
+        MainWindow_DoFileScreenshotSaveAs();
+        break;
+        //case ID_FILE_CREATEDISK:
+        //    MainWindow_DoFileCreateDisk();
+        //    break;
+    case ID_FILE_SETTINGS:
+        MainWindow_DoFileSettings();
+        break;
+    case ID_FILE_SETTINGS_COLORS:
+        MainWindow_DoFileSettingsColors();
         break;
     case IDM_EXIT:
         DestroyWindow(g_hwnd);
-        break;
-    case ID_VIEW_DEBUG:
-        MainWindow_DoViewDebug();
         break;
     case ID_VIEW_TOOLBAR:
         MainWindow_DoViewToolbar();
@@ -762,8 +781,56 @@ bool MainWindow_DoCommand(int commandId)
     case ID_EMULATOR_RUN:
         MainWindow_DoEmulatorRun();
         break;
+    case ID_EMULATOR_RESET:
+        MainWindow_DoEmulatorReset();
+        break;
     case ID_EMULATOR_AUTOSTART:
         MainWindow_DoEmulatorAutostart();
+        break;
+    case ID_EMULATOR_SOUND:
+        MainWindow_DoEmulatorSound();
+        break;
+    case ID_EMULATOR_SPEED25:
+        MainWindow_DoEmulatorSpeed(0x7ffe);
+        break;
+    case ID_EMULATOR_SPEED50:
+        MainWindow_DoEmulatorSpeed(0x7fff);
+        break;
+    case ID_EMULATOR_SPEEDMAX:
+        MainWindow_DoEmulatorSpeed(0);
+        break;
+    case ID_EMULATOR_REALSPEED:
+        MainWindow_DoEmulatorSpeed(1);
+        break;
+    case ID_EMULATOR_SPEED200:
+        MainWindow_DoEmulatorSpeed(2);
+        break;
+    case ID_EMULATOR_SERIAL:
+        MainWindow_DoEmulatorSerial();
+        break;
+    case ID_EMULATOR_PARALLEL:
+        MainWindow_DoEmulatorParallel();
+        break;
+    case ID_EMULATOR_FLOPPY0:
+        MainWindow_DoEmulatorFloppy(0);
+        break;
+    case ID_EMULATOR_FLOPPY1:
+        MainWindow_DoEmulatorFloppy(1);
+        break;
+    case ID_EMULATOR_FLOPPY2:
+        MainWindow_DoEmulatorFloppy(2);
+        break;
+    case ID_EMULATOR_FLOPPY3:
+        MainWindow_DoEmulatorFloppy(3);
+        break;
+    case ID_CONF_ROMA:
+        MainWindow_DoEmulatorConf(EMU_CONF_ROMA);
+        break;
+    case ID_CONF_ROMB:
+        MainWindow_DoEmulatorConf(EMU_CONF_ROMB);
+        break;
+    case ID_VIEW_DEBUG:
+        MainWindow_DoViewDebug();
         break;
     case ID_DEBUG_SPRITES:
         MainWindow_DoViewSpriteViewer();
@@ -784,77 +851,17 @@ bool MainWindow_DoCommand(int commandId)
         if (Settings_GetDebug())
             ConsoleView_DeleteAllBreakpoints();
         break;
+    case ID_DEBUG_SUBTITLES:
+        DisasmView_LoadUnloadSubtitles();
+        break;
     case ID_DEBUG_MEMORY_WORDBYTE:
         MemoryView_SwitchWordByte();
         break;
     case ID_DEBUG_MEMORY_GOTO:
         MemoryView_SelectAddress();
         break;
-    case ID_EMULATOR_RESET:
-        MainWindow_DoEmulatorReset();
-        break;
-    case ID_EMULATOR_SPEED25:
-        MainWindow_DoEmulatorSpeed(0x7ffe);
-        break;
-    case ID_EMULATOR_SPEED50:
-        MainWindow_DoEmulatorSpeed(0x7fff);
-        break;
-    case ID_EMULATOR_SPEEDMAX:
-        MainWindow_DoEmulatorSpeed(0);
-        break;
-    case ID_EMULATOR_REALSPEED:
-        MainWindow_DoEmulatorSpeed(1);
-        break;
-    case ID_EMULATOR_SPEED200:
-        MainWindow_DoEmulatorSpeed(2);
-        break;
-    case ID_EMULATOR_SOUND:
-        MainWindow_DoEmulatorSound();
-        break;
-    case ID_EMULATOR_SERIAL:
-        MainWindow_DoEmulatorSerial();
-        break;
-    case ID_EMULATOR_PARALLEL:
-        MainWindow_DoEmulatorParallel();
-        break;
-    case ID_EMULATOR_FLOPPY0:
-        MainWindow_DoEmulatorFloppy(0);
-        break;
-    case ID_EMULATOR_FLOPPY1:
-        MainWindow_DoEmulatorFloppy(1);
-        break;
-    case ID_EMULATOR_FLOPPY2:
-        MainWindow_DoEmulatorFloppy(2);
-        break;
-    case ID_EMULATOR_FLOPPY3:
-        MainWindow_DoEmulatorFloppy(3);
-        break;
-    case ID_FILE_LOADSTATE:
-        MainWindow_DoFileLoadState();
-        break;
-    case ID_FILE_SAVESTATE:
-        MainWindow_DoFileSaveState();
-        break;
-    case ID_FILE_SCREENSHOT:
-        MainWindow_DoFileScreenshot();
-        break;
-    case ID_FILE_SAVESCREENSHOTAS:
-        MainWindow_DoFileScreenshotSaveAs();
-        break;
-        //case ID_FILE_CREATEDISK:
-        //    MainWindow_DoFileCreateDisk();
-        //    break;
-    case ID_CONF_ROMA:
-        MainWindow_DoEmulatorConf(EMU_CONF_ROMA);
-        break;
-    case ID_CONF_ROMB:
-        MainWindow_DoEmulatorConf(EMU_CONF_ROMB);
-        break;
-    case ID_FILE_SETTINGS:
-        MainWindow_DoFileSettings();
-        break;
-    case ID_FILE_SETTINGS_COLORS:
-        MainWindow_DoFileSettingsColors();
+    case IDM_ABOUT:
+        ShowAboutBox();
         break;
     default:
         return false;
@@ -1018,6 +1025,18 @@ void MainWindow_DoFileScreenshot()
     if (!ScreenView_SaveScreenshot(bufFileName))
     {
         AlertWarning(_T("Failed to save screenshot bitmap."));
+    }
+}
+
+void MainWindow_DoFileScreenshotToClipboard()
+{
+    HGLOBAL hDIB = ScreenView_GetScreenshotAsDIB();
+    if (hDIB != NULL)
+    {
+        ::OpenClipboard(g_hwnd);
+        ::EmptyClipboard();
+        ::SetClipboardData(CF_DIB, hDIB);
+        ::CloseClipboard();
     }
 }
 
