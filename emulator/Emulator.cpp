@@ -561,7 +561,7 @@ void Emulator_SetParallel(bool parallelOnOff)
     m_okEmulatorParallel = parallelOnOff;
 }
 
-int Emulator_SystemFrame()
+bool Emulator_SystemFrame()
 {
     g_pBoard->SetCPUBreakpoints(m_wEmulatorCPUBpsCount > 0 ? m_EmulatorCPUBps : nullptr);
 
@@ -569,7 +569,7 @@ int Emulator_SystemFrame()
     ScreenView_ProcessKeyboard();
 
     if (!g_pBoard->SystemFrame())
-        return 0;
+        return false;
 
     // Calculate frames per second
     m_nFrameCount++;
@@ -616,7 +616,7 @@ int Emulator_SystemFrame()
         m_nEmulatorSoundChanges = 0;
     }
 
-    return 1;
+    return true;
 }
 
 void CALLBACK Emulator_SoundGenCallback(uint16_t value)
@@ -673,7 +673,7 @@ void Emulator_PrepareScreenRGB32(void* pImageBits, int screenMode)
     ASSERT(pVideoBuffer != nullptr);
 
     // Render to bitmap
-    bool hires = g_pBoard->GetPortView(0177604) & 010;
+    bool hires = (g_pBoard->GetPortView(0177604) & 010) != 0;
     uint8_t border = g_pBoard->GetPortView(0177604) & 7;
     bool blink = (m_dwTotalFrameCount % 75) > 37;
     PREPARE_SCREEN_CALLBACK callback = ScreenModeReference[screenMode].callback;
