@@ -216,11 +216,12 @@ CProcessor* ConsoleView_GetCurrentProcessor()
 
 void ConsoleView_PrintFormat(LPCTSTR pszFormat, ...)
 {
-    TCHAR buffer[512];
+    const size_t buffersize = 512;
+    TCHAR buffer[buffersize];
 
     va_list ptr;
     va_start(ptr, pszFormat);
-    _vsntprintf_s(buffer, 512, 512 - 1, pszFormat, ptr);
+    _vsntprintf_s(buffer, buffersize, buffersize - 1, pszFormat, ptr);
     va_end(ptr);
 
     ConsoleView_Print(buffer);
@@ -250,7 +251,7 @@ void ConsoleView_PrintConsolePrompt()
     TCHAR bufferAddr[7];
     PrintOctalValue(bufferAddr, pProc->GetPC());
     TCHAR buffer[14];
-    wsprintf(buffer, _T("%s> "), bufferAddr);
+    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s> "), bufferAddr);
     ::SetWindowText(m_hwndConsolePrompt, buffer);
 }
 
@@ -379,7 +380,7 @@ uint16_t ConsoleView_PrintDisassemble(WORD address, BOOL okOneInstr, BOOL okShor
         {
             if (!okShort)
             {
-                wsprintf(buffer, _T("  %s  %s\r\n"), bufaddr, bufvalue);
+                _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("  %s  %s\r\n"), bufaddr, bufvalue);
                 ConsoleView_Print(buffer);
             }
         }
@@ -394,9 +395,9 @@ uint16_t ConsoleView_PrintDisassemble(WORD address, BOOL okOneInstr, BOOL okShor
             if (index + length > nWindowSize)
                 break;
             if (okShort)
-                wsprintf(buffer, _T("%s: %-7s\t%s\r\n"), bufaddr, instr, args);
+                _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s: %-7s\t%s\r\n"), bufaddr, instr, args);
             else
-                wsprintf(buffer, _T("  %s  %s  %-7s %s\r\n"), bufaddr, bufvalue, instr, args);
+                _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("  %s  %s  %-7s %s\r\n"), bufaddr, bufvalue, instr, args);
             ConsoleView_Print(buffer);
         }
         length--;
@@ -619,7 +620,7 @@ void ConsoleView_DoConsoleCommand()
     TCHAR buffer[36];
     ::GetWindowText(m_hwndConsolePrompt, buffer, 14);
     ConsoleView_Print(buffer);
-    wsprintf(buffer, _T(" %s\r\n"), command);
+    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T(" %s\r\n"), command);
     ConsoleView_Print(buffer);
 
     BOOL okUpdateAllViews = FALSE;  // Flag - need to update all debug views

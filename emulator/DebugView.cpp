@@ -549,12 +549,11 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y)
         {
             bool isprimary = ((port177400 >> window) & 1) != 0;
             LPCTSTR szFormat = isprimary ? _T("RAM%d pri") : _T("RAM%d ext");
-            wsprintf(buffer, szFormat, window);
+            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, szFormat, window);
             szMapping = buffer;
         }
 
         TextOut(hdc, xtype, yp - cyLine * 4 / 3, szMapping, (int)_tcslen(szMapping));
-
     }
 
     PatBlt(hdc, x1, y1 + cyLine / 4, x2 - x1, 1, PATCOPY);
