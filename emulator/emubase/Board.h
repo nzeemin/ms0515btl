@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+п»ї/*  This file is part of MS0515BTL.
     MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -173,12 +173,12 @@ public:  // Saving/loading emulator status
     void        SaveToImage(uint8_t* pImage);
     void        LoadFromImage(const uint8_t* pImage);
 private:  // Ports: implementation
-    uint16_t    m_Port177400;       // Регистр диспетчера памяти
-    uint16_t    m_Port177440;       // Клавиатура: буфер данных приёмника
-    uint16_t    m_Port177442r;      // Клавиатура: регистр состояния порта
-    uint16_t    m_Port177460;       // Клавиатура: буфер данных передатчика
-    uint16_t    m_Port177600;       // Системный регистр A
-    uint16_t    m_Port177604;       // Системный регистр C
+    uint16_t    m_Port177400;       // Р РµРіРёСЃС‚СЂ РґРёСЃРїРµС‚С‡РµСЂР° РїР°РјСЏС‚Рё
+    uint16_t    m_Port177440;       // РљР»Р°РІРёР°С‚СѓСЂР°: Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РїСЂРёС‘РјРЅРёРєР°
+    uint16_t    m_Port177442r;      // РљР»Р°РІРёР°С‚СѓСЂР°: СЂРµРіРёСЃС‚СЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїРѕСЂС‚Р°
+    uint16_t    m_Port177460;       // РљР»Р°РІРёР°С‚СѓСЂР°: Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РїРµСЂРµРґР°С‚С‡РёРєР°
+    uint16_t    m_Port177600;       // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ A
+    uint16_t    m_Port177604;       // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ C
 private:
     const uint16_t* m_CPUbps;  // CPU breakpoint list, ends with 177777 value
     uint32_t    m_dwTrace;  // Trace flags

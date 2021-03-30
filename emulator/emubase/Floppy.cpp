@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+п»ї/*  This file is part of MS0515BTL.
     MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -190,7 +190,7 @@ void CFloppyController::SetControl(uint8_t data)
         Floppy_LastControl = data;
     }
 
-    bool okPrepareTrack = false;  // Нужно ли считывать дорожку в буфер
+    bool okPrepareTrack = false;  // РќСѓР¶РЅРѕ Р»Рё СЃС‡РёС‚С‹РІР°С‚СЊ РґРѕСЂРѕР¶РєСѓ РІ Р±СѓС„РµСЂ
 
     int newdrive = (data & 3); //((data & 2) << 2) | (((data & 8) >> 2) ^ 2) | (data & 1);
     if (data == 0x0f || data == 0) newdrive = -1;
@@ -275,9 +275,9 @@ void CFloppyController::WriteData(uint16_t data)
 static int FloppyLastState = 0;//DEBUG
 void CFloppyController::Periodic()
 {
-    if (IsEngineOn())  // Вращаем дискеты только если включен мотор
+    if (IsEngineOn())  // Р’СЂР°С‰Р°РµРј РґРёСЃРєРµС‚С‹ С‚РѕР»СЊРєРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅ РјРѕС‚РѕСЂ
     {
-        // Вращаем дискеты во всех драйвах сразу
+        // Р’СЂР°С‰Р°РµРј РґРёСЃРєРµС‚С‹ РІРѕ РІСЃРµС… РґСЂР°Р№РІР°С… СЃСЂР°Р·Сѓ
         for (int drive = 0; drive < 8; drive++)
         {
             m_drivedata[drive].dataptr++;
@@ -286,7 +286,7 @@ void CFloppyController::Periodic()
         }
     }
 
-    if (m_opercount > 0)  // Уменьшаем счётчик текущей операции
+    if (m_opercount > 0)  // РЈРјРµРЅСЊС€Р°РµРј СЃС‡С‘С‚С‡РёРє С‚РµРєСѓС‰РµР№ РѕРїРµСЂР°С†РёРё
         m_opercount--;
 
     bool diskpresent = (m_pDrive != nullptr) && (IsAttached(m_drive));
@@ -369,7 +369,7 @@ void CFloppyController::Periodic()
                     }
                     if (readlen >= 6 && (m_cmd & 0xf8) == 0xc0)  // Read Address
                     {
-                        // При выполнении команды "Чтение адреса" содержиморе регистра дорожки пересылается в регистр сектора
+                        // РџСЂРё РІС‹РїРѕР»РЅРµРЅРёРё РєРѕРјР°РЅРґС‹ "Р§С‚РµРЅРёРµ Р°РґСЂРµСЃР°" СЃРѕРґРµСЂР¶РёРјРѕСЂРµ СЂРµРіРёСЃС‚СЂР° РґРѕСЂРѕР¶РєРё РїРµСЂРµСЃС‹Р»Р°РµС‚СЃСЏ РІ СЂРµРіРёСЃС‚СЂ СЃРµРєС‚РѕСЂР°
                         m_sector = m_track;
                         m_state = S_IDLE;
                         break;
@@ -669,7 +669,7 @@ void CFloppyController::PrepareTrack()
     {
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
         size_t count = ::fread(data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
-        //TODO: Контроль ошибок чтения
+        //TODO: РљРѕРЅС‚СЂРѕР»СЊ РѕС€РёР±РѕРє С‡С‚РµРЅРёСЏ
     }
 
     // Fill m_data array with data
@@ -724,14 +724,14 @@ void CFloppyController::FlushChanges()
 //            uint32_t bytesToWrite = ((uint32_t)(foffset + FLOPPY_TRACKSIZE) - currentFileSize) % 512;
 //            if (bytesToWrite == 0) bytesToWrite = 512;
 //            ::fwrite(datafill, 1, bytesToWrite, m_pDrive->fpFile);
-//            //TODO: Проверка на ошибки записи
+//            //TODO: РџСЂРѕРІРµСЂРєР° РЅР° РѕС€РёР±РєРё Р·Р°РїРёСЃРё
 //            currentFileSize += bytesToWrite;
 //        }
 
         // Save data into the file
         ::fseek(m_pDrive->fpFile, foffset, SEEK_SET);
         size_t dwBytesWritten = ::fwrite(data, 1, FLOPPY_TRACKSIZE, m_pDrive->fpFile);
-        //TODO: Проверка на ошибки записи
+        //TODO: РџСЂРѕРІРµСЂРєР° РЅР° РѕС€РёР±РєРё Р·Р°РїРёСЃРё
     }
     else
     {
@@ -753,7 +753,7 @@ uint16_t CalculateChecksum(const uint8_t* buffer, int length)
     while (length > 0)
     {
         uint16_t src = *buffer;
-        if (src & 0200) src |= 0177400;  // Расширение знакового бита
+        if (src & 0200) src |= 0177400;  // Р Р°СЃС€РёСЂРµРЅРёРµ Р·РЅР°РєРѕРІРѕРіРѕ Р±РёС‚Р°
         signed short dst = sum + src;
         sum = dst;
 
@@ -768,28 +768,28 @@ uint16_t CalculateChecksum(const uint8_t* buffer, int length)
 // data   array length is 6250 == FLOPPY_RAWTRACKSIZE
 // marker array length is 6250 == FLOPPY_RAWMARKERSIZE
 //-------------------------------------------------
-//     ¦  54        4E
-//     ¦  12        00
-// 105-+   4        F6 (записывается C2)
-//     ¦  35        4E
-//  ---- Начало сектора 1..10 ---------------------
-//     ¦   8        00                            ¦
-//     ¦   3        F5 (записывается A1)          ¦
-//     ¦   1        FE — маркер заголовка сектора ¦
-//     ¦   1        tt — номер дорожки 0..79      ¦
-//     ¦   1        00 — сторона: 0 - низ         ¦
-//     ¦   1        0s — номер сектора 1..10      ¦
-//     ¦   1        02 — 512 байт на сектор       ¦
-//     ¦   1(2)     F7 (записывается 2 байта CRC) ¦
-//     ¦  22        4E                            ¦
-//     ¦  12        00                            ¦
-//     ¦   3        F5 (записывается A1)          ¦
-//     ¦   1        FB — маркер данных            ¦
-// 612-+ 512        xx — данные сектора           ¦
-//(614)¦   1(2)     F7 (записывается 2 байта CRC) ¦
-//     ¦  44        4E                            ¦
-//  ---- Конец сектора ----------------------------
-//     ¦ 352        4E — до конца дорожки
+//     В¦  54        4E
+//     В¦  12        00
+// 105-+   4        F6 (Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ C2)
+//     В¦  35        4E
+//  ---- РќР°С‡Р°Р»Рѕ СЃРµРєС‚РѕСЂР° 1..10 ---------------------
+//     В¦   8        00                            В¦
+//     В¦   3        F5 (Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ A1)          В¦
+//     В¦   1        FE вЂ” РјР°СЂРєРµСЂ Р·Р°РіРѕР»РѕРІРєР° СЃРµРєС‚РѕСЂР° В¦
+//     В¦   1        tt вЂ” РЅРѕРјРµСЂ РґРѕСЂРѕР¶РєРё 0..79      В¦
+//     В¦   1        00 вЂ” СЃС‚РѕСЂРѕРЅР°: 0 - РЅРёР·         В¦
+//     В¦   1        0s вЂ” РЅРѕРјРµСЂ СЃРµРєС‚РѕСЂР° 1..10      В¦
+//     В¦   1        02 вЂ” 512 Р±Р°Р№С‚ РЅР° СЃРµРєС‚РѕСЂ       В¦
+//     В¦   1(2)     F7 (Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ 2 Р±Р°Р№С‚Р° CRC) В¦
+//     В¦  22        4E                            В¦
+//     В¦  12        00                            В¦
+//     В¦   3        F5 (Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ A1)          В¦
+//     В¦   1        FB вЂ” РјР°СЂРєРµСЂ РґР°РЅРЅС‹С…            В¦
+// 612-+ 512        xx вЂ” РґР°РЅРЅС‹Рµ СЃРµРєС‚РѕСЂР°           В¦
+//(614)В¦   1(2)     F7 (Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ 2 Р±Р°Р№С‚Р° CRC) В¦
+//     В¦  44        4E                            В¦
+//  ---- РљРѕРЅРµС† СЃРµРєС‚РѕСЂР° ----------------------------
+//     В¦ 352        4E вЂ” РґРѕ РєРѕРЅС†Р° РґРѕСЂРѕР¶РєРё
 //-------------------------------------------------
 static void EncodeTrackData(const uint8_t* pSrc, uint8_t* data, uint8_t* marker, uint16_t track, uint16_t side)
 {

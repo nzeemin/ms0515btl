@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+п»ї/*  This file is part of MS0515BTL.
     MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -62,7 +62,7 @@ void CProcessor::Init()
     ASSERT(m_pExecuteMethodMap == NULL);
     m_pExecuteMethodMap = (CProcessor::ExecuteMethodRef*) ::calloc(65536, sizeof(CProcessor::ExecuteMethodRef));
 
-    // Сначала заполняем таблицу ссылками на метод ExecuteUNKNOWN
+    // РЎРЅР°С‡Р°Р»Р° Р·Р°РїРѕР»РЅСЏРµРј С‚Р°Р±Р»РёС†Сѓ СЃСЃС‹Р»РєР°РјРё РЅР° РјРµС‚РѕРґ ExecuteUNKNOWN
     RegisterMethodRef( 0000000, 0177777, &CProcessor::ExecuteUNKNOWN );
 
     RegisterMethodRef( 0000000, 0000000, &CProcessor::ExecuteHALT );
@@ -204,7 +204,7 @@ void CProcessor::Start ()
     SetPC(pc);
     SetPSW(0340);
     SetSP(376);
-    m_internalTick = 1000000;  // Количество тактов на включение процессора (значение с потолка)
+    m_internalTick = 1000000;  // РљРѕР»РёС‡РµСЃС‚РІРѕ С‚Р°РєС‚РѕРІ РЅР° РІРєР»СЋС‡РµРЅРёРµ РїСЂРѕС†РµСЃСЃРѕСЂР° (Р·РЅР°С‡РµРЅРёРµ СЃ РїРѕС‚РѕР»РєР°)
 }
 void CProcessor::Stop ()
 {
@@ -289,7 +289,7 @@ void CProcessor::Execute()
             {
                 intrVector = 0000034;  m_TRAPrq = false;
             }
-            else if (m_RPLYrq)  // Зависание
+            else if (m_RPLYrq)  // Р—Р°РІРёСЃР°РЅРёРµ
             {
                 intrVector = 000000;  m_RPLYrq = false;
             }
@@ -474,7 +474,7 @@ uint16_t CProcessor::GetDstWordArgAsBranch ()
 static bool TraceStarted = true;//DEBUG
 void CProcessor::FetchInstruction()
 {
-    // Считываем очередную инструкцию
+    // РЎС‡РёС‚С‹РІР°РµРј РѕС‡РµСЂРµРґРЅСѓСЋ РёРЅСЃС‚СЂСѓРєС†РёСЋ
     uint16_t pc = GetPC();
     pc = pc & ~1;
 
@@ -511,7 +511,7 @@ void CProcessor::TranslateInstruction ()
     (this->*methodref)();  // Call command implementation method
 }
 
-void CProcessor::ExecuteUNKNOWN ()  // Нет такой инструкции - просто вызывается TRAP 10
+void CProcessor::ExecuteUNKNOWN ()  // РќРµС‚ С‚Р°РєРѕР№ РёРЅСЃС‚СЂСѓРєС†РёРё - РїСЂРѕСЃС‚Рѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ TRAP 10
 {
     DebugLogFormat(_T("CPU: Invalid OPCODE %06o at PC=%06o\r\n"), m_instruction, m_instructionpc);
 
@@ -528,14 +528,14 @@ void CProcessor::ExecuteWAIT ()  // WAIT - Wait for an interrupt
     m_internalTick = TIMING_WAIT;
 }
 
-void CProcessor::ExecuteHALT ()  // HALT - Останов
+void CProcessor::ExecuteHALT ()  // HALT - РћСЃС‚Р°РЅРѕРІ
 {
     m_HALTrq = true;
 
     m_internalTick = TIMING_HALT;
 }
 
-void CProcessor::ExecuteRTI ()  // RTI - Возврат из прерывания
+void CProcessor::ExecuteRTI ()  // RTI - Р’РѕР·РІСЂР°С‚ РёР· РїСЂРµСЂС‹РІР°РЅРёСЏ
 {
     uint16_t new_psw;
     SetReg(7, GetWord( GetSP() ) );  // Pop PC
@@ -587,7 +587,7 @@ void CProcessor::ExecuteRTT ()  // RTT - return from trace trap
     m_internalTick = TIMING_RTT;
 }
 
-void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из процедуры
+void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Р’РѕР·РІСЂР°С‚ РёР· РїСЂРѕС†РµРґСѓСЂС‹
 {
     SetPC(GetReg(m_regdest));
     SetReg(m_regdest, GetWord(GetSP()));
@@ -596,7 +596,7 @@ void CProcessor::ExecuteRTS ()  // RTS - return from subroutine - Возврат из про
     m_internalTick = TIMING_RTS;
 }
 
-void CProcessor::ExecuteNOP ()  // NOP - Нет операции
+void CProcessor::ExecuteNOP ()  // NOP - РќРµС‚ РѕРїРµСЂР°С†РёРё
 {
     m_internalTick = TIMING_NOP;
 }
@@ -619,7 +619,7 @@ void CProcessor::ExecuteSCC ()
 
 void CProcessor::ExecuteJMP ()  // JMP - jump: PC = &d (a-mode > 0)
 {
-    if (m_methdest == 0)  // Неправильный метод адресации
+    if (m_methdest == 0)  // РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РјРµС‚РѕРґ Р°РґСЂРµСЃР°С†РёРё
     {
         m_RSVD4rq = true;
 
@@ -729,7 +729,7 @@ void CProcessor::ExecuteCOM ()  // COM
     }
 }
 
-void CProcessor::ExecuteINC ()  // INC - Инкремент
+void CProcessor::ExecuteINC ()  // INC - РРЅРєСЂРµРјРµРЅС‚
 {
     uint16_t ea = 0;
 
@@ -772,7 +772,7 @@ void CProcessor::ExecuteINC ()  // INC - Инкремент
     }
 }
 
-void CProcessor::ExecuteDEC ()  // DEC - Декремент
+void CProcessor::ExecuteDEC ()  // DEC - Р”РµРєСЂРµРјРµРЅС‚
 {
     uint16_t ea = 0;
 
@@ -1667,7 +1667,7 @@ void CProcessor::ExecuteJSR ()  // JSR - Jump subroutine: *--SP = R; R = PC; PC 
     //int meth = GetDigit(m_instruction, DST + 1);
     if (m_methdest == 0)
     {
-        // Неправильный метод адресации
+        // РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ РјРµС‚РѕРґ Р°РґСЂРµСЃР°С†РёРё
         m_RSVD4rq = true;
         m_internalTick = TIMING_EMT;
     }

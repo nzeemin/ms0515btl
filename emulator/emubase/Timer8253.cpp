@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+ï»¿/*  This file is part of MS0515BTL.
 MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -10,7 +10,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 // Timer8253.cpp
 //
-// * https://ru.wikipedia.org/wiki/%D0%9A%D0%A0580%D0%92%D0%9853 -- ÊÐ580ÂÈ53
+// * https://ru.wikipedia.org/wiki/%D0%9A%D0%A0580%D0%92%D0%9853 -- ÐšÐ 580Ð’Ð˜53
 // * https://en.wikipedia.org/wiki/Intel_8253
 
 #include "stdafx.h"

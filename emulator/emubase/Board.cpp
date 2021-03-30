@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+п»ї/*  This file is part of MS0515BTL.
     MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -171,7 +171,7 @@ bool CMotherboard::IsFloppyEngineOn() const
 }
 
 
-// Работа с памятью //////////////////////////////////////////////////
+// Р Р°Р±РѕС‚Р° СЃ РїР°РјСЏС‚СЊСЋ //////////////////////////////////////////////////
 
 uint16_t CMotherboard::GetLORAMWord(uint16_t offset)
 {
@@ -272,7 +272,7 @@ void CMotherboard::ResetHALT()
 
 void CMotherboard::Tick50()  // Vblank
 {
-    if (m_Port177400 & 512)  // Бит 9 регистра диспетчера памяти
+    if (m_Port177400 & 512)  // Р‘РёС‚ 9 СЂРµРіРёСЃС‚СЂР° РґРёСЃРїРµС‚С‡РµСЂР° РїР°РјСЏС‚Рё
         m_pCPU->FireIRQ11();
 }
 
@@ -290,14 +290,14 @@ void CMotherboard::ExecuteCPU()
 }
 
 /*
-Каждый фрейм равен 1/25 секунды = 40 мс
-Фрейм делим на 20000 тиков, 1 тик = 2 мкс
-В каждый фрейм происходит:
-* 300000 тиков ЦП       -- 15 раз за тик
-*  80000 тиков таймера 580ВИ53 -- 4 раза за тик -- 2 МГц
-*      2 тика vblank    -- 50 Гц, в 0-й и 10000-й тик фрейма
-*    625 тиков FDD -- каждый 32-й тик (300 RPM = 5 оборотов в секунду)
-*    196 обращений к клавиатуре (4950 бод) -- каждый 101-й тик
+РљР°Р¶РґС‹Р№ С„СЂРµР№Рј СЂР°РІРµРЅ 1/25 СЃРµРєСѓРЅРґС‹ = 40 РјСЃ
+Р¤СЂРµР№Рј РґРµР»РёРј РЅР° 20000 С‚РёРєРѕРІ, 1 С‚РёРє = 2 РјРєСЃ
+Р’ РєР°Р¶РґС‹Р№ С„СЂРµР№Рј РїСЂРѕРёСЃС…РѕРґРёС‚:
+* 300000 С‚РёРєРѕРІ Р¦Рџ       -- 15 СЂР°Р· Р·Р° С‚РёРє
+*  80000 С‚РёРєРѕРІ С‚Р°Р№РјРµСЂР° 580Р’Р53 -- 4 СЂР°Р·Р° Р·Р° С‚РёРє -- 2 РњР“С†
+*      2 С‚РёРєР° vblank    -- 50 Р“С†, РІ 0-Р№ Рё 10000-Р№ С‚РёРє С„СЂРµР№РјР°
+*    625 С‚РёРєРѕРІ FDD -- РєР°Р¶РґС‹Р№ 32-Р№ С‚РёРє (300 RPM = 5 РѕР±РѕСЂРѕС‚РѕРІ РІ СЃРµРєСѓРЅРґСѓ)
+*    196 РѕР±СЂР°С‰РµРЅРёР№ Рє РєР»Р°РІРёР°С‚СѓСЂРµ (4950 Р±РѕРґ) -- РєР°Р¶РґС‹Р№ 101-Р№ С‚РёРє
 */
 bool CMotherboard::SystemFrame()
 {
@@ -352,7 +352,7 @@ bool CMotherboard::SystemFrame()
 
                 if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard received %03o\r\n"), m_Port177440);
 
-                m_Port177442r |= 2;  // Установка флага "готовность приёмника"
+                m_Port177442r |= 2;  // РЈСЃС‚Р°РЅРѕРІРєР° С„Р»Р°РіР° "РіРѕС‚РѕРІРЅРѕСЃС‚СЊ РїСЂРёС‘РјРЅРёРєР°"
                 m_pCPU->FireIRQ5();
             }
             if (keyboardTxCount > 0)
@@ -361,7 +361,7 @@ bool CMotherboard::SystemFrame()
                 if (keyboardTxCount == 0)
                 {
                     m_pKeyboard->SendByte(m_Port177460 & 0xff);
-                    m_Port177442r |= 1;  // Установка флага "готовность передатчика"
+                    m_Port177442r |= 1;  // РЈСЃС‚Р°РЅРѕРІРєР° С„Р»Р°РіР° "РіРѕС‚РѕРІРЅРѕСЃС‚СЊ РїРµСЂРµРґР°С‚С‡РёРєР°"
                 }
             }
             else if ((m_Port177442r & 1) == 0)  // Ready is 0?
@@ -594,14 +594,14 @@ void CMotherboard::SetByte(uint16_t address, uint8_t byte)
 
 int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* pOffset)
 {
-    int window = (address >> 13) & 7;  // Номер запрашиваемого окна в основной памяти 0..7
+    int window = (address >> 13) & 7;  // РќРѕРјРµСЂ Р·Р°РїСЂР°С€РёРІР°РµРјРѕРіРѕ РѕРєРЅР° РІ РѕСЃРЅРѕРІРЅРѕР№ РїР°РјСЏС‚Рё 0..7
 
-    // Сначала проверяем, не маппится ли на это окно видеопамять
-    bool vramturedon = (m_Port177400 & 0200) != 0;  // Включено ли VRAM в основную память
+    // РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂСЏРµРј, РЅРµ РјР°РїРїРёС‚СЃСЏ Р»Рё РЅР° СЌС‚Рѕ РѕРєРЅРѕ РІРёРґРµРѕРїР°РјСЏС‚СЊ
+    bool vramturedon = (m_Port177400 & 0200) != 0;  // Р’РєР»СЋС‡РµРЅРѕ Р»Рё VRAM РІ РѕСЃРЅРѕРІРЅСѓСЋ РїР°РјСЏС‚СЊ
     if (vramturedon)
     {
         int vramwindow0, vramwindow1;
-        int vramflags = (m_Port177400 >> 10) & 3;  // Биты 10 и 11 указывают один из трёх блоков куда маппится VRAM
+        int vramflags = (m_Port177400 >> 10) & 3;  // Р‘РёС‚С‹ 10 Рё 11 СѓРєР°Р·С‹РІР°СЋС‚ РѕРґРёРЅ РёР· С‚СЂС‘С… Р±Р»РѕРєРѕРІ РєСѓРґР° РјР°РїРїРёС‚СЃСЏ VRAM
         switch (vramflags)
         {
         case 0:
@@ -618,7 +618,7 @@ int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* 
         }
     }
 
-    // Если это окно 7, то это ПЗУ и порты
+    // Р•СЃР»Рё СЌС‚Рѕ РѕРєРЅРѕ 7, С‚Рѕ СЌС‚Рѕ РџР—РЈ Рё РїРѕСЂС‚С‹
     if (window == 7)
     {
         if (address < 0177400)
@@ -630,14 +630,14 @@ int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* 
         *pOffset = address;
         return ADDRTYPE_IO;
     }
-    // Если это окно 6, то возможно это тоже ПЗУ
-    if (window == 6 && (m_Port177600 & 0200) != 0)  // Выбор ПЗУ - бит 7 системного регистра A
+    // Р•СЃР»Рё СЌС‚Рѕ РѕРєРЅРѕ 6, С‚Рѕ РІРѕР·РјРѕР¶РЅРѕ СЌС‚Рѕ С‚РѕР¶Рµ РџР—РЈ
+    if (window == 6 && (m_Port177600 & 0200) != 0)  // Р’С‹Р±РѕСЂ РџР—РЈ - Р±РёС‚ 7 СЃРёСЃС‚РµРјРЅРѕРіРѕ СЂРµРіРёСЃС‚СЂР° A
     {
         *pOffset = (address - 0140000) & 037777;  // 0..8192
         return ADDRTYPE_ROM;
     }
 
-    bool isprimary = ((m_Port177400 >> window) & 1) != 0;  // Признак того что выбрано основное ОЗУ
+    bool isprimary = ((m_Port177400 >> window) & 1) != 0;  // РџСЂРёР·РЅР°Рє С‚РѕРіРѕ С‡С‚Рѕ РІС‹Р±СЂР°РЅРѕ РѕСЃРЅРѕРІРЅРѕРµ РћР—РЈ
     *pOffset = address;
     return isprimary ? ADDRTYPE_RAM : ADDRTYPE_HIRAM;
 }
@@ -656,7 +656,7 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
     {
     default:
         if ((address & 0177440) == 0177400)  // 177400-177437
-            return m_Port177400;  // Регистр диспетчера памяти
+            return m_Port177400;  // Р РµРіРёСЃС‚СЂ РґРёСЃРїРµС‚С‡РµСЂР° РїР°РјСЏС‚Рё
 
         m_pCPU->MemoryError();
 
@@ -664,83 +664,83 @@ uint16_t CMotherboard::GetPortWord(uint16_t address)
 
         return 0;
 
-    case 0177440:  // Клавиатура: буфер данных приёмника, READ ONLY
+    case 0177440:  // РљР»Р°РІРёР°С‚СѓСЂР°: Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РїСЂРёС‘РјРЅРёРєР°, READ ONLY
         m_Port177442r &= ~2;  // Reset Ready flag
 //        if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard 177440 read %06o\r\n"), m_Port177442r);
         return m_Port177440;
-    case 0177442: // Клавиатура: регистр состояния порта, READ
+    case 0177442: // РљР»Р°РІРёР°С‚СѓСЂР°: СЂРµРіРёСЃС‚СЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїРѕСЂС‚Р°, READ
 //        if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard 177440 read %06o\r\n"), m_Port177442r);
         return m_Port177442r;
-    case 0177460:  // Клавиатура: буфер данных передатчика
+    case 0177460:  // РљР»Р°РІРёР°С‚СѓСЂР°: Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РїРµСЂРµРґР°С‚С‡РёРєР°
         return m_Port177460;
-    case 0177462:  // Клавиатура: регистр уплавления, READ ONLY
+    case 0177462:  // РљР»Р°РІРёР°С‚СѓСЂР°: СЂРµРіРёСЃС‚СЂ СѓРїР»Р°РІР»РµРЅРёСЏ, READ ONLY
         return 0;
 
-    case 0177500:  // Таймер
+    case 0177500:  // РўР°Р№РјРµСЂ
         {
             uint8_t value = m_pTimer->Read(0);
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177500 read %02x\r\n"), value);
             return (uint16_t)value;
         }
-    case 0177502:  // Таймер
+    case 0177502:  // РўР°Р№РјРµСЂ
         {
             uint8_t value = m_pTimer->Read(1);
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177502 read %02x\r\n"), value);
             return (uint16_t)value;
         }
-    case 0177504:  // Таймер
+    case 0177504:  // РўР°Р№РјРµСЂ
         {
             uint8_t value = m_pTimer->Read(2);
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177504 read %02x\r\n"), value);
             return (uint16_t)value;
         }
-    case 0177506:  // Таймер: управляющее слово
+    case 0177506:  // РўР°Р№РјРµСЂ: СѓРїСЂР°РІР»СЏСЋС‰РµРµ СЃР»РѕРІРѕ
         {
             uint8_t value = m_pTimer->ReadCommand();
             if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer 177506 read %02x\r\n"), value);
             return (uint16_t)value;
         }
 
-    case 0177524:  // Таймер канал 2 запись
+    case 0177524:  // РўР°Р№РјРµСЂ РєР°РЅР°Р» 2 Р·Р°РїРёСЃСЊ
         return 0; //STUB
-    case 0177526:  // Таймер упр.слово запись
+    case 0177526:  // РўР°Р№РјРµСЂ СѓРїСЂ.СЃР»РѕРІРѕ Р·Р°РїРёСЃСЊ
         return 0; //STUB
 
-    case 0177540:  // Регистр порта A
+    case 0177540:  // Р РµРіРёСЃС‚СЂ РїРѕСЂС‚Р° A
         return 0; //STUB
-    case 0177542:  // Регистр порта B
+    case 0177542:  // Р РµРіРёСЃС‚СЂ РїРѕСЂС‚Р° B
         return 0177777; //STUB
         //return 0;//DEBUG
-    case 0177544:  // Регистр порта C
+    case 0177544:  // Р РµРіРёСЃС‚СЂ РїРѕСЂС‚Р° C
         return 0177777; //STUB
         //return 0;//DEBUG
-    case 0177546:  // ИРПР: регистр управления
+    case 0177546:  // РР РџР : СЂРµРіРёСЃС‚СЂ СѓРїСЂР°РІР»РµРЅРёСЏ
         return 0; //STUB
-    case 0177600:  // Системный регистр A
+    case 0177600:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ A
         return m_Port177600;
-    case 0177602:  // Системный регистр B
+    case 0177602:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ B
         return 0; //STUB
-    case 0177604:  // Системный регистр C
+    case 0177604:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ C
         return m_Port177604;
-    case 0177606:  // Управляющее слово программируемого интерфейса
+    case 0177606:  // РЈРїСЂР°РІР»СЏСЋС‰РµРµ СЃР»РѕРІРѕ РїСЂРѕРіСЂР°РјРјРёСЂСѓРµРјРѕРіРѕ РёРЅС‚РµСЂС„РµР№СЃР°
         return 0; //STUB
 
-    case 0177640:  // НГМД: регистр состояния
+    case 0177640:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ
         if (m_pFloppyCtl == NULL) return 0;
         return m_pFloppyCtl->GetStatus();
-    case 0177642:  // НГМД: регистр дорожки
+    case 0177642:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ РґРѕСЂРѕР¶РєРё
         if (m_pFloppyCtl == NULL) return 0;
         return m_pFloppyCtl->GetTrack();
-    case 0177644:  // НГМД: регистр сектора
+    case 0177644:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ СЃРµРєС‚РѕСЂР°
         if (m_pFloppyCtl == NULL) return 0;
         return m_pFloppyCtl->GetSector();
-    case 0177646:  // НГМД: регистр данных
+    case 0177646:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ РґР°РЅРЅС‹С…
         if (m_pFloppyCtl == NULL) return 0;
         return m_pFloppyCtl->GetData();
 
-    case 0177700:  // Стык С2
+    case 0177700:  // РЎС‚С‹Рє РЎ2
         return 0; //STUB
-    case 0177702:  // Стык С2
+    case 0177702:  // РЎС‚С‹Рє РЎ2
         return 0; //STUB
     case 0177720:
         return 0; //STUB
@@ -757,19 +757,19 @@ uint16_t CMotherboard::GetPortView(uint16_t address)
 {
     switch (address)
     {
-    case 0177400:  // Регистр диспетчера памяти
+    case 0177400:  // Р РµРіРёСЃС‚СЂ РґРёСЃРїРµС‚С‡РµСЂР° РїР°РјСЏС‚Рё
         return m_Port177400;
-    case 0177440:  // Клавиатура: буфер данных приёмника
+    case 0177440:  // РљР»Р°РІРёР°С‚СѓСЂР°: Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РїСЂРёС‘РјРЅРёРєР°
         return m_Port177440;
-    case 0177442:  // Клавиатура: регистр состояния порта
+    case 0177442:  // РљР»Р°РІРёР°С‚СѓСЂР°: СЂРµРіРёСЃС‚СЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РїРѕСЂС‚Р°
         return m_Port177442r;
-    case 0177460:  // Клавиатура: буфер данных передатчика
+    case 0177460:  // РљР»Р°РІРёР°С‚СѓСЂР°: Р±СѓС„РµСЂ РґР°РЅРЅС‹С… РїРµСЂРµРґР°С‚С‡РёРєР°
         return m_Port177460;
-    case 0177600:  // Системный регистр A
+    case 0177600:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ A
         return m_Port177600;
-    case 0177602:  // Системный регистр B
+    case 0177602:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ B
         return 0; //STUB
-    case 0177604:  // Системный регистр C
+    case 0177604:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ C
         return m_Port177604;
 
     default:
@@ -802,7 +802,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
     default:
         if ((address & 0177440) == 0177400)  // 177400-177437
         {
-            if ((word ^ m_Port177400) & 256)  // Бит 8 -- инициирование программного запроса прерывания от монитора
+            if ((word ^ m_Port177400) & 256)  // Р‘РёС‚ 8 -- РёРЅРёС†РёРёСЂРѕРІР°РЅРёРµ РїСЂРѕРіСЂР°РјРјРЅРѕРіРѕ Р·Р°РїСЂРѕСЃР° РїСЂРµСЂС‹РІР°РЅРёСЏ РѕС‚ РјРѕРЅРёС‚РѕСЂР°
                 m_pCPU->FireIRQ2();
 
             m_Port177400 = word;
@@ -816,7 +816,7 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 
     case 0177440:
         return; //STUB
-    case 0177442: // Клавиатура: регистр инструкций
+    case 0177442: // РљР»Р°РІРёР°С‚СѓСЂР°: СЂРµРіРёСЃС‚СЂ РёРЅСЃС‚СЂСѓРєС†РёР№
         if (m_dwTrace & TRACE_KEYBOARD) DebugLogFormat(_T("Keyboard %06o -> 177442\r\n"), word);
         return; //STUB
     case 0177460:
@@ -827,25 +827,25 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
 
     case 0177462:
         return; //STUB
-    case 0177500:  // Таймер канал 0 чтение
+    case 0177500:  // РўР°Р№РјРµСЂ РєР°РЅР°Р» 0 С‡С‚РµРЅРёРµ
         return; //STUB
-    case 0177502:  // Таймер канал 1 чтение
+    case 0177502:  // РўР°Р№РјРµСЂ РєР°РЅР°Р» 1 С‡С‚РµРЅРёРµ
         return; //STUB
-    case 0177506:  // Таймер упр.слово чтение
+    case 0177506:  // РўР°Р№РјРµСЂ СѓРїСЂ.СЃР»РѕРІРѕ С‡С‚РµРЅРёРµ
         return; //STUB
-    case 0177520:  // Таймер канал 0 запись
+    case 0177520:  // РўР°Р№РјРµСЂ РєР°РЅР°Р» 0 Р·Р°РїРёСЃСЊ
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177520 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
         m_pTimer->Write(0, (uint8_t)(word & 255));
         return;
-    case 0177522:  // Таймер канал 1 запись
+    case 0177522:  // РўР°Р№РјРµСЂ РєР°РЅР°Р» 1 Р·Р°РїРёСЃСЊ
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177522 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
         m_pTimer->Write(1, (uint8_t)(word & 255));
         return;
-    case 0177524:  // Таймер канал 2 запись
+    case 0177524:  // РўР°Р№РјРµСЂ РєР°РЅР°Р» 2 Р·Р°РїРёСЃСЊ
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177524 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
         m_pTimer->Write(2, (uint8_t)(word & 255));
         return;
-    case 0177526:  // Таймер упр.слово запись
+    case 0177526:  // РўР°Р№РјРµСЂ СѓРїСЂ.СЃР»РѕРІРѕ Р·Р°РїРёСЃСЊ
         if (m_dwTrace & TRACE_TIMER) DebugLogFormat(_T("Timer %02x -> 177526 at %06o\r\n"), word, m_pCPU->GetInstructionPC());
         m_pTimer->WriteCommand((uint8_t)(word & 255));
         return;
@@ -854,36 +854,36 @@ void CMotherboard::SetPortWord(uint16_t address, uint16_t word)
         return; //STUB
     case 0177546:
         return; //STUB
-    case 0177600:  // Системный регистр A
+    case 0177600:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ A
         DebugLogFormat(_T("SysRegA %06o -> 177600\r\n"), word);
         m_Port177600 = word;
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetControl(word & 017);
         return;
-    case 0177602:  // Системный регистр B
+    case 0177602:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ B
         return; //STUB
-    case 0177604:  // Системный регистр C
+    case 0177604:  // РЎРёСЃС‚РµРјРЅС‹Р№ СЂРµРіРёСЃС‚СЂ C
         m_Port177604 = word;
         return;
     case 0177606:
         return; //STUB
 
-    case 0177640:  // НГМД: регистр команд
+    case 0177640:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ РєРѕРјР°РЅРґ
 //        if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy %06o -> 177640\r\n"), word);
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetCommand(word & 0xff);
         return;
-    case 0177642:  // НГМД: регистр дорожки
+    case 0177642:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ РґРѕСЂРѕР¶РєРё
         if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET TRACK %d\r\n"), (int)word);
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetTrack(word & 0xff);
         return;
-    case 0177644:  // НГМД: регистр сектора
+    case 0177644:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ СЃРµРєС‚РѕСЂР°
         if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET SECTOR %d\r\n"), (int)word);
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->SetSector(word & 0xff);
         return;
-    case 0177646:  // НГМД: регистр данных
+    case 0177646:  // РќР“РњР”: СЂРµРіРёСЃС‚СЂ РґР°РЅРЅС‹С…
         if (m_dwTrace & TRACE_FLOPPY) DebugLogFormat(_T("Floppy SET DATA %02X\r\n"), word);
         if (m_pFloppyCtl != NULL)
             m_pFloppyCtl->WriteData(word);
@@ -982,7 +982,7 @@ void CMotherboard::DoSound(void)
 {
     int soundValue = 0;
 
-    int soundon = (m_Port177604 >> 6) & 1;  // Бит 6 системного регистра
+    int soundon = (m_Port177604 >> 6) & 1;  // Р‘РёС‚ 6 СЃРёСЃС‚РµРјРЅРѕРіРѕ СЂРµРіРёСЃС‚СЂР°
     if (soundon != 0)
         soundValue = m_pTimer->GetOutput(2);
 
