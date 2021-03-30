@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+п»ї/*  This file is part of MS0515BTL.
     MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -57,14 +57,14 @@ uint16_t g_wEmulatorPrevCpuPC = 0177777;  // Previous PC value
 void CALLBACK Emulator_SoundGenCallback(uint16_t value);
 
 //////////////////////////////////////////////////////////////////////
-//Прототип функции преобразования экрана
+//РџСЂРѕС‚РѕС‚РёРї С„СѓРЅРєС†РёРё РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ СЌРєСЂР°РЅР°
 // Input:
-//   pVideoBuffer   Исходные данные, биты экрана БК
-//   pPalette       Палитра
-//   pImageBits     Результат, 32-битный цвет, размер для каждой функции свой
-//   hires          Признак режима высокого разрешения 640x200
-//   border         Номер цвета бордюра 0..7
-//   blink          Фаза мерцания
+//   pVideoBuffer   РСЃС…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ, Р±РёС‚С‹ СЌРєСЂР°РЅР° Р‘Рљ
+//   pPalette       РџР°Р»РёС‚СЂР°
+//   pImageBits     Р РµР·СѓР»СЊС‚Р°С‚, 32-Р±РёС‚РЅС‹Р№ С†РІРµС‚, СЂР°Р·РјРµСЂ РґР»СЏ РєР°Р¶РґРѕР№ С„СѓРЅРєС†РёРё СЃРІРѕР№
+//   hires          РџСЂРёР·РЅР°Рє СЂРµР¶РёРјР° РІС‹СЃРѕРєРѕРіРѕ СЂР°Р·СЂРµС€РµРЅРёСЏ 640x200
+//   border         РќРѕРјРµСЂ С†РІРµС‚Р° Р±РѕСЂРґСЋСЂР° 0..7
+//   blink          Р¤Р°Р·Р° РјРµСЂС†Р°РЅРёСЏ
 typedef void (CALLBACK* PREPARE_SCREEN_CALLBACK)(
     const uint8_t* pVideoBuffer, const uint32_t* pPalette, void* pImageBits,
     bool hires, uint8_t border, bool blink);

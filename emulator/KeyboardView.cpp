@@ -1,4 +1,4 @@
-/*  This file is part of MS0515BTL.
+Ôªø/*  This file is part of MS0515BTL.
     MS0515BTL is free software: you can redistribute it and/or modify it under the terms
 of the GNU Lesser General Public License as published by the Free Software Foundation,
 either version 3 of the License, or (at your option) any later version.
@@ -65,22 +65,22 @@ struct KeyboardKeys
 }
 m_arrKeyboardKeys[] =
 {
-    {   2,   2, 25, 25, KEYCLASSGRAY, _T(" 1"),     0126 }, // —“Œœ  ¿ƒ–
-    {  27,   2, 25, 25, KEYCLASSGRAY, _T(" 2"),     0127 }, // œ≈◊¿“‹  ¿ƒ–¿
-    {  52,   2, 25, 25, KEYCLASSGRAY, _T(" 3"),     0130 }, // œ¿”«¿
-    {  77,   2, 25, 25, KEYCLASSGRAY, _T(" 4"),     0131 }, // ”—“ –≈∆»Ã¿
-    { 102,   2, 25, 25, KEYCLASSGRAY, _T(" 5"),     0132 }, // ‘5
-    { 152,   2, 25, 25, KEYCLASSGRAY, _T(" 6"),     0144 }, // œ–≈–€¬
-    { 177,   2, 25, 25, KEYCLASSGRAY, _T(" 7"),     0145 }, // œ–ŒƒŒÀ∆
-    { 202,   2, 25, 25, KEYCLASSGRAY, _T(" 8"),     0146 }, // Œ“Ã≈Õ
-    { 227,   2, 25, 25, KEYCLASSGRAY, _T(" 9"),     0147 }, // Œ—ÕŒ¬Õ  ¿ƒ–
-    { 252,   2, 25, 25, KEYCLASSGRAY, _T("10"),     0150 }, // ¬€’Œƒ
+    {   2,   2, 25, 25, KEYCLASSGRAY, _T(" 1"),     0126 }, // –°–¢–û–ü –ö–ê–î–†
+    {  27,   2, 25, 25, KEYCLASSGRAY, _T(" 2"),     0127 }, // –ü–ï–ß–ê–¢–¨ –ö–ê–î–†–ê
+    {  52,   2, 25, 25, KEYCLASSGRAY, _T(" 3"),     0130 }, // –ü–ê–£–ó–ê
+    {  77,   2, 25, 25, KEYCLASSGRAY, _T(" 4"),     0131 }, // –£–°–¢ –†–ï–ñ–ò–ú–ê
+    { 102,   2, 25, 25, KEYCLASSGRAY, _T(" 5"),     0132 }, // –§5
+    { 152,   2, 25, 25, KEYCLASSGRAY, _T(" 6"),     0144 }, // –ü–†–ï–†–´–í
+    { 177,   2, 25, 25, KEYCLASSGRAY, _T(" 7"),     0145 }, // –ü–†–û–î–û–õ–ñ
+    { 202,   2, 25, 25, KEYCLASSGRAY, _T(" 8"),     0146 }, // –û–¢–ú–ï–ù
+    { 227,   2, 25, 25, KEYCLASSGRAY, _T(" 9"),     0147 }, // –û–°–ù–û–í–ù –ö–ê–î–†
+    { 252,   2, 25, 25, KEYCLASSGRAY, _T("10"),     0150 }, // –í–´–•–û–î
     { 302,   2, 25, 25, KEYCLASSGRAY, _T("11"),     0161 },
     { 327,   2, 25, 25, KEYCLASSGRAY, _T("12"),     0162 },
     { 352,   2, 25, 25, KEYCLASSGRAY, _T("13"),     0163 },
     { 377,   2, 25, 25, KEYCLASSGRAY, _T("14"),     0164 },
-    { 427,   2, 25, 25, KEYCLASSGRAY, _T("ÔÏ"),     0174 }, // œÃ
-    { 477,   2, 25, 25, KEYCLASSGRAY, _T("ËÒÔ"),    0175 }, // »—œ
+    { 427,   2, 25, 25, KEYCLASSGRAY, _T("–ø–º"),     0174 }, // –ü–ú
+    { 477,   2, 25, 25, KEYCLASSGRAY, _T("–∏—Å–ø"),    0175 }, // –ò–°–ü
     { 527,   2, 25, 25, KEYCLASSGRAY, _T("17"),     0200 },
     { 552,   2, 25, 25, KEYCLASSGRAY, _T("18"),     0201 },
     { 577,   2, 25, 25, KEYCLASSGRAY, _T("19"),     0202 },
@@ -101,74 +101,74 @@ m_arrKeyboardKeys[] =
     { 302,  42, 25, 25, KEYCLASSLITE, _T("- ="),    0371 }, // - =
     { 327,  42, 25, 25, KEYCLASSLITE, _T("} \u2196"), 0365 }, // } NW-arrow
     { 352,  42, 25, 25, KEYCLASSLITE, _T("  "),     0000 },
-    { 377,  42, 25, 25, KEYCLASSLITE, _T("«¡"),     0274 }, // «¡
+    { 377,  42, 25, 25, KEYCLASSLITE, _T("–ó–ë"),     0274 }, // –ó–ë
 
-    {  15,  67, 25, 25, KEYCLASSLITE, _T("“¿¡"),    0276 }, // TAB
-    {  40,  67, 25, 25, KEYCLASSLITE, _T("…J"),     0301 }, // … J
-    {  65,  67, 25, 25, KEYCLASSLITE, _T("÷C"),     0306 }, // ÷ C
-    {  90,  67, 25, 25, KEYCLASSLITE, _T("”U"),     0314 }, // ” U
-    { 115,  67, 25, 25, KEYCLASSLITE, _T(" K"),     0321 }, //   K
-    { 140,  67, 25, 25, KEYCLASSLITE, _T("≈E"),     0327 }, // ≈ E
-    { 165,  67, 25, 25, KEYCLASSLITE, _T("ÕN"),     0334 }, // Õ N
-    { 190,  67, 25, 25, KEYCLASSLITE, _T("√G"),     0341 }, // √ G
-    { 215,  67, 25, 25, KEYCLASSLITE, _T("ÿ ["),    0346 }, // ÿ [
-    { 240,  67, 25, 25, KEYCLASSLITE, _T("Ÿ ]"),    0353 }, // Ÿ ]
-    { 265,  67, 25, 25, KEYCLASSLITE, _T("«Z"),     0360 }, // « Z
-    { 290,  67, 25, 25, KEYCLASSLITE, _T("’H"),     0366 }, // ’ H
+    {  15,  67, 25, 25, KEYCLASSLITE, _T("–¢–ê–ë"),    0276 }, // TAB
+    {  40,  67, 25, 25, KEYCLASSLITE, _T("–ôJ"),     0301 }, // –ô J
+    {  65,  67, 25, 25, KEYCLASSLITE, _T("–¶C"),     0306 }, // –¶ C
+    {  90,  67, 25, 25, KEYCLASSLITE, _T("–£U"),     0314 }, // –£ U
+    { 115,  67, 25, 25, KEYCLASSLITE, _T("–öK"),     0321 }, // –ö K
+    { 140,  67, 25, 25, KEYCLASSLITE, _T("–ïE"),     0327 }, // –ï E
+    { 165,  67, 25, 25, KEYCLASSLITE, _T("–ùN"),     0334 }, // –ù N
+    { 190,  67, 25, 25, KEYCLASSLITE, _T("–ìG"),     0341 }, // –ì G
+    { 215,  67, 25, 25, KEYCLASSLITE, _T("–® ["),    0346 }, // –® [
+    { 240,  67, 25, 25, KEYCLASSLITE, _T("–© ]"),    0353 }, // –© ]
+    { 265,  67, 25, 25, KEYCLASSLITE, _T("–óZ"),     0360 }, // –ó Z
+    { 290,  67, 25, 25, KEYCLASSLITE, _T("–•H"),     0366 }, // –• H
     { 315,  67, 25, 25, KEYCLASSLITE, _T(": *"),    0372 }, // : *
     { 340,  67, 25, 25, KEYCLASSLITE, _T("~"),      0000 }, // ~
-    { 365,  67, 25, 25, KEYCLASSLITE, _T("¬ "),     0275 }, // ¬ 
+    { 365,  67, 25, 25, KEYCLASSLITE, _T("–í–ö"),     0275 }, // –í–ö
 
-    {   2,  92, 25, 25, KEYCLASSLITE, _T("—”"),     0000 }, // —”
-    {  27,  92, 25, 25, KEYCLASSLITE, _T("ÙÍÒ"),    0260 }, // ‘ —
-    {  52,  92, 25, 25, KEYCLASSLITE, _T("‘F"),     0302 }, // ‘ F
-    {  77,  92, 25, 25, KEYCLASSLITE, _T("€Y"),     0307 }, // € Y
-    { 102,  92, 25, 25, KEYCLASSLITE, _T("¬W"),     0315 }, // ¬ W
-    { 127,  92, 25, 25, KEYCLASSLITE, _T("¿A"),     0322 }, // ¿ A
-    { 152,  92, 25, 25, KEYCLASSLITE, _T("œP"),     0330 }, // œ P
-    { 177,  92, 25, 25, KEYCLASSLITE, _T("–R"),     0335 }, // – R
-    { 202,  92, 25, 25, KEYCLASSLITE, _T("ŒO"),     0342 }, // Œ O
-    { 227,  92, 25, 25, KEYCLASSLITE, _T("ÀL"),     0347 }, // À L
-    { 252,  92, 25, 25, KEYCLASSLITE, _T("ƒD"),     0354 }, // ƒ D
-    { 277,  92, 25, 25, KEYCLASSLITE, _T("∆V"),     0362 }, // ∆ V
-    { 302,  92, 25, 25, KEYCLASSLITE, _T("› \\"),   0373 }, // › backslash
+    {   2,  92, 25, 25, KEYCLASSLITE, _T("–°–£"),     0000 }, // –°–£
+    {  27,  92, 25, 25, KEYCLASSLITE, _T("—Ñ–∫—Å"),    0260 }, // –§–ö–°
+    {  52,  92, 25, 25, KEYCLASSLITE, _T("–§F"),     0302 }, // –§ F
+    {  77,  92, 25, 25, KEYCLASSLITE, _T("–´Y"),     0307 }, // –´ Y
+    { 102,  92, 25, 25, KEYCLASSLITE, _T("–íW"),     0315 }, // –í W
+    { 127,  92, 25, 25, KEYCLASSLITE, _T("–êA"),     0322 }, // –ê A
+    { 152,  92, 25, 25, KEYCLASSLITE, _T("–üP"),     0330 }, // –ü P
+    { 177,  92, 25, 25, KEYCLASSLITE, _T("–†R"),     0335 }, // –† R
+    { 202,  92, 25, 25, KEYCLASSLITE, _T("–ûO"),     0342 }, // –û O
+    { 227,  92, 25, 25, KEYCLASSLITE, _T("–õL"),     0347 }, // –õ L
+    { 252,  92, 25, 25, KEYCLASSLITE, _T("–îD"),     0354 }, // –î D
+    { 277,  92, 25, 25, KEYCLASSLITE, _T("–ñV"),     0362 }, // –ñ V
+    { 302,  92, 25, 25, KEYCLASSLITE, _T("–≠ \\"),   0373 }, // –≠ backslash
     { 327,  92, 25, 25, KEYCLASSLITE, _T(". >"),    0367 }, // . >
-    { 352,  92, 25, 25, KEYCLASSLITE, _T("⁄"),      0304 }, // ⁄
+    { 352,  92, 25, 25, KEYCLASSLITE, _T("–™"),      0304 }, // –™
 
-    {  15, 117, 25, 25, KEYCLASSLITE, _T("¬–"),     0000 }, // Shift
-    {  40, 117, 25, 25, KEYCLASSLITE, _T("–/À"),    0262 }, // –”— / À¿“
-    {  65, 117, 25, 25, KEYCLASSLITE, _T("ﬂQ"),     0303 }, // ﬂ Q
-    {  90, 117, 25, 25, KEYCLASSLITE, _T("◊\u00ac"), 0310 }, // ◊ ^
-    { 115, 117, 25, 25, KEYCLASSLITE, _T("—S"),     0316 }, // — S
-    { 140, 117, 25, 25, KEYCLASSLITE, _T("ÃM"),     0323 }, // Ã M
-    { 165, 117, 25, 25, KEYCLASSLITE, _T("»I"),     0331 }, // » I
-    { 190, 117, 25, 25, KEYCLASSLITE, _T("“T"),     0336 }, // “ T
-    { 215, 117, 25, 25, KEYCLASSLITE, _T("‹X"),     0343 }, // ‹ X
-    { 240, 117, 25, 25, KEYCLASSLITE, _T("¡B"),     0350 }, // ¡ B
-    { 265, 117, 25, 25, KEYCLASSLITE, _T("ﬁ@"),     0355 }, // ﬁ @
+    {  15, 117, 25, 25, KEYCLASSLITE, _T("–í–†"),     0000 }, // Shift
+    {  40, 117, 25, 25, KEYCLASSLITE, _T("–†/–õ"),    0262 }, // –†–£–° / –õ–ê–¢
+    {  65, 117, 25, 25, KEYCLASSLITE, _T("–ØQ"),     0303 }, // –Ø Q
+    {  90, 117, 25, 25, KEYCLASSLITE, _T("–ß\u00ac"), 0310 }, // –ß ^
+    { 115, 117, 25, 25, KEYCLASSLITE, _T("–°S"),     0316 }, // –° S
+    { 140, 117, 25, 25, KEYCLASSLITE, _T("–úM"),     0323 }, // –ú M
+    { 165, 117, 25, 25, KEYCLASSLITE, _T("–òI"),     0331 }, // –ò I
+    { 190, 117, 25, 25, KEYCLASSLITE, _T("–¢T"),     0336 }, // –¢ T
+    { 215, 117, 25, 25, KEYCLASSLITE, _T("–¨X"),     0343 }, // –¨ X
+    { 240, 117, 25, 25, KEYCLASSLITE, _T("–ëB"),     0350 }, // –ë B
+    { 265, 117, 25, 25, KEYCLASSLITE, _T("–Æ@"),     0355 }, // –Æ @
     { 290, 117, 25, 25, KEYCLASSLITE, _T(", <"),    0363 }, // ,
     { 315, 117, 25, 25, KEYCLASSLITE, _T("/ ?"),    0312 }, // /
     { 340, 117, 25, 25, KEYCLASSLITE, _T("_"),      0361 }, // _
-    { 365, 117, 25, 25, KEYCLASSLITE, _T("¬–"),     0000 }, // Shift
+    { 365, 117, 25, 25, KEYCLASSLITE, _T("–í–†"),     0000 }, // Shift
 
-    {  65, 142, 25, 25, KEYCLASSLITE, _T("ÍÏÔ"),    0261 }, //  Ãœ
+    {  65, 142, 25, 25, KEYCLASSLITE, _T("–∫–º–ø"),    0261 }, // –ö–ú–ü
     {  90, 142, 225, 25, KEYCLASSLITE, NULL,        0324 }, // Space
 
-    { 427,  42, 25, 25, KEYCLASSGRAY, _T("ÌÚ"),     0212 }, // Õ“
-    { 452,  42, 25, 25, KEYCLASSGRAY, _T("‚ÒÚ"),    0213 }, // ¬—“
-    { 477,  42, 25, 25, KEYCLASSGRAY, _T("Û‰"),     0214 }, // ”ƒ¿À
-    { 427,  67, 25, 25, KEYCLASSGRAY, _T("‚·"),    0215 }, // ¬€¡–
-    { 452,  67, 25, 25, KEYCLASSGRAY, _T("œ "),    0216 }, // œ–≈ƒ  ¿ƒ–
-    { 477,  67, 25, 25, KEYCLASSGRAY, _T("—Î "),    0217 }, // —ƒ≈∆  ¿ƒ–
+    { 427,  42, 25, 25, KEYCLASSGRAY, _T("–Ω—Ç"),     0212 }, // –ù–¢
+    { 452,  42, 25, 25, KEYCLASSGRAY, _T("–≤—Å—Ç"),    0213 }, // –í–°–¢
+    { 477,  42, 25, 25, KEYCLASSGRAY, _T("—É–¥"),     0214 }, // –£–î–ê–õ
+    { 427,  67, 25, 25, KEYCLASSGRAY, _T("–≤–±—Ä"),    0215 }, // –í–´–ë–†
+    { 452,  67, 25, 25, KEYCLASSGRAY, _T("–ü—Ä–ö"),    0216 }, // –ü–†–ï–î –ö–ê–î–†
+    { 477,  67, 25, 25, KEYCLASSGRAY, _T("–°–ª–ö"),    0217 }, // –°–î–ï–ñ –ö–ê–î–†
     { 452,  92, 25, 25, KEYCLASSGRAY, _T("\u2191"), 0252 }, // Up
     { 427, 117, 25, 25, KEYCLASSGRAY, _T("\u2190"), 0247 }, // Left
     { 452, 117, 25, 25, KEYCLASSGRAY, _T("\u2193"), 0251 }, // Down
     { 477, 117, 25, 25, KEYCLASSGRAY, _T("\u2192"), 0250 }, // Right
 
-    { 527,  42, 25, 25, KEYCLASSLITE, _T("ÔÙ1"),    0241 }, // NumPad œ‘1
-    { 552,  42, 25, 25, KEYCLASSLITE, _T("ÔÙ2"),    0242 }, // NumPad œ‘2
-    { 577,  42, 25, 25, KEYCLASSLITE, _T("ÔÙ3"),    0243 }, // NumPad œ‘3
-    { 602,  42, 25, 25, KEYCLASSLITE, _T("ÔÙ4"),    0244 }, // NumPad œ‘4
+    { 527,  42, 25, 25, KEYCLASSLITE, _T("–ø—Ñ1"),    0241 }, // NumPad –ü–§1
+    { 552,  42, 25, 25, KEYCLASSLITE, _T("–ø—Ñ2"),    0242 }, // NumPad –ü–§2
+    { 577,  42, 25, 25, KEYCLASSLITE, _T("–ø—Ñ3"),    0243 }, // NumPad –ü–§3
+    { 602,  42, 25, 25, KEYCLASSLITE, _T("–ø—Ñ4"),    0244 }, // NumPad –ü–§4
     { 527,  67, 25, 25, KEYCLASSLITE, _T("7"),      0235 }, // NumPad 7
     { 552,  67, 25, 25, KEYCLASSLITE, _T("8"),      0236 }, // NumPad 8
     { 577,  67, 25, 25, KEYCLASSLITE, _T("9"),      0237 }, // NumPad 9
@@ -181,8 +181,8 @@ m_arrKeyboardKeys[] =
     { 552, 117, 25, 25, KEYCLASSLITE, _T("2"),      0227 }, // NumPad 2
     { 577, 117, 25, 25, KEYCLASSLITE, _T("3"),      0230 }, // NumPad 3
     { 602, 117, 25, 25, KEYCLASSLITE, _T("."),      0224 }, // NumPad
-    { 527, 142, 50, 25, KEYCLASSLITE, _T("0"),      0105 }, // NumPad 0 ¬—“
-    { 577, 142, 50, 25, KEYCLASSLITE, _T("‚‚Ó‰"),   0225 }, // NumPad ¬¬Œƒ
+    { 527, 142, 50, 25, KEYCLASSLITE, _T("0"),      0105 }, // NumPad 0 –í–°–¢
+    { 577, 142, 50, 25, KEYCLASSLITE, _T("–≤–≤–æ–¥"),   0225 }, // NumPad –í–í–û–î
 };
 
 const int m_nKeyboardKeysCount = sizeof(m_arrKeyboardKeys) / sizeof(KeyboardKeys);
