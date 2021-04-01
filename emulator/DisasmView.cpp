@@ -82,7 +82,7 @@ TCHAR m_strDisasmHint[42] = { 0 };
 TCHAR m_strDisasmHint2[42] = { 0 };
 
 int m_cxDisasmBreakpointZone = 16;  // Width of breakpoint zone at the left, for mouse click
-int m_cyDisasmLine = 10;
+int m_cyDisasmLine = 10;  // cyLine for the current font
 
 void DisasmView_UpdateWindowText();
 BOOL DisasmView_OnKeyDown(WPARAM vkey, LPARAM lParam);
@@ -901,7 +901,7 @@ int DisasmView_GetInstructionHint(const WORD* memory, const CProcessor * pProc,
         int dstmod = (instr >> 3) & 7;
         if (dstreg != 7)
         {
-            TCHAR tempbuf[42];
+            TCHAR tempbuf[buffersize];
             DisasmView_InstructionHint(memory, pProc, tempbuf, buffer2, -1, -1, dstreg, dstmod);
             WORD psw = pProc->GetPSW();
             _sntprintf(buffer, buffersize - 1, _T("%s, C=%c"), tempbuf, (psw & PSW_C) ? '1' : '0');  // "..., C=X"
@@ -1094,7 +1094,6 @@ void DisasmView_DoDraw(HDC hdc)
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorOld = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
     SetBkMode(hdc, TRANSPARENT);
-    //COLORREF colorBkOld = SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
 
     CProcessor* pDisasmPU = g_pBoard->GetCPU();
 
@@ -1103,7 +1102,6 @@ void DisasmView_DoDraw(HDC hdc)
     int yFocus = DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
 
     SetTextColor(hdc, colorOld);
-    //SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
     VERIFY(::DeleteObject(hFont));
 

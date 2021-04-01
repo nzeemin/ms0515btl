@@ -164,8 +164,8 @@ void Emulator_Done()
     g_pBoard = nullptr;
 
     // Free memory used for old RAM values
-    ::free(g_pEmulatorRam);
-    ::free(g_pEmulatorChangedRam);
+    ::free(g_pEmulatorRam);  g_pEmulatorRam = nullptr;
+    ::free(g_pEmulatorChangedRam);  g_pEmulatorChangedRam = nullptr;
 }
 
 bool Emulator_InitConfiguration(int configuration)

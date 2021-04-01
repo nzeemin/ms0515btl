@@ -224,7 +224,7 @@ BOOL MainWindow_InitToolbar()
 BOOL MainWindow_InitStatusbar()
 {
     TCHAR buffer[100];
-    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s - version %s"), g_szTitle, _T(APP_VERSION_STRING));
+    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s version %s"), g_szTitle, _T(APP_VERSION_STRING));
     m_hwndStatusbar = CreateStatusWindow(
             WS_CHILD | WS_VISIBLE | SBT_TOOLTIPS | CCS_NOPARENTALIGN | CCS_NODIVIDER,
             buffer,
@@ -651,7 +651,8 @@ void MainWindow_UpdateMenu()
     CheckMenuItem(hMenu, ID_EMULATOR_RUN, (g_okEmulatorRunning ? MF_CHECKED : MF_UNCHECKED));
     SendMessage(m_hwndToolbar, TB_CHECKBUTTON, ID_EMULATOR_RUN, (g_okEmulatorRunning ? 1 : 0));
     //MainWindow_SetToolbarImage(ID_EMULATOR_RUN, g_okEmulatorRunning ? ToolbarImageRun : ToolbarImagePause);
-    // View|Debug check
+
+    // View menu
     CheckMenuItem(hMenu, ID_VIEW_TOOLBAR, (Settings_GetToolbar() ? MF_CHECKED : MF_UNCHECKED));
     CheckMenuItem(hMenu, ID_VIEW_KEYBOARD, (Settings_GetKeyboard() ? MF_CHECKED : MF_UNCHECKED));
 
@@ -936,6 +937,7 @@ void MainWindow_DoEmulatorSpeed(WORD speed)
 
     MainWindow_UpdateMenu();
 }
+
 void MainWindow_DoEmulatorSound()
 {
     Settings_SetSound(!Settings_GetSound());
@@ -1019,7 +1021,8 @@ void MainWindow_DoFileScreenshot()
     TCHAR bufFileName[MAX_PATH];
     SYSTEMTIME st;
     ::GetSystemTime(&st);
-    _sntprintf(bufFileName, MAX_PATH, _T("%04d%02d%02d%02d%02d%02d%03d.png"),
+    _sntprintf(bufFileName, sizeof(bufFileName) / sizeof(TCHAR) - 1,
+            _T("%04d%02d%02d%02d%02d%02d%03d.png"),
             st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 
     if (!ScreenView_SaveScreenshot(bufFileName))
@@ -1186,6 +1189,15 @@ void MainWindow_SetToolbarImage(int commandId, int imageIndex)
     info.iImage = imageIndex;
     info.dwMask = TBIF_IMAGE;
     SendMessage(m_hwndToolbar, TB_SETBUTTONINFO, commandId, (LPARAM) &info);
+}
+
+void MainWindow_EnableToolbarItem(int commandId, BOOL enable)
+{
+    TBBUTTONINFO info;
+    info.cbSize = sizeof(info);
+    info.fsState = enable ? TBSTATE_ENABLED : 0;
+    info.dwMask = TBIF_STATE;
+    SendMessage(m_hwndToolbar, TB_SETBUTTONINFO, commandId, (LPARAM)&info);
 }
 
 void MainWindow_SetStatusbarText(int part, LPCTSTR message)

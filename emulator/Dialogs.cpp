@@ -31,6 +31,9 @@ INT_PTR CALLBACK DcbEditorProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lP
 LPCTSTR m_strInputBoxTitle = NULL;
 WORD* m_pInputBoxValueOctal = NULL;
 
+// Show the standard Choose Color dialog box
+BOOL ShowColorDialog(COLORREF& color);
+
 DCB m_DialogSettings_SerialConfig;
 DCB m_DialogSettings_NetComConfig;
 DCB* m_pDcbEditorData = NULL;
@@ -54,9 +57,12 @@ INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
     {
     case WM_INITDIALOG:
         {
-            TCHAR buf[64];
-            _sntprintf(buf, sizeof(buf) / sizeof(TCHAR) - 1, _T("%S %S"), __DATE__, __TIME__);
-            ::SetWindowText(::GetDlgItem(hDlg, IDC_BUILDDATE), buf);
+            const size_t buffersize = 64;
+            TCHAR buffer[buffersize];
+            _sntprintf(buffer, buffersize - 1, _T("MS0515BTL version %s revision %d"), _T(APP_VERSION_STRING), APP_REVISION);
+            ::SetDlgItemText(hDlg, IDC_VERSION, buffer);
+            _sntprintf(buffer, buffersize - 1, _T("%S %S"), __DATE__, __TIME__);
+            ::SetWindowText(::GetDlgItem(hDlg, IDC_BUILDDATE), buffer);
             return (INT_PTR)TRUE;
         }
     case WM_COMMAND:
@@ -84,7 +90,6 @@ BOOL InputBoxOctal(HWND hwndOwner, LPCTSTR strTitle, WORD* pValue)
 
     return TRUE;
 }
-
 
 INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -114,7 +119,7 @@ INT_PTR CALLBACK InputBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
                 GetDlgItemText(hDlg, IDC_EDIT1, buffer, buffersize);
                 if (_sntscanf_s(buffer, buffersize, _T("%ho"), m_pInputBoxValueOctal) > 0)
                 {
-                    GetDlgItemText(hDlg, IDC_EDIT2, buffer, 8);
+                    GetDlgItemText(hDlg, IDC_EDIT2, buffer, buffersize);
                     WORD otherValue;
                     if (_sntscanf_s(buffer, buffersize, _T("%hx"), &otherValue) <= 0 || *m_pInputBoxValueOctal != otherValue)
                     {
@@ -253,6 +258,26 @@ void Dialogs_DoCreateDisk()
 
 
 //////////////////////////////////////////////////////////////////////
+// Color Dialog
+
+BOOL ShowColorDialog(COLORREF& color, HWND hWndOwner)
+{
+    CHOOSECOLOR cc;  memset(&cc, 0, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.hwndOwner = hWndOwner;
+    cc.lpCustColors = (LPDWORD)m_DialogSettings_acrCustClr;
+    cc.rgbResult = color;
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+    if (!::ChooseColor(&cc))
+        return FALSE;
+
+    color = cc.rgbResult;
+    return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////
 // Settings Dialog
 
 void ShowSettingsDialog()
@@ -369,9 +394,9 @@ void SettingsDialog_FillDebugFontCombo(HWND hCombo)
     logfont.lfWeight = FW_NORMAL;
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_DONTCARE;
 
-    HDC hdc = GetDC(NULL);
+    HDC hdc = ::GetDC(NULL);
     EnumFontFamiliesEx(hdc, &logfont, (FONTENUMPROC)SettingsDialog_EnumFontProc, (LPARAM)hCombo, 0);
-    ReleaseDC(NULL, hdc);
+    VERIFY(::ReleaseDC(NULL, hdc));
 
     Settings_GetDebugFontName(logfont.lfFaceName);
     ::SendMessage(hCombo, CB_SELECTSTRING, 0, (LPARAM)logfont.lfFaceName);

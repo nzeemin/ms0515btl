@@ -191,7 +191,8 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
         }
         break;
     case WM_LBUTTONDOWN:
-        SetFocus(hWnd);
+    case WM_RBUTTONDOWN:
+        ::SetFocus(hWnd);
         break;
     case WM_KEYDOWN:
         return (LRESULT) DebugView_OnKeyDown(wParam, lParam);
@@ -285,7 +286,7 @@ void DebugView_DoDraw(HDC hdc)
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
     SelectObject(hdc, hOldFont);
-    DeleteObject(hFont);
+    VERIFY(::DeleteObject(hFont));
 
     if (::GetFocus() == m_hwndDebugViewer)
     {
@@ -364,7 +365,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
     COLORREF colorPrev = Settings_GetColor(ColorDebugPrevious);
     COLORREF colorOld = SetTextColor(hdc, colorText);
 
-    uint16_t current = pProc->GetReg(reg);
+    uint16_t current = pProc->GetReg(reg) & ~1;
     uint16_t previous = oldValue;
     bool okExec = (reg == 7);
 
