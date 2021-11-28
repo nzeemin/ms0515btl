@@ -238,6 +238,15 @@ void ParseCommandLine()
         {
             Settings_SetSound(FALSE);
         }
+        else if (_tcslen(arg) > 7 && _tcsncmp(arg, _T("/disk"), 5) == 0)  // "/diskN:filePath", N=0..3
+        {
+            if (arg[5] >= _T('0') && arg[5] <= _T('3') && arg[6] == ':')
+            {
+                int slot = arg[5] - _T('0');
+                LPCTSTR filePath = arg + 7;
+                Settings_SetFloppyFilePath(slot, filePath);
+            }
+        }
     }
 
     ::LocalFree(args);

@@ -519,7 +519,8 @@ void MainWindow_AdjustWindowLayout()
     SetWindowPos(g_hwndScreen, NULL, 0, yScreen, cxScreen, cyScreen, SWP_NOZORDER /*| SWP_NOCOPYBITS*/);
 
     int cyStatusReal = rcStatus.bottom - rcStatus.top;
-    SetWindowPos(m_hwndStatusbar, NULL, 0, rc.bottom - cyStatusReal, cxScreen, cyStatusReal, SWP_NOZORDER | SWP_SHOWWINDOW);
+    SetWindowPos(m_hwndStatusbar, NULL, 0, rc.bottom - cyStatusReal, cxScreen, cyStatusReal,
+            SWP_NOZORDER | SWP_SHOWWINDOW);
 }
 
 void MainWindow_ShowHideDebug()
@@ -614,19 +615,6 @@ void MainWindow_ShowHideKeyboard()
     MainWindow_AdjustWindowSize();
     MainWindow_AdjustWindowLayout();
     MainWindow_UpdateMenu();
-}
-
-void MainWindow_ShowHideMemoryMap()
-{
-    //if (g_hwndMemoryMap == INVALID_HANDLE_VALUE)
-    //{
-    //    RECT rcScreen;  ::GetWindowRect(g_hwndScreen, &rcScreen);
-    //    CreateMemoryMapView(rcScreen.right, rcScreen.top);
-    //}
-    //else
-    //{
-    //    ::SetFocus(g_hwndMemoryMap);
-    //}
 }
 
 void MainWindow_ShowHideSpriteViewer()
@@ -876,10 +864,6 @@ void MainWindow_DoViewDebug()
 
     Settings_SetDebug(!Settings_GetDebug());
     MainWindow_ShowHideDebug();
-}
-void MainWindow_DoDebugMemoryMap()
-{
-    MainWindow_ShowHideMemoryMap();
 }
 void MainWindow_DoViewToolbar()
 {
