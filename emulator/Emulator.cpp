@@ -130,8 +130,8 @@ bool Emulator_Init()
     g_pBoard = new CMotherboard();
 
     // Allocate memory for old RAM values
-    g_pEmulatorRam = (uint8_t*) ::calloc(65536, 1);
-    g_pEmulatorChangedRam = (uint8_t*) ::calloc(65536, 1);
+    g_pEmulatorRam = static_cast<uint8_t*>(::calloc(65536, 1));
+    g_pEmulatorChangedRam = static_cast<uint8_t*>(::calloc(65536, 1));
 
     g_pBoard->Reset();
 
@@ -170,7 +170,7 @@ void Emulator_Done()
 
 bool Emulator_InitConfiguration(int configuration)
 {
-    g_pBoard->SetConfiguration((uint16_t)configuration);
+    g_pBoard->SetConfiguration(static_cast<uint16_t>(configuration));
 
     uint8_t buffer[16384];
 
@@ -699,8 +699,8 @@ void CALLBACK Emulator_PrepareScreen640x200(
         uint32_t colorborder = palette[(border & 7) + 16];
         for (int y = 0; y < 200; y++)
         {
-            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + y * 320 / 4);
-            uint32_t* pBits = (uint32_t*)pImageBits + (200 - 1 - y) * 640;
+            const uint16_t* pVideo = reinterpret_cast<const uint16_t*>(pVideoBuffer + y * 320 / 4);
+            uint32_t* pBits = static_cast<uint32_t*>(pImageBits) + (200 - 1 - y) * 640;
             for (int i = 0; i < 160; i++)  // Left part of line
                 *pBits++ = colorborder;
             for (int x = 0; x < 320 / 8; x++)
@@ -729,8 +729,8 @@ void CALLBACK Emulator_PrepareScreen640x200(
         uint32_t colorink = palette[(border & 7) ^ 7];
         for (int y = 0; y < 200; y++)
         {
-            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + y * 640 / 8);
-            uint32_t* pBits = (uint32_t*)pImageBits + (200 - 1 - y) * 640;
+            const uint8_t* pVideo = const_cast<uint8_t*>(pVideoBuffer + y * 640 / 8);
+            uint32_t* pBits = static_cast<uint32_t*>(pImageBits) + (200 - 1 - y) * 640;
             for (int x = 0; x < 640; x += 8)
             {
                 uint8_t value = *pVideo++;
@@ -752,7 +752,7 @@ void CALLBACK Emulator_PrepareScreen360x220(
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
     {
-        uint32_t* pBits = (uint32_t*)pImageBits + (220 - 1 - y) * 360;
+        uint32_t* pBits = static_cast<uint32_t*>(pImageBits) + (220 - 1 - y) * 360;
         if (y < 10 || y >= 210)  // Border at the top/bottom
         {
             for (int i = 0; i < 360; i++)
@@ -763,7 +763,7 @@ void CALLBACK Emulator_PrepareScreen360x220(
             *pBits++ = colorborder;
         if (!hires)
         {
-            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + (y - 10) * 320 / 4);
+            const uint16_t* pVideo = reinterpret_cast<const uint16_t*>(pVideoBuffer + (y - 10) * 320 / 4);
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -785,7 +785,7 @@ void CALLBACK Emulator_PrepareScreen360x220(
         {
             uint32_t colorpaper = palette[border & 7];
             uint32_t colorink = palette[(border & 7) ^ 7];
-            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
+            const uint8_t* pVideo = const_cast<uint8_t*>(pVideoBuffer + (y - 10) * 640 / 8);
             for (int x = 0; x < 320; x += 4)
             {
                 uint8_t value = *pVideo++;
@@ -812,8 +812,8 @@ void CALLBACK Emulator_PrepareScreen720x440(
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
     {
-        uint32_t* pBits1 = (uint32_t*)pImageBits + (440 - 1 - y * 2) * 720;
-        uint32_t* pBits2 = (uint32_t*)pImageBits + (440 - 2 - y * 2) * 720;
+        uint32_t* pBits1 = static_cast<uint32_t*>(pImageBits) + (440 - 1 - y * 2) * 720;
+        uint32_t* pBits2 = static_cast<uint32_t*>(pImageBits) + (440 - 2 - y * 2) * 720;
         if (y < 10 || y >= 210)  // Border at the top/bottom
         {
             for (int i = 0; i < 720; i++)
@@ -824,7 +824,7 @@ void CALLBACK Emulator_PrepareScreen720x440(
             *pBits1++ = *pBits2++ = colorborder;
         if (!hires)
         {
-            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + (y - 10) * 320 / 4);
+            const uint16_t* pVideo = reinterpret_cast<const uint16_t*>(pVideoBuffer + (y - 10) * 320 / 4);
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -847,7 +847,7 @@ void CALLBACK Emulator_PrepareScreen720x440(
         {
             uint32_t colorpaper = palette[border & 7];
             uint32_t colorink = palette[(border & 7) ^ 7];
-            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
+            const uint8_t* pVideo = const_cast<uint8_t*>(pVideoBuffer + (y - 10) * 640 / 8);
             for (int x = 0; x < 640; x += 8)
             {
                 uint8_t value = *pVideo++;
@@ -871,9 +871,9 @@ void CALLBACK Emulator_PrepareScreen880x660(
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
     {
-        uint32_t* pBits1 = (uint32_t*)pImageBits + (660 - 1 - y * 3) * 880;
-        uint32_t* pBits2 = (uint32_t*)pImageBits + (660 - 2 - y * 3) * 880;
-        uint32_t* pBits3 = (uint32_t*)pImageBits + (660 - 3 - y * 3) * 880;
+        uint32_t* pBits1 = static_cast<uint32_t*>(pImageBits) + (660 - 1 - y * 3) * 880;
+        uint32_t* pBits2 = static_cast<uint32_t*>(pImageBits) + (660 - 2 - y * 3) * 880;
+        uint32_t* pBits3 = static_cast<uint32_t*>(pImageBits) + (660 - 3 - y * 3) * 880;
         if (y < 10 || y >= 210)  // Border at the top/bottom
         {
             for (int i = 0; i < 880; i++)
@@ -886,7 +886,7 @@ void CALLBACK Emulator_PrepareScreen880x660(
 
         if (!hires)
         {
-            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + (y - 10) * 320 / 4);
+            const uint16_t* pVideo = reinterpret_cast<const uint16_t*>(pVideoBuffer + (y - 10) * 320 / 4);
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -913,7 +913,7 @@ void CALLBACK Emulator_PrepareScreen880x660(
         }
         else  // hires
         {
-            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
+            const uint8_t* pVideo = const_cast<uint8_t*>(pVideoBuffer + (y - 10) * 640 / 8);
             uint32_t colorpaper = palette[border & 7];
             uint32_t colorink = palette[(border & 7) ^ 7];
             for (int x = 0; x < 640; x += 8)
@@ -952,8 +952,8 @@ void CALLBACK Emulator_PrepareScreen1080x660(
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
     {
-        uint32_t* pBits1 = (uint32_t*)pImageBits + (660 - 1 - y * 3) * 1080;
-        uint32_t* pBits2 = (uint32_t*)pImageBits + (660 - 2 - y * 3) * 1080;
+        uint32_t* pBits1 = static_cast<uint32_t*>(pImageBits) + (660 - 1 - y * 3) * 1080;
+        uint32_t* pBits2 = static_cast<uint32_t*>(pImageBits) + (660 - 2 - y * 3) * 1080;
         //uint32_t* pBits3 = (uint32_t*)pImageBits + (660 - 3 - y * 3) * 1080;
         //for (int i = 0; i < 1080; i++)
         //    *pBits3++ = 0;
@@ -967,7 +967,7 @@ void CALLBACK Emulator_PrepareScreen1080x660(
             *pBits1++ = *pBits2++ = colorborder;
         if (!hires)
         {
-            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + (y - 10) * 320 / 4);
+            const uint16_t* pVideo = reinterpret_cast<const uint16_t*>(pVideoBuffer + (y - 10) * 320 / 4);
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -990,7 +990,7 @@ void CALLBACK Emulator_PrepareScreen1080x660(
         }
         else  // hires
         {
-            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
+            const uint8_t* pVideo = const_cast<uint8_t*>(pVideoBuffer + (y - 10) * 640 / 8);
             uint32_t colorpaper = palette[border & 7];
             uint32_t colorink = palette[(border & 7) ^ 7];
             for (int x = 0; x < 640; x += 8)
@@ -1022,9 +1022,9 @@ void CALLBACK Emulator_PrepareScreen1280x880(
     uint32_t colorborder = palette[(border & 7) + 16];
     for (int y = 0; y < 220; y++)
     {
-        uint32_t* pBits1 = (uint32_t*)pImageBits + (880 - 1 - y * 4) * 1280;
-        uint32_t* pBits2 = (uint32_t*)pImageBits + (880 - 2 - y * 4) * 1280;
-        uint32_t* pBits3 = (uint32_t*)pImageBits + (880 - 3 - y * 4) * 1280;
+        uint32_t* pBits1 = static_cast<uint32_t*>(pImageBits) + (880 - 1 - y * 4) * 1280;
+        uint32_t* pBits2 = static_cast<uint32_t*>(pImageBits) + (880 - 2 - y * 4) * 1280;
+        uint32_t* pBits3 = static_cast<uint32_t*>(pImageBits) + (880 - 3 - y * 4) * 1280;
 
         if (y < 10 || y >= 210)  // Border at the top/bottom
         {
@@ -1036,7 +1036,7 @@ void CALLBACK Emulator_PrepareScreen1280x880(
             *pBits1++ = *pBits2++ = *pBits3++ = colorborder;
         if (!hires)
         {
-            const uint16_t* pVideo = (uint16_t*)(pVideoBuffer + (y - 10) * 320 / 4);
+            const uint16_t* pVideo = reinterpret_cast<const uint16_t*>(pVideoBuffer + (y - 10) * 320 / 4);
             for (int x = 0; x < 320 / 8; x++)
             {
                 uint16_t value = *pVideo++;
@@ -1079,7 +1079,7 @@ void CALLBACK Emulator_PrepareScreen1280x880(
         }
         else  // hires
         {
-            const uint8_t* pVideo = (uint8_t*)(pVideoBuffer + (y - 10) * 640 / 8);
+            const uint8_t* pVideo = const_cast<uint8_t*>(pVideoBuffer + (y - 10) * 640 / 8);
             uint32_t colorpaper = palette[border & 7];
             uint32_t colorink = palette[(border & 7) ^ 7];
             for (int x = 0; x < 640; x += 8)
@@ -1134,7 +1134,7 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
         return false;
 
     // Allocate memory
-    uint8_t* pImage = (uint8_t*) ::calloc(MS0515IMAGE_SIZE, 1);
+    uint8_t* pImage = static_cast<uint8_t*>(::calloc(MS0515IMAGE_SIZE, 1));
     if (pImage == nullptr)
     {
         ::fclose(fpFile);
@@ -1142,14 +1142,14 @@ bool Emulator_SaveImage(LPCTSTR sFilePath)
     }
     memset(pImage, 0, MS0515IMAGE_SIZE);
     // Prepare header
-    uint32_t* pHeader = (uint32_t*) pImage;
+    uint32_t* pHeader = reinterpret_cast<uint32_t*>(pImage);
     *pHeader++ = MS0515IMAGE_HEADER1;
     *pHeader++ = MS0515IMAGE_HEADER2;
     *pHeader++ = MS0515IMAGE_VERSION;
     *pHeader++ = MS0515IMAGE_SIZE;
     // Store emulator state to the image
     g_pBoard->SaveToImage(pImage);
-    *(uint32_t*)(pImage + 16) = m_dwTotalFrameCount;
+    *reinterpret_cast<uint32_t*>(pImage + 16) = m_dwTotalFrameCount;
 
     // Save image to the file
     size_t dwBytesWritten = ::fwrite(pImage, 1, MS0515IMAGE_SIZE, fpFile);
@@ -1183,7 +1183,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     //TODO: Check version and size
 
     // Allocate memory
-    uint8_t* pImage = (uint8_t*) ::calloc(MS0515IMAGE_SIZE, 1);
+    uint8_t* pImage = static_cast<uint8_t*>(::calloc(MS0515IMAGE_SIZE, 1));
     if (pImage == nullptr)
     {
         ::fclose(fpFile);
@@ -1203,7 +1203,7 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     // Restore emulator state from the image
     g_pBoard->LoadFromImage(pImage);
 
-    m_dwTotalFrameCount = (*(uint32_t*)(pImage + 16));
+    m_dwTotalFrameCount = (*reinterpret_cast<uint32_t*>(pImage + 16));
     g_wEmulatorCpuPC = g_pBoard->GetCPU()->GetPC();
 
     // Free memory, close file

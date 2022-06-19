@@ -34,12 +34,9 @@ void MainWindow_RestoreSettings();
 void MainWindow_UpdateMenu();
 void MainWindow_UpdateWindowTitle();
 void MainWindow_UpdateAllViews();
-BOOL MainWindow_InitToolbar();
-BOOL MainWindow_InitStatusbar();
 void MainWindow_ShowHideDebug();
 void MainWindow_ShowHideToolbar();
 void MainWindow_ShowHideKeyboard();
-void MainWindow_ShowHideTape();
 void MainWindow_ShowHideSpriteViewer();
 void MainWindow_AdjustWindowSize();
 

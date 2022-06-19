@@ -84,6 +84,7 @@ public:  // Register control
     }
     uint16_t    GetReg(int regno) const { return m_R[regno]; }
     void        SetReg(int regno, uint16_t word) { m_R[regno] = word; }
+    uint8_t     GetLReg(int regno) const { return static_cast<uint8_t>(m_R[regno] & 0xff); }
     uint16_t    GetSP() const { return m_R[6]; }
     void        SetSP(uint16_t word) { m_R[6] = word; }
     uint16_t    GetPC() const { return m_R[7]; }
@@ -119,14 +120,6 @@ public:  // Saving/loading emulator status (pImage addresses up to 32 bytes)
 protected:  // Implementation
     void        FetchInstruction();      // Read next instruction
     void        TranslateInstruction();  // Execute the instruction
-protected:  // Implementation - instruction processing
-    uint8_t     GetByteSrc();
-    uint8_t     GetByteDest();
-    void        SetByteDest(uint8_t);
-    uint16_t    GetWordSrc();
-    uint16_t    GetWordDest();
-    void        SetWordDest(uint16_t);
-    uint16_t    GetDstWordArgAsBranch();
 protected:  // Implementation - memory access
     uint16_t    GetWordExec(uint16_t address) { return m_pBoard->GetWordExec(address); }
     uint16_t    GetWord(uint16_t address) { return m_pBoard->GetWord(address); }
@@ -162,6 +155,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteDEC ();
     void        ExecuteNEG ();
     void        ExecuteTST ();
+    void        ExecuteTSTB();
     void        ExecuteASR ();
     void        ExecuteASL ();
     void        ExecuteROR ();
@@ -169,11 +163,12 @@ protected:  // Implementation - instruction execution
     void        ExecuteADC ();
     void        ExecuteSBC ();
     void        ExecuteSXT ();
-    void        ExecuteSWAB ();
-    void        ExecuteMTPS ();
-    void        ExecuteMFPS ();
+    void        ExecuteSWAB();
+    void        ExecuteMTPS();
+    void        ExecuteMFPS();
     // Two fields
     void        ExecuteMOV ();
+    void        ExecuteMOVB();
     void        ExecuteCMP ();
     void        ExecuteADD ();
     void        ExecuteSUB ();
@@ -182,7 +177,7 @@ protected:  // Implementation - instruction execution
     void        ExecuteBIS ();
     void        ExecuteXOR ();
     // Branching
-    void        ExecuteBR ();
+    void        ExecuteBR  ();
     void        ExecuteBNE ();
     void        ExecuteBEQ ();
     void        ExecuteBPL ();
@@ -194,9 +189,9 @@ protected:  // Implementation - instruction execution
     void        ExecuteBGT ();
     void        ExecuteBLE ();
     void        ExecuteBHI ();
-    void        ExecuteBLOS ();  //BCC == BHIS
-    void        ExecuteBHIS ();
-    void        ExecuteBLO ();   //BCS == BLO
+    void        ExecuteBLOS();  //BCC == BHIS
+    void        ExecuteBHIS();
+    void        ExecuteBLO ();  //BCS == BLO
     void        ExecuteJMP ();
     void        ExecuteJSR ();
     void        ExecuteRTS ();
@@ -208,40 +203,13 @@ protected:  // Implementation - instruction execution
     void        ExecuteBPT ();
     void        ExecuteRTI ();
     void        ExecuteRTT ();
-    void        ExecuteHALT ();
-    void        ExecuteWAIT ();
-    void        ExecuteRESET ();
+    void        ExecuteHALT();
+    void        ExecuteWAIT();
+    void        ExecuteRESET();
     void        ExecuteMFPT();
     // Flags
-    void        ExecuteCLC ();
-    void        ExecuteCLV ();
-    void        ExecuteCLVC ();
-    void        ExecuteCLZ ();
-    void        ExecuteCLZC ();
-    void        ExecuteCLZV ();
-    void        ExecuteCLZVC ();
-    void        ExecuteCLN ();
-    void        ExecuteCLNC ();
-    void        ExecuteCLNV ();
-    void        ExecuteCLNVC ();
-    void        ExecuteCLNZ ();
-    void        ExecuteCLNZC ();
-    void        ExecuteCLNZV ();
     void        ExecuteCCC ();
-    void        ExecuteSEC ();
-    void        ExecuteSEV ();
-    void        ExecuteSEVC ();
     void        ExecuteSEZ ();
-    void        ExecuteSEZC ();
-    void        ExecuteSEZV ();
-    void        ExecuteSEZVC ();
-    void        ExecuteSEN ();
-    void        ExecuteSENC ();
-    void        ExecuteSENV ();
-    void        ExecuteSENVC ();
-    void        ExecuteSENZ ();
-    void        ExecuteSENZC ();
-    void        ExecuteSENZV ();
     void        ExecuteSCC ();
     void        ExecuteNOP ();
 };
@@ -364,23 +332,23 @@ inline bool CProcessor::CheckSubForOverflow (uint16_t a, uint16_t b)
 }
 inline bool CProcessor::CheckAddForCarry (uint8_t a, uint8_t b)
 {
-    uint16_t sum = (uint16_t)a + (uint16_t)b;
-    return (uint8_t)((sum >> 8) & 0xff) != 0;
+    uint16_t sum = static_cast<uint16_t>(a) + static_cast<uint16_t>(b);
+    return (sum & 0xff00) != 0;
 }
 inline bool CProcessor::CheckAddForCarry (uint16_t a, uint16_t b)
 {
-    uint32_t sum = (uint32_t)a + (uint32_t)b;
-    return (uint16_t)((sum >> 16) & 0xffff) != 0;
+    uint32_t sum = static_cast<uint32_t>(a) + static_cast<uint32_t>(b);
+    return static_cast<uint16_t>((sum >> 16) & 0xffff) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint8_t a, uint8_t b)
 {
-    uint16_t sum = (uint16_t)a - (uint16_t)b;
-    return (uint8_t)((sum >> 8) & 0xff) != 0;
+    uint16_t sum = static_cast<uint16_t>(a) - static_cast<uint16_t>(b);
+    return (sum & 0xff00) != 0;
 }
 inline bool CProcessor::CheckSubForCarry (uint16_t a, uint16_t b)
 {
-    uint32_t sum = (uint32_t)a - (uint32_t)b;
-    return (uint16_t)((sum >> 16) & 0xffff) != 0;
+    uint32_t sum = static_cast<uint32_t>(a) - static_cast<uint32_t>(b);
+    return static_cast<uint16_t>((sum >> 16) & 0xffff) != 0;
 }
 
 

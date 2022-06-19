@@ -65,7 +65,6 @@ void MainWindow_DoEmulatorConf(int configuration);
 void MainWindow_DoFileScreenshot();
 void MainWindow_DoFileScreenshotToClipboard();
 void MainWindow_DoFileScreenshotSaveAs();
-void MainWindow_DoFileCreateDisk();
 void MainWindow_DoFileSettings();
 void MainWindow_DoFileSettingsColors();
 void MainWindow_OnToolbarGetInfoTip(LPNMTBGETINFOTIP);
@@ -731,9 +730,6 @@ bool MainWindow_DoCommand(int commandId)
     case ID_FILE_SAVESCREENSHOTAS:
         MainWindow_DoFileScreenshotSaveAs();
         break;
-        //case ID_FILE_CREATEDISK:
-        //    MainWindow_DoFileCreateDisk();
-        //    break;
     case ID_FILE_SETTINGS:
         MainWindow_DoFileSettings();
         break;
@@ -1043,11 +1039,6 @@ void MainWindow_DoFileScreenshotSaveAs()
     }
 }
 
-//void MainWindow_DoFileCreateDisk()
-//{
-//    Dialogs_DoCreateDisk();
-//}
-
 void MainWindow_DoFileSettings()
 {
     ShowSettingsDialog();
@@ -1091,12 +1082,6 @@ void MainWindow_DoEmulatorFloppy(int slot)
     }
     else
     {
-        //if ((g_nEmulatorConfiguration & BK_COPT_FDD) == 0)
-        //{
-        //    AlertWarning(_T("Current configuration has no floppy controller."));
-        //    return;
-        //}
-
         // File Open dialog
         TCHAR bufFileName[MAX_PATH];
         BOOL okResult = ShowOpenDialog(g_hwnd,
