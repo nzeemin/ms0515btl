@@ -23,10 +23,11 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK InputBoxProc(HWND, UINT, WPARAM, LPARAM);
-BOOL InputBoxValidate(HWND hDlg);
 INT_PTR CALLBACK SettingsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK SettingsColorsProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DcbEditorProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
+
+BOOL InputBoxValidate(HWND hDlg);
 
 LPCTSTR m_strInputBoxTitle = NULL;
 WORD* m_pInputBoxValueOctal = NULL;
@@ -34,12 +35,12 @@ WORD* m_pInputBoxValueOctal = NULL;
 // Show the standard Choose Color dialog box
 BOOL ShowColorDialog(COLORREF& color);
 
+COLORREF m_DialogSettings_acrCustClr[16];  // array of custom colors to use in ChooseColor()
+COLORREF m_DialogSettings_OsdLineColor = RGB(120, 0, 0);
+
 DCB m_DialogSettings_SerialConfig;
 DCB m_DialogSettings_NetComConfig;
 DCB* m_pDcbEditorData = NULL;
-
-COLORREF m_DialogSettings_acrCustClr[16];  // array of custom colors to use in ChooseColor()
-COLORREF m_DialogSettings_OsdLineColor = RGB(120, 0, 0);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -62,7 +63,7 @@ INT_PTR CALLBACK AboutBoxProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lPa
             _sntprintf(buffer, buffersize - 1, _T("MS0515BTL version %s revision %d"), _T(APP_VERSION_STRING), APP_REVISION);
             ::SetDlgItemText(hDlg, IDC_VERSION, buffer);
             _sntprintf(buffer, buffersize - 1, _T("%S %S"), __DATE__, __TIME__);
-            ::SetWindowText(::GetDlgItem(hDlg, IDC_BUILDDATE), buffer);
+            ::SetDlgItemText(hDlg, IDC_BUILDDATE, buffer);
             return (INT_PTR)TRUE;
         }
     case WM_COMMAND:
@@ -252,8 +253,7 @@ void Dialogs_DoCreateDisk()
     ::SetEndOfFile(hFile);
     ::CloseHandle(hFile);
 
-    ::MessageBox(g_hwnd, _T("New disk file created successfully.\nPlease initialize the disk using INIT command."),
-            g_szTitle, MB_OK | MB_ICONINFORMATION);
+    AlertInfo(_T("New disk file created successfully.\nPlease initialize the disk using INIT command."));
 }
 
 
@@ -462,17 +462,9 @@ void SettingsDialog_OnChooseColor(HWND hDlg)
     HWND hList = GetDlgItem(hDlg, IDC_LIST1);
     int itemIndex = ::SendMessage(hList, LB_GETCURSEL, 0, 0);
     COLORREF color = ::SendMessage(hList, LB_GETITEMDATA, itemIndex, 0);
-
-    CHOOSECOLOR cc;  memset(&cc, 0, sizeof(cc));
-    cc.lStructSize = sizeof(cc);
-    cc.hwndOwner = hDlg;
-    cc.lpCustColors = (LPDWORD)m_DialogSettings_acrCustClr;
-    cc.rgbResult = color;
-    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-
-    if (::ChooseColor(&cc))
+    if (ShowColorDialog(color, hDlg))
     {
-        ::SendMessage(hList, LB_SETITEMDATA, itemIndex, (LPARAM)cc.rgbResult);
+        ::SendMessage(hList, LB_SETITEMDATA, itemIndex, (LPARAM)color);
         ::InvalidateRect(hList, NULL, TRUE);
     }
 }

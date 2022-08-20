@@ -381,7 +381,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
 
         // Value at the address
         WORD value = memory[index];
-        WORD wChanged = Emulator_GetChangeRamStatus(address);
+        WORD wChanged = Emulator_GetChangeRamStatus(addrtype[index], address);
         SetTextColor(hdc, (wChanged != 0) ? colorChanged : colorText);
         DrawOctalValue(hdc, x + 11 * cxChar, y, value);
 
@@ -427,7 +427,7 @@ BOOL DebugView_DrawWatchpoints(HDC hdc, int x, int y)
         DrawOctalValue(hdc, x, y, address);
         int addrtype;
         uint16_t value = g_pBoard->GetWordView(address, false, &addrtype);
-        uint16_t wChanged = Emulator_GetChangeRamStatus(address);
+        uint16_t wChanged = Emulator_GetChangeRamStatus(addrtype, address);
         SetTextColor(hdc, (wChanged != 0) ? colorChanged : colorText);
         DrawOctalValue(hdc, x + 8 * cxChar, y, value);
 

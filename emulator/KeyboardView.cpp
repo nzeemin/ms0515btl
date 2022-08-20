@@ -277,8 +277,8 @@ LRESULT CALLBACK KeyboardViewWndProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 
             // Remember key pressed
             m_nKeyboardKeyPressed = keyscan;
-            break;
         }
+        break;
     case WM_LBUTTONUP:
         if (m_nKeyboardKeyPressed != KEYSCAN_NONE)
         {

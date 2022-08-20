@@ -20,9 +20,10 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 
 // TranslateAddress result code
-#define ADDRTYPE_RAM     0  // RAM -- lower 56 KB of RAM
-#define ADDRTYPE_HIRAM   1  // RAM -- higher 56 KB of RAM
-#define ADDRTYPE_VRAM    2  // Video RAM -- top 16 KB of RAM
+#define ADDRTYPE_NONE    0
+#define ADDRTYPE_RAM     1  // RAM -- lower 56 KB of RAM
+#define ADDRTYPE_HIRAM   2  // RAM -- higher 56 KB of RAM
+#define ADDRTYPE_VRAM    4  // Video RAM -- top 16 KB of RAM
 #define ADDRTYPE_ROM     8  // ROM
 #define ADDRTYPE_IO     16  // I/O port
 #define ADDRTYPE_DENY  128  // Access denied
@@ -160,7 +161,7 @@ public:  // Memory
     // Get video buffer address
     const uint8_t* GetVideoBuffer();
 private:
-    // Determite memory type for given address - see ADDRTYPE_Xxx constants
+    // Determine memory type for given address - see ADDRTYPE_Xxx constants
     //   okExec - TRUE: read instruction for execution; FALSE: read memory
     //   pOffset - result - offset in memory plane
     int TranslateAddress(uint16_t address, bool okExec, uint16_t* pOffset);

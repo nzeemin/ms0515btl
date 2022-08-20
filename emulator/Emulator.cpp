@@ -130,8 +130,8 @@ bool Emulator_Init()
     g_pBoard = new CMotherboard();
 
     // Allocate memory for old RAM values
-    g_pEmulatorRam = static_cast<uint8_t*>(::calloc(65536, 1));
-    g_pEmulatorChangedRam = static_cast<uint8_t*>(::calloc(65536, 1));
+    g_pEmulatorRam = static_cast<uint8_t*>(::calloc(128 * 1024, 1));
+    g_pEmulatorChangedRam = static_cast<uint8_t*>(::calloc(128 * 1024, 1));
 
     g_pBoard->Reset();
 
@@ -632,28 +632,47 @@ void Emulator_OnUpdate()
     g_wEmulatorCpuPC = g_pBoard->GetCPU()->GetPC();
 
     // Update memory change flags
+    uint8_t* pOld = g_pEmulatorRam;
+    uint8_t* pChanged = g_pEmulatorChangedRam;
+    // low RAM
+    uint16_t addr = 0;
+    do
     {
-        uint8_t* pOld = g_pEmulatorRam;
-        uint8_t* pChanged = g_pEmulatorChangedRam;
-        uint16_t addr = 0;
-        do
-        {
-            uint8_t newvalue = g_pBoard->GetLORAMByte(addr);  //TODO
-            uint8_t oldvalue = *pOld;
-            *pChanged = (newvalue != oldvalue) ? 255 : 0;
-            *pOld = newvalue;
-            addr++;
-            pOld++;  pChanged++;
-        }
-        while (addr < 65535);
+        uint8_t newvalue = g_pBoard->GetLORAMByte(addr);
+        uint8_t oldvalue = *pOld;
+        *pChanged = (newvalue != oldvalue) ? 255 : 0;
+        *pOld = newvalue;
+        addr++;
+        pOld++;  pChanged++;
     }
+    while (addr < 65535);
+    // high RAM
+    addr = 0;
+    do
+    {
+        uint8_t newvalue = g_pBoard->GetHIRAMByte(addr);
+        uint8_t oldvalue = *pOld;
+        *pChanged = (newvalue != oldvalue) ? 255 : 0;
+        *pOld = newvalue;
+        addr++;
+        pOld++;  pChanged++;
+    }
+    while (addr < 65535);
 }
 
-// Get RAM change flag
+// Get RAM change flag for RAM word
 //   addrtype - address mode - see ADDRTYPE_XXX constants
-uint16_t Emulator_GetChangeRamStatus(uint16_t address)
+uint16_t Emulator_GetChangeRamStatus(int addrtype, uint16_t address)
 {
-    return *((uint16_t*)(g_pEmulatorChangedRam + address));
+    switch (addrtype)
+    {
+    case ADDRTYPE_RAM:
+        return *((uint16_t*)(g_pEmulatorChangedRam + address));
+    case ADDRTYPE_HIRAM:
+        return *((uint16_t*)(g_pEmulatorChangedRam + 65536 + address));
+    default:
+        return 0;
+    }
 }
 
 void Emulator_GetScreenSize(int scrmode, int* pwid, int* phei)

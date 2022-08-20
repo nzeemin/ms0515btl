@@ -74,6 +74,9 @@ enum ToolbarButtonImages
     ToolbarImageWordByte = 18,
     ToolbarImageGotoAddress = 19,
     ToolbarImageSpriteViewer = 20,
+    ToolbarImageMemoryCpu = 21,
+    ToolbarImageMemoryRamLo = 22,
+    ToolbarImageMemoryRamHi = 23,
 };
 
 enum StatusbarParts
@@ -130,6 +133,8 @@ void Settings_SetDebug(BOOL flag);
 BOOL Settings_GetDebug();
 void Settings_GetDebugFontName(LPTSTR buffer);
 void Settings_SetDebugFontName(LPCTSTR sFontName);
+void Settings_SetDebugMemoryMode(WORD mode);
+WORD Settings_GetDebugMemoryMode();
 void Settings_SetDebugMemoryAddress(WORD address);
 WORD Settings_GetDebugMemoryAddress();
 void Settings_SetDebugMemoryBase(WORD address);
