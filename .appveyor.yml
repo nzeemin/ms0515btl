@@ -19,8 +19,13 @@ configuration:
 
 environment:
   matrix:
-    - toolchain: msvc13
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      toolchain: msvc13
+      PROJECTFILE: MS0515BTL-VS2013.sln
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      toolchain: msvc15
+      PROJECTFILE: MS0515BTL-VS2015.sln    
 
 build:
-  project: emulator\MS0515BTL-VS2013.sln
+  project: emulator\$(PROJECTFILE)
 
