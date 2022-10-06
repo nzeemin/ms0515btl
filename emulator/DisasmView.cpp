@@ -20,7 +20,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "ToolWindow.h"
 #include "Dialogs.h"
 #include "Emulator.h"
-#include "emubase\Emubase.h"
+#include "emubase/Emubase.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -60,7 +60,6 @@ struct DisasmLineItem
     int      jumpdelta;     // Jump delta for LINETYPE_JUMP
     const DisasmSubtitleItem* pSubItem;  // Link to subtitles item for LINETYPE_SUBTITLE
 };
-
 
 HWND g_hwndDisasm = (HWND) INVALID_HANDLE_VALUE;  // Disasm View window handle
 WNDPROC m_wndprocDisasmToolWindow = NULL;  // Old window proc address of the ToolWindow
@@ -304,9 +303,14 @@ void DisasmView_OnRButtonDown(int mousex, int mousey)
     HMENU hMenu = ::CreatePopupMenu();
     if (pLineItem != nullptr)
     {
-        ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_ADDRESS, _T("Copy Address"));
+        TCHAR buffer[24];
+        _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("Copy Address: %06o"), pLineItem->address);
+        ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_ADDRESS, buffer);
         if ((pLineItem->type & (LINETYPE_DATA | LINETYPE_INSTR)) != 0)  // if the item has a valid value
-            ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_VALUE, _T("Copy Value"));
+        {
+            _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("Copy Value: %06o"), pLineItem->value);
+            ::AppendMenu(hMenu, 0, ID_DEBUG_COPY_VALUE, buffer);
+        }
         ::AppendMenu(hMenu, MF_SEPARATOR, 0, NULL);
     }
     ::AppendMenu(hMenu, 0, ID_DEBUG_SUBTITLES, m_okDisasmSubtitles ? _T("Unload Subtitles\tS") : _T("Load Subtitles...\tS"));
@@ -362,7 +366,7 @@ void DisasmView_AddSubtitle(uint16_t addr, int type, LPCTSTR pCommentText)
 {
     DisasmSubtitleItem item;
     item.address = addr;
-    item.type = (DisasmSubtitleType) type;
+    item.type = static_cast<DisasmSubtitleType>(type);
     item.comment = pCommentText;
     m_SubtitleItems.push_back(item);
 }
@@ -403,7 +407,7 @@ void DisasmView_LoadUnloadSubtitles()
         return;
     }
 
-    m_strDisasmSubtitles = (TCHAR*) ::calloc(dwSubFileSize + sizeof(TCHAR), 1);
+    m_strDisasmSubtitles = static_cast<TCHAR*>(::calloc(dwSubFileSize + sizeof(TCHAR), 1));
     DWORD dwBytesRead;
     ::ReadFile(hSubFile, m_strDisasmSubtitles, dwSubFileSize, &dwBytesRead, NULL);
     ASSERT(dwBytesRead == dwSubFileSize);
@@ -554,7 +558,7 @@ BOOL DisasmView_CheckForJump(const uint16_t* memory, int* pDelta)
     }
 
     // SOB
-    if ((instr & ~(uint16_t)0777) == PI_SOB)
+    if ((instr & ~static_cast<uint16_t>(0777)) == PI_SOB)
     {
         *pDelta = -(GetDigit(instr, 1) * 8 + GetDigit(instr, 0)) + 1;
         return TRUE;
@@ -563,7 +567,7 @@ BOOL DisasmView_CheckForJump(const uint16_t* memory, int* pDelta)
     // CALL, JMP
     if (instr == 0004767 || instr == 0000167)
     {
-        *pDelta = ((short)(memory[1]) + 4) / 2;
+        *pDelta = (static_cast<short>(memory[1]) + 4) / 2;
         return TRUE;
     }
 
@@ -961,7 +965,14 @@ int DisasmView_GetInstructionHint(const uint16_t* memory, const CProcessor * pPr
         DisasmView_InstructionHint(memory, pProc, buffer, buffer2, -1, -1, dstreg, dstmod);
     }
 
-    //TODO: MARK
+    if ((instr & ~(uint16_t)077) == PI_MARK)
+    {
+        uint16_t regval = pProc->GetReg(6);
+        _sntprintf(buffer, buffersize - 1, _T("SP=%06o, R5=%06o"), regval, pProc->GetReg(5));  // "SP=XXXXXX, R5=XXXXXX"
+        int addrtype = 0;
+        uint16_t srcval2 = g_pBoard->GetWordView(regval, false, &addrtype);
+        _sntprintf(buffer2, buffersize - 1, _T("(SP)=%06o"), srcval2);  // "(SP)=XXXXXX"
+    }
 
     int result = 0;
     if (*buffer != 0)
@@ -1172,7 +1183,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
     m_nDisasmCurrentLineIndex = -1;
 
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
-    m_cxDisasmBreakpointZone = x + cxChar * 2;
+    m_cxDisasmBreakpointZone = x + cxChar * 5 / 2;
     m_cyDisasmLine = cyLine;
     COLORREF colorText = Settings_GetColor(ColorDebugText);
     COLORREF colorPrev = Settings_GetColor(ColorDebugPrevious);
@@ -1183,6 +1194,14 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
     ::SetTextColor(hdc, colorText);
 
     uint16_t proccurrent = pProc->GetPC();
+
+    // Draw breakpoint zone
+    COLORREF colorBreakptZone = Settings_GetColor(ColorDebugBreakptZone);
+    HBRUSH hBrushBreakptZone = ::CreateSolidBrush(colorBreakptZone);
+    HGDIOBJ hBrushOld = ::SelectObject(hdc, hBrushBreakptZone);
+    ::PatBlt(hdc, 0, 0, m_cxDisasmBreakpointZone, cyLine * MAX_DISASMLINECOUNT, PATCOPY);
+    ::SelectObject(hdc, hBrushOld);
+    VERIFY(::DeleteObject(hBrushBreakptZone));
 
     // Draw current line background
     if (!m_okDisasmSubtitles)  //NOTE: Subtitles can move lines down

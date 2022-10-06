@@ -10,7 +10,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 
 #pragma once
 
-#include "res\\resource.h"
+#include "res/resource.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -107,8 +107,10 @@ enum ColorIndices
     ColorDebugJumpHint      = 13,
     ColorDebugHint          = 14,
     ColorDebugBreakpoint    = 15,
+    ColorDebugHighlight     = 16,
+    ColorDebugBreakptZone   = 17,
 
-    ColorIndicesCount       = 16,
+    ColorIndicesCount       = 18,
 };
 
 
