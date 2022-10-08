@@ -97,20 +97,20 @@ public:  // Construct / destruct
 public:  // Getting devices
     CProcessor* GetCPU() { return m_pCPU; }
 public:  // Memory access  //TODO: Make it private
-    uint16_t    GetLORAMWord(uint16_t offset);
-    uint16_t    GetHIRAMWord(uint16_t offset);
-    uint16_t    GetVRAMWord(uint16_t offset);
-    uint8_t     GetLORAMByte(uint16_t offset);
-    uint8_t     GetHIRAMByte(uint16_t offset);
-    uint8_t     GetVRAMByte(uint16_t offset);
+    uint16_t    GetLORAMWord(uint16_t offset) const;
+    uint16_t    GetHIRAMWord(uint16_t offset) const;
+    uint16_t    GetVRAMWord(uint16_t offset) const;
+    uint8_t     GetLORAMByte(uint16_t offset) const;
+    uint8_t     GetHIRAMByte(uint16_t offset) const;
+    uint8_t     GetVRAMByte(uint16_t offset) const;
     void        SetLORAMWord(uint16_t offset, uint16_t word);
     void        SetHIRAMWord(uint16_t offset, uint16_t word);
     void        SetVRAMWord(uint16_t offset, uint16_t word);
     void        SetLORAMByte(uint16_t offset, uint8_t byte);
     void        SetHIRAMByte(uint16_t offset, uint8_t byte);
     void        SetVRAMByte(uint16_t offset, uint8_t byte);
-    uint16_t    GetROMWord(uint16_t offset);
-    uint8_t     GetROMByte(uint16_t offset);
+    uint16_t    GetROMWord(uint16_t offset) const;
+    uint8_t     GetROMByte(uint16_t offset) const;
 public:  // Debug
     void        DebugTicks();  // One Debug CPU tick -- use for debug step or debug breakpoint
     void        SetCPUBreakpoints(const uint16_t* bps) { m_CPUbps = bps; } // Set CPU breakpoint list
@@ -155,16 +155,16 @@ public:  // Memory
     // Write byte
     void SetByte(uint16_t address, uint8_t byte);
     // Read word from memory for debugger
-    uint16_t GetWordView(uint16_t address, bool okExec, int* pValid);
+    uint16_t GetWordView(uint16_t address, bool okExec, int* pValid) const;
     // Read word from port for debugger
     uint16_t GetPortView(uint16_t address);
     // Get video buffer address
-    const uint8_t* GetVideoBuffer();
+    const uint8_t* GetVideoBuffer() const;
 private:
     // Determine memory type for given address - see ADDRTYPE_Xxx constants
     //   okExec - TRUE: read instruction for execution; FALSE: read memory
     //   pOffset - result - offset in memory plane
-    int TranslateAddress(uint16_t address, bool okExec, uint16_t* pOffset);
+    int TranslateAddress(uint16_t address, bool okExec, uint16_t* pOffset) const;
 private:  // Access to I/O ports
     uint16_t    GetPortWord(uint16_t address);
     void        SetPortWord(uint16_t address, uint16_t word);

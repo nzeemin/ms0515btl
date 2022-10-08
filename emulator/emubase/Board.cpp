@@ -173,29 +173,29 @@ bool CMotherboard::IsFloppyEngineOn() const
 
 // Работа с памятью //////////////////////////////////////////////////
 
-uint16_t CMotherboard::GetLORAMWord(uint16_t offset)
+uint16_t CMotherboard::GetLORAMWord(uint16_t offset) const
 {
     return *((uint16_t*)(m_pRAM + offset));  // Lower 56 KB
 }
-uint16_t CMotherboard::GetHIRAMWord(uint16_t offset)
+uint16_t CMotherboard::GetHIRAMWord(uint16_t offset) const
 {
     return *((uint16_t*)(m_pRAM + (uint32_t)0160000 + (uint32_t)offset));  // Higher 56 KB
 }
-uint16_t CMotherboard::GetVRAMWord(uint16_t offset)
+uint16_t CMotherboard::GetVRAMWord(uint16_t offset) const
 {
     return *((uint16_t*)(m_pRAM + (uint32_t)0340000 + (uint32_t)offset));  // Top 16 KB of 128 KB RAM
 }
 
-uint8_t CMotherboard::GetLORAMByte(uint16_t offset)
+uint8_t CMotherboard::GetLORAMByte(uint16_t offset) const
 {
     return m_pRAM[offset];
 }
-uint8_t CMotherboard::GetHIRAMByte(uint16_t offset)
+uint8_t CMotherboard::GetHIRAMByte(uint16_t offset) const
 {
     uint32_t dwOffset = (uint32_t)0160000 + (uint32_t)offset;
     return m_pRAM[dwOffset];
 }
-uint8_t CMotherboard::GetVRAMByte(uint16_t offset)
+uint8_t CMotherboard::GetVRAMByte(uint16_t offset) const
 {
     uint32_t dwOffset = (uint32_t)0340000 + (uint32_t)offset;
     return m_pRAM[dwOffset];
@@ -231,19 +231,19 @@ void CMotherboard::SetVRAMByte(uint16_t offset, uint8_t byte)
     m_pRAM[dwOffset] = byte;
 }
 
-uint16_t CMotherboard::GetROMWord(uint16_t offset)
+uint16_t CMotherboard::GetROMWord(uint16_t offset) const
 {
     ASSERT(offset < 1024 * 16);
     return *((uint16_t*)(m_pROM + offset));
 }
-uint8_t CMotherboard::GetROMByte(uint16_t offset)
+uint8_t CMotherboard::GetROMByte(uint16_t offset) const
 {
     ASSERT(offset < 1024 * 16);
     return m_pROM[offset];
 }
 
 // Calculates video buffer start address, for screen drawing procedure
-const uint8_t* CMotherboard::GetVideoBuffer()
+const uint8_t* CMotherboard::GetVideoBuffer() const
 {
     return (m_pRAM + (uint32_t)0340000);
 }
@@ -450,7 +450,7 @@ void CMotherboard::KeyboardEvent(uint8_t scancode, bool okPressed)
 // Motherboard: memory management
 
 // Read word from memory for debugger
-uint16_t CMotherboard::GetWordView(uint16_t address, bool okExec, int* pAddrType)
+uint16_t CMotherboard::GetWordView(uint16_t address, bool okExec, int* pAddrType) const
 {
     uint16_t offset;
     int addrtype = TranslateAddress(address, okExec, &offset);
@@ -592,7 +592,7 @@ void CMotherboard::SetByte(uint16_t address, uint8_t byte)
     ASSERT(false);  // If we are here - then addrtype has invalid value
 }
 
-int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* pOffset)
+int CMotherboard::TranslateAddress(uint16_t address, bool /*okExec*/, uint16_t* pOffset) const
 {
     int window = (address >> 13) & 7;  // Номер запрашиваемого окна в основной памяти 0..7
 
