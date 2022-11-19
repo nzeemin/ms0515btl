@@ -11,6 +11,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 // DebugView.cpp
 
 #include "stdafx.h"
+#include <windowsx.h>
 #include <CommCtrl.h>
 #include "Main.h"
 #include "Views.h"
@@ -32,6 +33,7 @@ BOOL m_okDebugCpuRChanged[9];  // Register change flags
 WORD m_wDebugCpuPswOld;  // PSW value on previous step
 WORD m_wDebugCpuR6Old;  // SP value on previous step
 
+void DebugView_OnRButtonDown(int mousex, int mousey);
 void DebugView_DoDraw(HDC hdc);
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM lParam);
 void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw);
@@ -44,6 +46,7 @@ void DebugView_UpdateWindowText();
 
 
 //////////////////////////////////////////////////////////////////////
+
 
 void DebugView_RegisterClass()
 {
@@ -185,8 +188,10 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
         }
         break;
     case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
         ::SetFocus(hWnd);
+        break;
+    case WM_RBUTTONDOWN:
+        DebugView_OnRButtonDown(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
         break;
     case WM_KEYDOWN:
         return (LRESULT) DebugView_OnKeyDown(wParam, lParam);
@@ -198,6 +203,20 @@ LRESULT CALLBACK DebugViewViewerWndProc(HWND hWnd, UINT message, WPARAM wParam, 
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return (LRESULT)FALSE;
+}
+
+void DebugView_OnRButtonDown(int mousex, int mousey)
+{
+    ::SetFocus(m_hwndDebugViewer);
+
+    HMENU hMenu = ::CreatePopupMenu();
+    ::AppendMenu(hMenu, 0, ID_DEBUG_DELETEALLBREAKPTS, _T("Delete All Breakpoints"));
+
+    POINT pt = { mousex, mousey };
+    ::ClientToScreen(m_hwndDebugViewer, &pt);
+    ::TrackPopupMenu(hMenu, 0, pt.x, pt.y, 0, m_hwndDebugViewer, NULL);
+
+    VERIFY(::DestroyMenu(hMenu));
 }
 
 BOOL DebugView_OnKeyDown(WPARAM vkey, LPARAM /*lParam*/)
@@ -253,6 +272,7 @@ void DebugView_DoDraw(HDC hdc)
     HFONT hFont = CreateMonospacedFont();
     HGDIOBJ hOldFont = SelectObject(hdc, hFont);
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+    int cyHeight = cyLine * 17;
     COLORREF colorOld = SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
     COLORREF colorBkOld = SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
 
@@ -263,17 +283,40 @@ void DebugView_DoDraw(HDC hdc)
     WORD oldPsw = m_wDebugCpuPswOld;
     WORD oldSP = m_wDebugCpuR6Old;
 
-    DebugView_DrawProcessor(hdc, pDebugPU, 30 + cxChar * 2, 2 + 1 * cyLine, arrR, arrRChanged, oldPsw);
+    HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR_BTNFACE));
+    int x = 32;
+    ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
+    x += 4;
+    int xProc = x;
+    x += cxChar * 33;
+    ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
+    x += 4;
+    int xStack = x;
+    x += cxChar * 17 + cxChar / 2;
+    ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
+    x += 4;
+    int xPorts = x;
+    x += cxChar * 23;
+    ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
+    x += 4;
+    int xBreaks = x;
+    x += cxChar * 9;
+    ::PatBlt(hdc, x, 0, 4, cyHeight, PATCOPY);
+    x += 4;
+    int xMemmap = x;
+    ::SelectObject(hdc, hOldBrush);
+
+    DebugView_DrawProcessor(hdc, pDebugPU, xProc + cxChar, cyLine / 2, arrR, arrRChanged, oldPsw);
 
     // Draw stack for the current processor
-    DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, 30 + 35 * cxChar, 2 + 0 * cyLine, oldSP);
+    DebugView_DrawMemoryForRegister(hdc, 6, pDebugPU, xStack + cxChar / 2, cyLine / 2, oldSP);
 
-    int nWatches = DebugView_DrawWatchpoints(hdc, 30 + 54 * cxChar, 2 + 0 * cyLine);
-    DebugView_DrawPorts(hdc, 30 + 54 * cxChar, 2 + (nWatches > 0 ? 2 + nWatches : 0) * cyLine);
+    int nWatches = DebugView_DrawWatchpoints(hdc, xPorts + cxChar, cyLine / 2);
+    DebugView_DrawPorts(hdc, xPorts + cxChar, cyLine / 2 + (nWatches > 0 ? 2 + nWatches : 0) * cyLine);
 
-    DebugView_DrawBreakpoints(hdc, 30 + 77 * cxChar, 2 + 0 * cyLine);
+    DebugView_DrawBreakpoints(hdc, xBreaks + cxChar / 2, cyLine / 2);
 
-    DebugView_DrawMemoryMap(hdc, 30 + 88 * cxChar, 0 * cyLine);
+    DebugView_DrawMemoryMap(hdc, xMemmap + cxChar, 0);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -288,24 +331,12 @@ void DebugView_DoDraw(HDC hdc)
     }
 }
 
-void DebugView_DrawRectangle(HDC hdc, int x1, int y1, int x2, int y2)
-{
-    HGDIOBJ hOldBrush = ::SelectObject(hdc, ::GetSysColorBrush(COLOR_BTNSHADOW));
-    PatBlt(hdc, x1, y1, x2 - x1, 1, PATCOPY);
-    PatBlt(hdc, x1, y1, 1, y2 - y1, PATCOPY);
-    PatBlt(hdc, x1, y2, x2 - x1, 1, PATCOPY);
-    PatBlt(hdc, x2, y1, 1, y2 - y1 + 1, PATCOPY);
-    ::SelectObject(hdc, hOldBrush);
-}
-
 void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WORD* arrR, BOOL* arrRChanged, WORD oldPsw)
 {
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
     COLORREF colorText = Settings_GetColor(ColorDebugText);
     COLORREF colorChanged = Settings_GetColor(ColorDebugValueChanged);
     ::SetTextColor(hdc, colorText);
-
-    DebugView_DrawRectangle(hdc, x - cxChar, y - 8, x + cxChar + 31 * cxChar, y + 8 + cyLine * 14);
 
     // Registers
     for (int r = 0; r < 8; r++)
@@ -327,7 +358,7 @@ void DebugView_DrawProcessor(HDC hdc, const CProcessor* pProc, int x, int y, WOR
     TextOut(hdc, x, y + 10 * cyLine, _T("PS"), 2);
     WORD psw = arrR[8]; // pProc->GetPSW();
     DrawOctalValue(hdc, x + cxChar * 3, y + 10 * cyLine, psw);
-    DrawHexValue(hdc, x + cxChar * 10, y + 10 * cyLine, psw);
+    //DrawHexValue(hdc, x + cxChar * 10, y + 10 * cyLine, psw);
     ::SetTextColor(hdc, colorText);
     TextOut(hdc, x + cxChar * 15, y + 9 * cyLine, _T("        P  TNZVC"), 16);
 
@@ -495,6 +526,7 @@ void DebugView_DrawBreakpoints(HDC hdc, int x, int y)
 
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
 
+    x += cxChar;
     y += cyLine;
     while (*pbps != 0177777)
     {
