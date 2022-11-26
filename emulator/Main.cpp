@@ -15,14 +15,15 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include <commdlg.h>
 #include <crtdbg.h>
 #include <mmintrin.h>
-#include <vfw.h>
-#include <commctrl.h>
+#include <Vfw.h>
+#include <CommCtrl.h>
 #include <shellapi.h>
 
 #include "Main.h"
 #include "Emulator.h"
-#include "Dialogs.h"
 #include "Views.h"
+#include "util/BitmapFile.h"
+
 
 //////////////////////////////////////////////////////////////////////
 // Global Variables
@@ -170,6 +171,8 @@ BOOL InitInstance(HINSTANCE /*hInstance*/, int /*nCmdShow*/)
     ics.dwICC = ICC_WIN95_CLASSES;
     InitCommonControlsEx(&ics);
 
+    BitmapFile_Init();
+
 #if !defined(PRODUCT)
     DebugLogClear();
 #endif
@@ -201,6 +204,8 @@ void DoneInstance()
     DisasmView_Done();
 
     Emulator_Done();
+
+    BitmapFile_Done();
 
     Settings_Done();
 }
