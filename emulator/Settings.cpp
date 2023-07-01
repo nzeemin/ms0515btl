@@ -33,7 +33,7 @@ void Settings_Init()
     TCHAR* pExt = m_Settings_IniPath + _tcslen(m_Settings_IniPath) - 3;
     *pExt++ = _T('i');
     *pExt++ = _T('n');
-    *pExt++ = _T('i');
+    *pExt   = _T('i');
 
     // Set m_Settings_SerialConfig defaults
     ::memset(&m_Settings_SerialConfig, 0, sizeof(DCB));
@@ -231,7 +231,7 @@ BOOL Settings_LoadBinaryValue(LPCTSTR sName, void * pData, int size)
     } \
     OUTTYPE Settings_Get##PARAMNAME() { \
         if (!m_Settings_##PARAMNAME##_Valid) { \
-            DWORD dwValue = (DWORD) DEFVALUE; \
+            DWORD dwValue = (DWORD)(DEFVALUE); \
             Settings_LoadDwordValue(PARAMNAMESTR, &dwValue); \
             m_Settings_##PARAMNAME = (OUTTYPE) dwValue; \
             m_Settings_##PARAMNAME##_Valid = TRUE; \
@@ -329,6 +329,7 @@ SETTINGS_GETSET_DWORD(DebugMemoryMode, _T("DebugMemoryMode"), WORD, 3);
 SETTINGS_GETSET_DWORD(DebugMemoryAddress, _T("DebugMemoryAddress"), WORD, 0);
 SETTINGS_GETSET_DWORD(DebugMemoryBase, _T("DebugMemoryBase"), WORD, 0);
 SETTINGS_GETSET_DWORD(DebugMemoryByte, _T("DebugMemoryByte"), BOOL, FALSE);
+SETTINGS_GETSET_DWORD(DebugMemoryNumeral, _T("DebugMemoryNumeral"), WORD, 0);
 
 SETTINGS_GETSET_DWORD(Autostart, _T("Autostart"), BOOL, FALSE);
 
@@ -435,7 +436,7 @@ static ColorDescriptors[ColorIndicesCount] =
 {
     { _T("ColorDebugText"),         RGB(0,   0,   0),   FALSE, _T("Debug Text") },
     { _T("ColorDebugBackCurrent"),  RGB(255, 255, 224), FALSE, _T("Debug Current Line Background") },
-    { _T("ColorDebugValueChanged"), RGB(255, 0,   0),   FALSE, _T("Debug Value Changed") },
+    { _T("ColorDebugValueChanged"), RGB(128, 0,   0),   FALSE, _T("Debug Value Changed") },
     { _T("ColorDebugPrevious"),     RGB(0,   0,   255), FALSE, _T("Debug Previous Address Marker") },
     { _T("ColorDebugMemoryROM"),    RGB(0,   0,   255), FALSE, _T("Debug Memory ROM") },
     { _T("ColorDebugMemoryIO"),     RGB(0,   128, 0),   FALSE, _T("Debug Memory IO") },

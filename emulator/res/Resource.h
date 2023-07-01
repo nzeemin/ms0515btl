@@ -77,8 +77,8 @@
 #define ID_EMULATOR_CONF                32808
 #define ID_CONF_ROMA                    32809
 #define ID_CONF_ROMB                    32810
-#define ID_EMULATOR_SERIAL              32812
-#define ID_EMULATOR_PARALLEL            32818
+#define ID_EMULATOR_SERIAL              32826
+#define ID_EMULATOR_PARALLEL            32827
 #define ID_EMULATOR_SOUND               32831
 #define ID_SCREEN                       32846
 #define ID_VIEW_SCREENMODE0             32847
@@ -101,13 +101,15 @@
 #define ID_DEBUG_MEMORY_RAMHI           32891
 #define ID_VIEW_MEMORYMAP               32893
 #define ID_DEBUG_MEMORY_WORDBYTE        32894
-#define ID_DEBUG_MEMORY_GOTO            32895
-#define ID_DEBUG_CLEARCONSOLE           32896
-#define ID_DEBUG_DELETEALLBREAKPTS      32897
-#define ID_DEBUG_SUBTITLES              32898
-#define ID_DEBUG_COPY_ADDRESS           32899
-#define ID_DEBUG_COPY_VALUE             32900
-#define ID_DEBUG_GOTO_ADDRESS           32901
+#define ID_DEBUG_MEMORY_HEXMODE         32895
+#define ID_DEBUG_MEMORY_GOTO            32896
+#define ID_DEBUG_CLEARCONSOLE           32897
+#define ID_DEBUG_DELETEALLBREAKPTS      32898
+#define ID_DEBUG_SUBTITLES              32899
+#define ID_DEBUG_COPY_ADDRESS           32900
+#define ID_DEBUG_COPY_VALUE             32901
+#define ID_DEBUG_GOTO_ADDRESS           32902
+#define ID_HELP_COMMAND_LINE_HELP       32921
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
