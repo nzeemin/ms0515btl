@@ -22,6 +22,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #include "Emulator.h"
 #include "emubase/Emubase.h"
 
+
 //////////////////////////////////////////////////////////////////////
 
 
@@ -91,7 +92,7 @@ void DisasmView_OnRButtonDown(int mousex, int mousey);
 void DisasmView_CopyToClipboard(WPARAM command);
 BOOL DisasmView_ParseSubtitles();
 void DisasmView_DoDraw(HDC hdc);
-int  DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t base, uint16_t previous, int x, int y);
+int  DisasmView_DrawDisassemble(HDC hdc, const CProcessor* pProc, uint16_t base, uint16_t previous);
 
 
 //////////////////////////////////////////////////////////////////////
@@ -293,7 +294,7 @@ void DisasmView_OnRButtonDown(int mousex, int mousey)
     DisasmLineItem* pLineItem = nullptr;
     if (lineindex >= 0 && lineindex < MAX_DISASMLINECOUNT)
         pLineItem = m_pDisasmLineItems + lineindex;
-    if (pLineItem->type == LINETYPE_NONE)
+    if (pLineItem != nullptr && pLineItem->type == LINETYPE_NONE)
         pLineItem = nullptr;
 
     m_nDisasmSelectedLineIndex = (pLineItem == nullptr) ? m_nDisasmCurrentLineIndex : lineindex;
@@ -341,17 +342,7 @@ void DisasmView_CopyToClipboard(WPARAM command)
     TCHAR buffer[7];
     PrintOctalValue(buffer, value);
 
-    // Prepare global memory object for the text
-    HGLOBAL hglbCopy = ::GlobalAlloc(GMEM_MOVEABLE, sizeof(buffer));
-    LPTSTR lptstrCopy = (LPTSTR) ::GlobalLock(hglbCopy);
-    memcpy(lptstrCopy, buffer, sizeof(buffer));
-    ::GlobalUnlock(hglbCopy);
-
-    // Send the text to the Clipboard
-    ::OpenClipboard(g_hwnd);
-    ::EmptyClipboard();
-    ::SetClipboardData(CF_UNICODETEXT, hglbCopy);
-    ::CloseClipboard();
+    CopyTextToClipboard(buffer);
 }
 
 void DisasmView_UpdateWindowText()
@@ -707,7 +698,7 @@ void DisasmView_DoDraw(HDC hdc)
 
     // Draw disassembly for the current processor
     uint16_t prevPC = g_wEmulatorPrevCpuPC;
-    int yFocus = DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC, 0, 2 + 0 * cyLine);
+    int yFocus = DisasmView_DrawDisassemble(hdc, pDisasmPU, m_wDisasmBaseAddr, prevPC);
 
     SetTextColor(hdc, colorOld);
     SelectObject(hdc, hOldFont);
@@ -738,13 +729,15 @@ void DisasmView_DrawBreakpoint(HDC hdc, int x, int y, int size)
     VERIFY(::DeleteObject(hBreakBrush));
 }
 
-int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uint16_t previous, int x, int y)
+int DisasmView_DrawDisassemble(HDC hdc, const CProcessor* pProc, uint16_t current, uint16_t previous)
 {
     int result = -1;
     m_nDisasmCurrentLineIndex = -1;
 
     int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
-    m_cxDisasmBreakpointZone = x + cxChar * 5 / 2;
+    int x = 32 + 4 - cxChar * 4;
+    int y = 2;
+    m_cxDisasmBreakpointZone = cxChar * 5 / 2;
     m_cyDisasmLine = cyLine;
     COLORREF colorText = Settings_GetColor(ColorDebugText);
     COLORREF colorPrev = Settings_GetColor(ColorDebugPrevious);
@@ -789,7 +782,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
             LPCTSTR strBlockSubtitle = pLineItem->pSubItem->comment;
 
             ::SetTextColor(hdc, colorSubtitle);
-            TextOut(hdc, x + 21 * cxChar, y, strBlockSubtitle, (int) _tcslen(strBlockSubtitle));
+            TextOut(hdc, x + 21 * cxChar, y, strBlockSubtitle, (int)_tcslen(strBlockSubtitle));
             ::SetTextColor(hdc, colorText);
 
             y += cyLine;
@@ -798,7 +791,7 @@ int DisasmView_DrawDisassemble(HDC hdc, CProcessor* pProc, uint16_t current, uin
 
         if (Emulator_IsBreakpoint(address))  // Breakpoint
         {
-            DisasmView_DrawBreakpoint(hdc, x + cxChar / 2, y, cyLine);
+            DisasmView_DrawBreakpoint(hdc, cxChar / 2, y, cyLine);
         }
 
         DrawOctalValue(hdc, x + 5 * cxChar, y, address);  // Address
