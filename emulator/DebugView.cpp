@@ -41,7 +41,7 @@ void DebugView_DrawMemoryForRegister(HDC hdc, int reg, const CProcessor* pProc, 
 int DebugView_DrawWatchpoints(HDC hdc, int x, int y);
 void DebugView_DrawPorts(HDC hdc, int x, int y);
 void DebugView_DrawBreakpoints(HDC hdc, int x, int y);
-void DebugView_DrawMemoryMap(HDC hdc, int x, int y);
+void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc);
 void DebugView_UpdateWindowText();
 
 
@@ -316,7 +316,7 @@ void DebugView_DoDraw(HDC hdc)
 
     DebugView_DrawBreakpoints(hdc, xBreaks + cxChar / 2, cyLine / 2);
 
-    DebugView_DrawMemoryMap(hdc, xMemmap + cxChar, 0);
+    DebugView_DrawMemoryMap(hdc, xMemmap + cxChar, 0, pDebugPU);
 
     SetTextColor(hdc, colorOld);
     SetBkColor(hdc, colorBkOld);
@@ -536,7 +536,7 @@ void DebugView_DrawBreakpoints(HDC hdc, int x, int y)
     }
 }
 
-void DebugView_DrawMemoryMap(HDC hdc, int x, int y)
+void DebugView_DrawMemoryMap(HDC hdc, int x, int y, const CProcessor* pProc)
 {
     uint16_t port177400 = g_pBoard->GetPortView(0177400);
     uint16_t port177600 = g_pBoard->GetPortView(0177600);
@@ -598,6 +598,17 @@ void DebugView_DrawMemoryMap(HDC hdc, int x, int y)
     }
 
     PatBlt(hdc, x1, y1 + cyLine / 4, x2 - x1, 1, PATCOPY);
+
+    uint16_t sp = pProc->GetSP();
+    int ysp = y2 - ((y2 - y1) * sp / 65536);
+    PatBlt(hdc, x2, ysp, cxChar, 1, PATCOPY);
+    TextOut(hdc, x2 + cxChar, ysp - cyLine / 2, _T("SP"), 2);
+
+    uint16_t pc = pProc->GetPC();
+    int ypc = y2 - ((y2 - y1) * pc / 65536);
+    PatBlt(hdc, x2, ypc, cxChar, 1, PATCOPY);
+    TextOut(hdc, x2 + cxChar, ypc - cyLine / 2, _T("PC"), 2);
+
     ::SelectObject(hdc, hOldBrush);
 }
 
