@@ -340,6 +340,7 @@ void ScreenView_ScanKeyboard()
             BYTE pressed = (newstate & 128) | (okCtrl ? 64 : 0);
             WORD keyevent = MAKEWORD(key, pressed);
             ScreenView_PutKeyEventToQueue(keyevent);
+            KeyboardView_KeyEvent(key, pressed);
         }
 
         // Save keyboard state
