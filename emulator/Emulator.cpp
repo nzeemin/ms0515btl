@@ -122,7 +122,7 @@ bool Emulator_Init()
         m_EmulatorCPUBps[i] = 0177777;
     }
     m_wEmulatorWatchesCount = 0;
-    for (int i = 0; i <= MAX_WATCHPOINTCOUNT; i++)
+    for (int i = 0; i <= MAX_WATCHESCOUNT; i++)
     {
         m_EmulatorWatches[i] = 0177777;
     }
@@ -353,9 +353,9 @@ void Emulator_RemoveAllBreakpoints()
     m_wEmulatorCPUBpsCount = 0;
 }
 
-bool Emulator_AddWatchpoint(uint16_t address)
+bool Emulator_AddWatch(uint16_t address)
 {
-    if (m_wEmulatorWatchesCount == MAX_WATCHPOINTCOUNT - 1 || address == 0177777)
+    if (m_wEmulatorWatchesCount == MAX_WATCHESCOUNT - 1 || address == 0177777)
         return false;
     for (int i = 0; i < m_wEmulatorWatchesCount; i++)  // Check if the BP exists
     {
@@ -373,12 +373,12 @@ bool Emulator_AddWatchpoint(uint16_t address)
     m_wEmulatorWatchesCount++;
     return true;
 }
-const uint16_t* Emulator_GetWatchpointList() { return m_EmulatorWatches; }
-bool Emulator_RemoveWatchpoint(uint16_t address)
+const uint16_t* Emulator_GetWatchList() { return m_EmulatorWatches; }
+bool Emulator_RemoveWatch(uint16_t address)
 {
     if (m_wEmulatorWatchesCount == 0 || address == 0177777)
         return false;
-    for (int i = 0; i < MAX_WATCHPOINTCOUNT; i++)
+    for (int i = 0; i < MAX_WATCHESCOUNT; i++)
     {
         if (m_EmulatorWatches[i] == address)
         {
@@ -394,9 +394,9 @@ bool Emulator_RemoveWatchpoint(uint16_t address)
     }
     return false;
 }
-void Emulator_RemoveAllWatchpoints()
+void Emulator_RemoveAllWatches()
 {
-    for (int i = 0; i < MAX_WATCHPOINTCOUNT; i++)
+    for (int i = 0; i < MAX_WATCHESCOUNT; i++)
         m_EmulatorWatches[i] = 0177777;
     m_wEmulatorWatchesCount = 0;
 }

@@ -675,7 +675,7 @@ void ConsoleView_CmdRemoveBreakpointAtAddress(const ConsoleCommandParams& params
 
 void ConsoleView_CmdPrintAllWatches(const ConsoleCommandParams& /*params*/)
 {
-    const uint16_t* pws = Emulator_GetWatchpointList();
+    const uint16_t* pws = Emulator_GetWatchList();
     if (pws == nullptr || *pws == 0177777)
     {
         ConsoleView_Print(_T("  No watches defined.\r\n"));
@@ -696,7 +696,7 @@ void ConsoleView_CmdSetWatchAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
 
-    bool result = Emulator_AddWatchpoint(address);
+    bool result = Emulator_AddWatch(address);
     if (!result)
         ConsoleView_Print(_T("  Failed to add the watch.\r\n"));
     DebugView_Redraw();
@@ -705,14 +705,14 @@ void ConsoleView_CmdRemoveWatchAtAddress(const ConsoleCommandParams& params)
 {
     uint16_t address = params.paramOct1;
 
-    bool result = Emulator_RemoveWatchpoint(address);
+    bool result = Emulator_RemoveWatch(address);
     if (!result)
         ConsoleView_Print(_T("  Failed to remove the watch.\r\n"));
     DebugView_Redraw();
 }
 void ConsoleView_CmdRemoveAllWatches(const ConsoleCommandParams& /*params*/)
 {
-    Emulator_RemoveAllWatchpoints();
+    Emulator_RemoveAllWatches();
     DebugView_Redraw();
 }
 
