@@ -68,7 +68,28 @@ void CTimer8253::WriteCommand(uint8_t data)
 
     if (CTRL_ACCESS(data) == 0)
     {
-        //
+        // Latch count command; has no effect if we are halfway through a 16-bit read
+        if (timer->latched_count == 0 && !timer->rmsb)
+        {
+            uint16_t value = masked_value(timer);
+            switch (CTRL_ACCESS(timer->control))
+            {
+            case 0:
+                break;  // This should never happen
+            case 1:  // latch bits 0-7 only
+                timer->latch = ((value << 8) & 0xff00) | (value & 0xff);
+                timer->latched_count = 1;
+                break;
+            case 2:  // latch bits 8-15 only
+                timer->latch = (value & 0xff00) | ((value >> 8) & 0xff);
+                timer->latched_count = 1;
+                break;
+            case 3:  // latch all 16 bits
+                timer->latch = value;
+                timer->latched_count = 2;
+                break;
+            }
+        }
     }
     else
     {
@@ -206,7 +227,41 @@ void simulate(CTimerChannel* timer)
         //TODO
         break;
     case 2:  // Mode 2: (Rate Generator)
-        //TODO
+        // phase|output|length  |value|next|comment
+        // -----+------+--------+-----+----+-----------------------------------
+        //     0|high  |infinity|     |1   |waiting for count
+        //     1|high  |1       |     |2   |internal delay to load counter
+        //     2|high  |n       |n..2 |3   |counting down
+        //     3|low   |1       |1    |2   |reload counter
+        if (timer->gate == 0 || timer->phase == 0)
+        {
+            // Gate low or mode control write forces output high
+            set_output(timer, 1);
+        }
+        else if (timer->phase == 1)
+        {
+            // Internal delay to load the counter, no decrement on this tick
+            timer->phase = 2;
+            load_counter_value(timer);
+            set_output(timer, 1);
+        }
+        else if (timer->phase == 3)
+        {
+            // Reload counter, output goes high, no decrement on this tick
+            timer->phase = 2;
+            load_counter_value(timer);
+            set_output(timer, 1);
+        }
+        else
+        {
+            decrease_counter_value(timer);
+            if (timer->value == 1)
+            {
+                // Counter hits 1, output goes low for one tick
+                timer->phase = 3;
+                set_output(timer, 0);
+            }
+        }
         break;
     case 3:  // Mode 3: (Square Wave Generator)
         if (timer->gate == 0 || timer->phase == 0)
