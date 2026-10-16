@@ -76,6 +76,24 @@ void Emulator_PrepareScreenRGB32(void* pBits, int screenMode);
 void Emulator_OnUpdate();
 uint16_t Emulator_GetChangeRamStatus(int addrtype, uint16_t address);
 
+// Instruction history, always recorded
+const int INSTR_HISTORY_SIZE = 256;  // Must be a power of two
+
+// A record is either an executed instruction or an interrupt taken by the processor
+struct InstructionRecord
+{
+    uint16_t pc;        // Instruction: its address; interrupt: PC where the interrupt appeared
+    uint16_t words[3];  // Instruction: opcode and two next words, the instruction is at most 3 words long;
+    // interrupt: vector, new PC, new PSW
+    uint16_t psw;       // Instruction: PSW before it; interrupt: new PSW
+    bool     interrupt; // true = interrupt record
+};
+
+int Emulator_GetHistoryLength();
+const InstructionRecord& Emulator_GetHistoryRecord(int index);  // index 0 = most recent
+void Emulator_ClearHistory();
+LPCTSTR Emulator_GetInterruptName(uint16_t vector);  // Short name of the interrupt vector
+
 bool Emulator_SaveImage(LPCTSTR sFilePath);
 bool Emulator_LoadImage(LPCTSTR sFilePath);
 

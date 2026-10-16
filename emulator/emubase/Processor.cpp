@@ -175,6 +175,8 @@ CProcessor::CProcessor(CMotherboard* pBoard)
 {
     ASSERT(pBoard != nullptr);
     m_pBoard = pBoard;
+    m_pInstructionCallback = nullptr;
+    m_pInterruptCallback = nullptr;
     ::memset(m_R, 0, sizeof(m_R));
     m_psw = 0340;
     m_okStopped = true;
@@ -273,8 +275,11 @@ void CProcessor::Execute()
                 SetSP(GetSP() - 2);
                 SetWord(GetSP(), GetPC());
                 // Restart
+                uint16_t haltPc = m_instructionpc;
                 SetPC(0172004);
                 SetPSW(0340);
+                if (m_pInterruptCallback != nullptr)
+                    m_pInterruptCallback(this, haltPc, 0172004);
                 break;
             }
             else if (m_BPT_rq)  // BPT command
@@ -342,6 +347,7 @@ void CProcessor::Execute()
             m_waitmode = false;
 
             uint16_t oldpsw = m_psw;
+            uint16_t oldPc = GetPC();  // PC where the interrupt appears, for m_pInterruptCallback
 
             // Save PC/PSW to stack
             SetSP(GetSP() - 2);
@@ -351,6 +357,9 @@ void CProcessor::Execute()
 
             SetPC(GetWord(intrVector));
             m_psw = GetWord(intrVector + 2) & 0377;
+
+            if (m_pInterruptCallback != nullptr)
+                m_pInterruptCallback(this, oldPc, intrVector);
         }  // end while
     }
 }
@@ -403,6 +412,9 @@ void CProcessor::FetchInstruction()
 
 void CProcessor::TranslateInstruction()
 {
+    if (m_pInstructionCallback != nullptr)
+        m_pInstructionCallback(this, m_instructionpc, m_instruction);
+
     // Prepare values to help decode the command
     m_regdest  = GetDigit(m_instruction, 0);
     m_methdest = GetDigit(m_instruction, 1);

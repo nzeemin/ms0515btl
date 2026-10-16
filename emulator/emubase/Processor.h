@@ -28,6 +28,8 @@ public:  // Constructor / initialization
     void        MemoryError();
     int         GetInternalTick() const { return m_internalTick; }
     void        ClearInternalTick() { m_internalTick = 0; }
+    void        SetInstructionCallback(INSTRUCTIONCALLBACK callback) { m_pInstructionCallback = callback; }
+    void        SetInterruptCallback(INTERRUPTCALLBACK callback) { m_pInterruptCallback = callback; }
 
 public:  // Statics
     static void Init();  // Initialize static tables
@@ -54,6 +56,10 @@ protected:  // Current instruction processing
     uint8_t     m_regdest;          // Destination register number
     uint8_t     m_methdest;         // Destination address mode
     uint16_t    m_addrdest;         // Destination address
+
+protected:  // Callbacks
+    INSTRUCTIONCALLBACK m_pInstructionCallback;  // Called before each instruction execution, nullptr = off
+    INTERRUPTCALLBACK m_pInterruptCallback;      // Called when an interrupt is taken, nullptr = off
 
 protected:  // Interrupt processing
     bool        m_RPLYrq;           // Hangup interrupt pending

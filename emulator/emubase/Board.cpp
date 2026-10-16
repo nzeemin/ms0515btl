@@ -99,6 +99,16 @@ void CMotherboard::SetTrace(uint32_t dwTrace)
         m_pFloppyCtl->SetTrace((dwTrace & TRACE_FLOPPY) != 0);
 }
 
+void CMotherboard::SetInstructionCallback(INSTRUCTIONCALLBACK callback)
+{
+    m_pCPU->SetInstructionCallback(callback);
+}
+
+void CMotherboard::SetInterruptCallback(INTERRUPTCALLBACK callback)
+{
+    m_pCPU->SetInterruptCallback(callback);
+}
+
 void CMotherboard::Reset ()
 {
     m_pCPU->Stop();

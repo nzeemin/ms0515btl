@@ -139,6 +139,22 @@ void DisasmView_Done()
     }
 }
 
+const int DISASMVIEW_WIDTH_CHARS = 80;  // Width of the view when it shares the row with other views
+
+// Width of the view when it shares the row with other views: DISASMVIEW_WIDTH_CHARS characters of the debug font
+int DisasmView_GetWidth()
+{
+    HDC hdc = GetDC(g_hwnd);
+    HFONT hFont = CreateMonospacedFont();
+    HGDIOBJ hOldFont = SelectObject(hdc, hFont);
+    int cxChar, cyLine;  GetFontWidthAndHeight(hdc, &cxChar, &cyLine);
+    SelectObject(hdc, hOldFont);
+    VERIFY(::DeleteObject(hFont));
+    ReleaseDC(g_hwnd, hdc);
+
+    return cxChar * DISASMVIEW_WIDTH_CHARS + 8;  // 8 is for the border and the margin
+}
+
 void DisasmView_Create(HWND hwndParent, int x, int y, int width, int height)
 {
     ASSERT(hwndParent != NULL);

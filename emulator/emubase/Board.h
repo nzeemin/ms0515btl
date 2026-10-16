@@ -34,6 +34,7 @@ MS0515BTL. If not, see <http://www.gnu.org/licenses/>. */
 #define TRACE_CPUROM       1  // Trace CPU instructions from ROM
 #define TRACE_CPURAM       2  // Trace CPU instructions from RAM
 #define TRACE_CPU          3  // Trace CPU instructions (mask)
+#define TRACE_CPUINT       4  // Trace CPU interrupts
 #define TRACE_TIMER      010  // Trace timer events
 #define TRACE_FLOPPY    0100  // Trace floppies
 #define TRACE_KEYBOARD 01000  // Trace keyboard events
@@ -73,6 +74,22 @@ typedef bool (CALLBACK* SERIALOUTCALLBACK)(uint8_t byte);
 typedef bool (CALLBACK* PARALLELOUTCALLBACK)(uint8_t byte);
 
 class CProcessor;
+
+// Instruction execution callback -- called by CPU just before an instruction is executed
+// Input:
+//   pProc      The processor
+//   address    Address of the instruction
+//   opcode     The instruction word
+typedef void (CALLBACK* INSTRUCTIONCALLBACK)(const CProcessor* pProc, uint16_t address, uint16_t opcode);
+
+// Interrupt callback -- called by CPU when an interrupt or trap has been taken:
+// the new PC/PSW are already loaded
+// Input:
+//   pProc      The processor
+//   oldPc      PC where the interrupt appeared
+//   vector     Interrupt vector
+typedef void (CALLBACK* INTERRUPTCALLBACK)(const CProcessor* pProc, uint16_t oldPc, uint16_t vector);
+
 class CTimer8253;
 class CFloppyController;
 class CKeyboard;
@@ -116,6 +133,8 @@ public:  // Debug
     void        SetCPUBreakpoints(const uint16_t* bps) { m_CPUbps = bps; } // Set CPU breakpoint list
     uint32_t    GetTrace() const { return m_dwTrace; }
     void        SetTrace(uint32_t dwTrace);
+    void        SetInstructionCallback(INSTRUCTIONCALLBACK callback);  // nullptr to remove
+    void        SetInterruptCallback(INTERRUPTCALLBACK callback);  // nullptr to remove
 public:  // System control
     void        SetConfiguration(uint16_t conf);
     void        Reset();  // Reset computer

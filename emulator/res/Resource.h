@@ -109,6 +109,7 @@
 #define ID_DEBUG_COPY_ADDRESS           32900
 #define ID_DEBUG_COPY_VALUE             32901
 #define ID_DEBUG_GOTO_ADDRESS           32902
+#define ID_VIEW_INSTRHISTORY            32903
 #define ID_HELP_COMMAND_LINE_HELP       32921
 #define IDC_STATIC                      -1
 

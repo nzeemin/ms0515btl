@@ -95,6 +95,9 @@
     <ClCompile Include="DisasmView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InstrHistoryView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="KeyboardView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

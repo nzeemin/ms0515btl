@@ -106,6 +106,9 @@ const uint32_t Emulator_Palette[24] =
 
 const LPCTSTR FILENAME_ROM_MS0515   = _T("ms0515.rom");
 
+void CALLBACK Emulator_Instruction_Callback(const CProcessor* pProc, uint16_t address, uint16_t opcode);
+void CALLBACK Emulator_Interrupt_Callback(const CProcessor* pProc, uint16_t oldPc, uint16_t vector);
+
 
 //////////////////////////////////////////////////////////////////////
 
@@ -130,6 +133,9 @@ bool Emulator_Init()
     }
 
     g_pBoard = new CMotherboard();
+    g_pBoard->SetInstructionCallback(Emulator_Instruction_Callback);
+    g_pBoard->SetInterruptCallback(Emulator_Interrupt_Callback);
+    Emulator_ClearHistory();
 
     // Allocate memory for old RAM values
     g_pEmulatorRam = static_cast<uint8_t*>(::calloc(128 * 1024, 1));
@@ -156,6 +162,8 @@ void Emulator_Done()
 
     CProcessor::Done();
 
+    g_pBoard->SetInstructionCallback(nullptr);
+    g_pBoard->SetInterruptCallback(nullptr);
     g_pBoard->SetSoundGenCallback(nullptr);
     SoundGen_Finalize();
 
@@ -262,6 +270,7 @@ void Emulator_Reset()
     ASSERT(g_pBoard != nullptr);
 
     g_pBoard->Reset();
+    Emulator_ClearHistory();
 
     m_nUptimeFrameCount = 0;
     m_dwTotalFrameCount = 0;
@@ -1240,6 +1249,102 @@ bool Emulator_LoadImage(LPCTSTR sFilePath)
     MainWindow_UpdateAllViews();
 
     return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+
+
+// Instruction history: ring buffer filled by Emulator_Instruction_Callback
+static InstructionRecord m_InstrHistory[INSTR_HISTORY_SIZE];
+static int m_InstrHistoryHead = 0;    // Index of the next record to write
+static int m_InstrHistoryLength = 0;  // Number of valid records
+
+int Emulator_GetHistoryLength()
+{
+    return m_InstrHistoryLength;
+}
+
+// index 0 = most recent record
+const InstructionRecord& Emulator_GetHistoryRecord(int index)
+{
+    ASSERT(index >= 0 && index < m_InstrHistoryLength);
+    return m_InstrHistory[(m_InstrHistoryHead - 1 - index) & (INSTR_HISTORY_SIZE - 1)];
+}
+
+void Emulator_ClearHistory()
+{
+    m_InstrHistoryHead = 0;
+    m_InstrHistoryLength = 0;
+}
+
+static InstructionRecord& Emulator_AddHistoryRecord()
+{
+    InstructionRecord& record = m_InstrHistory[m_InstrHistoryHead];
+    m_InstrHistoryHead = (m_InstrHistoryHead + 1) & (INSTR_HISTORY_SIZE - 1);
+    if (m_InstrHistoryLength < INSTR_HISTORY_SIZE)
+        m_InstrHistoryLength++;
+    return record;
+}
+
+// Short name of the interrupt vector
+LPCTSTR Emulator_GetInterruptName(uint16_t vector)
+{
+    switch (vector)
+    {
+    case 0000000: return _T("RPLY");
+    case 0000010: return _T("RSVD");
+    case 0000014: return _T("BPT/TBIT");
+    case 0000020: return _T("IOT");
+    case 0000030: return _T("EMT");
+    case 0000034: return _T("TRAP");
+    case 0000064: return _T("VBLANK");
+    case 0000100: return _T("TIMER");
+    case 0000130: return _T("KEYB");
+    case 0172004: return _T("HALT");
+    default:      return _T("VIRQ");
+    }
+}
+
+// Called by the CPU before each instruction is executed; records the history
+void CALLBACK Emulator_Instruction_Callback(const CProcessor* pProc, uint16_t address, uint16_t opcode)
+{
+    // Instruction is at most 3 words long
+    int addrtype = ADDRTYPE_RAM;
+    InstructionRecord& record = Emulator_AddHistoryRecord();
+    record.pc = address;
+    record.words[0] = opcode;
+    record.words[1] = g_pBoard->GetWordView(address + 1 * 2, true, &addrtype);
+    record.words[2] = g_pBoard->GetWordView(address + 2 * 2, true, &addrtype);
+    record.psw = pProc->GetPSW();
+    record.interrupt = false;
+}
+
+// Called by the CPU when an interrupt has been taken, the new PC/PSW are already loaded;
+// records the history and writes trace
+void CALLBACK Emulator_Interrupt_Callback(const CProcessor* pProc, uint16_t oldPc, uint16_t vector)
+{
+    InstructionRecord& record = Emulator_AddHistoryRecord();
+    record.pc = oldPc;
+    record.words[0] = vector;
+    record.words[1] = pProc->GetPC();
+    record.words[2] = pProc->GetPSW();
+    record.psw = pProc->GetPSW();
+    record.interrupt = true;
+
+    if ((g_pBoard->GetTrace() & TRACE_CPUINT) == 0)
+        return;
+
+    TCHAR bufaddr[7], bufvector[7], bufnewpc[7];
+    PrintOctalValue(bufaddr, oldPc);
+    PrintOctalValue(bufvector, vector);
+    PrintOctalValue(bufnewpc, pProc->GetPC());
+
+    TCHAR buffer[80];
+    _sntprintf(buffer, sizeof(buffer) / sizeof(TCHAR) - 1, _T("%s\tINT\t%s\t%s\t%s\r\n"),
+            bufaddr, bufvector, Emulator_GetInterruptName(vector), bufnewpc);
+
+    DebugLog(buffer);
 }
 
 
