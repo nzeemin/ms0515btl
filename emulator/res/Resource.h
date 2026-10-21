@@ -16,6 +16,7 @@
 #define IDD_CREATEDISK                  144
 #define IDD_SETTINGS                    145
 #define IDD_SETTINGS_COLORS             146
+#define IDD_COMMANDLINEHELP             147
 #define IDD_DCB_EDITOR                  148
 #define IDB_KEYBOARDMASK                149
 #define IDR_ROMA                        151
@@ -118,7 +119,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_RESOURCE_VALUE        153
 #define _APS_NEXT_COMMAND_VALUE         32999
 #define _APS_NEXT_CONTROL_VALUE         1034
 #define _APS_NEXT_SYMED_VALUE           110
